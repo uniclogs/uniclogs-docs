@@ -26,13 +26,13 @@ int main(int argc, char *argv[]){
     FILE *run_fp = NULL;
     pid_t process_id = 0;
     pid_t sid = 0;
-    /*pthread_t statethread, servthread;*/
+    pthread_t statethread, servthread;
 
     //Command line argument processing
     while ((c = getopt(argc, argv, "dp:")) != -1){
         switch (c){
             case 'd':
-                daemon_flag = 1;
+                /*daemon_flag = 1;*/
                 break;
             case 'p':
                 //TODO: Set port override
@@ -79,6 +79,9 @@ int main(int argc, char *argv[]){
         fclose(stdout);
         fclose(stderr);
     }
+
+    pthread_create(&servthread, NULL, udp_serv, NULL);
+    pthread_join(servthread, NULL);
 
     return EXIT_SUCCESS;
 }
