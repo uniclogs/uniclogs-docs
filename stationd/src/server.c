@@ -26,7 +26,7 @@ void *udp_serv(void *argp)
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage remaddr;
     socklen_t addrlen;
-    unsigned char buf[MAXBUF];
+    char buf[MAXBUF];
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
@@ -68,6 +68,9 @@ void *udp_serv(void *argp)
         if (recvlen > 0) {
             buf[recvlen] = '\0';
             printf("Received message: \"%s\"\n", buf);
+            if (!strncmp("q", buf, MAXBUF)) {
+                break;
+            }
         }
     }
 
