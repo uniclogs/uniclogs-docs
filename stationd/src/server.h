@@ -5,7 +5,7 @@
  *
  *    Description:  stationd UDP server header
  *
- *        Version:  0.1
+ *        Version:  0.1.0
  *        Created:  10/25/2018 03:15:54 PM
  *       Compiler:  gcc
  *

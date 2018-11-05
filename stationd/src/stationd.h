@@ -5,7 +5,7 @@
  *
  *    Description:  stationd main header
  *
- *        Version:  0.1
+ *        Version:  0.1.0
  *        Created:  10/25/2018 12:29:28 PM
  *       Compiler:  gcc
  *
