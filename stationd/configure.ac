@@ -5,15 +5,16 @@ AC_PREREQ([2.69])
 AC_INIT([stationd], [0.1.0])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/stationd.h])
-AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
 
 # Checks for libraries.
+AC_SEARCH_LIBS([pthread_create], [pthread])
 
 # Checks for header files.
-AC_CHECK_HEADERS([netdb.h stdlib.h string.h sys/socket.h unistd.h])
+AC_CHECK_HEADERS([netdb.h stdlib.h string.h sys/socket.h unistd.h pthread.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T
