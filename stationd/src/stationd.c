@@ -60,6 +60,7 @@ int main(int argc, char *argv[]){
             run_fp = fopen(PID_FILE, "w+");
             if (!run_fp){
                 fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", PID_FILE);
+                kill(process_id, SIGINT);
                 exit(EXIT_FAILURE);
             }
             fprintf(run_fp, "%d\n", process_id);

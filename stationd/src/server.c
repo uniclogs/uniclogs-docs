@@ -15,6 +15,16 @@
  * =====================================================================================
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
 #include "server.h"
 
 #define MAXBUF 2048
