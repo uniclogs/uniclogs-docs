@@ -18,11 +18,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
+#include <syslog.h>
 #include <pthread.h>
 
 #include "statemachine.h" //stationd State machine
@@ -31,7 +33,8 @@
 #define DEFAULT_PORT "8080"
 #define DEFAULT_PID_FILE "/run/stationd/stationd.pid"
 
-static int daemon_flag = 0;
+static bool daemon_flag = false;
+static int verbose_flag = false;
 
 int main(int argc, char *argv[]){
     int c;
@@ -42,10 +45,10 @@ int main(int argc, char *argv[]){
     pthread_t statethread, servthread;
 
     //Command line argument processing
-    while ((c = getopt(argc, argv, "dp:r:")) != -1){
+    while ((c = getopt(argc, argv, "dp:r:v")) != -1){
         switch (c){
             case 'd':
-                daemon_flag = 1;
+                daemon_flag = true;
                 break;
             case 'p':
                 port = optarg;
@@ -53,10 +56,13 @@ int main(int argc, char *argv[]){
             case 'r':
                 pid_file = optarg;
                 break;
+            case 'v':
+                verbose_flag = true;
+                break;
             case '?':
 
             default:
-                fprintf(stderr, "Usage: %s [-d] [-p portnum] [-r pid_file]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-d] [-p portnum] [-r pid_file] [-v]\n", argv[0]);
                 exit(1);
         }
     }
@@ -88,6 +94,7 @@ int main(int argc, char *argv[]){
             exit(EXIT_FAILURE);
         }
 
+        //Set default umask and cd to root to avoid locking up any filesystems
         umask(0);
         chdir("/");
 
@@ -97,8 +104,19 @@ int main(int argc, char *argv[]){
         freopen("/dev/null", "w+", stderr);
     }
 
+    //Open syslog for all logging purposes
+    if (verbose_flag){
+        setlogmask(LOG_UPTO(LOG_DEBUG));
+    } else {
+        setlogmask(LOG_UPTO(LOG_NOTICE));
+    }
+    openlog(argv[0], LOG_PID|LOG_CONS, LOG_DAEMON);
+
+    //Register signal handlers
+
     /*pthread_create(&servthread, NULL, udp_serv, NULL);*/
     /*pthread_join(servthread, NULL);*/
 
+    closelog();
     return EXIT_SUCCESS;
 }
