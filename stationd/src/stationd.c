@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
@@ -37,8 +38,7 @@ int main(int argc, char *argv[]){
     char *port = DEFAULT_PORT;
     char *pid_file = DEFAULT_PID_FILE;
     FILE *run_fp = NULL;
-    pid_t process_id = 0;
-    pid_t sid = 0;
+    pid_t pid = 0, sid = 0;
     pthread_t statethread, servthread;
 
     //Command line argument processing
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
                 /*daemon_flag = 1;*/
                 break;
             case 'p':
-                //TODO: Set port override
+                port = optarg;
                 break;
 
             case '?':
@@ -62,29 +62,27 @@ int main(int argc, char *argv[]){
     //Run as daemon if needed
     if (daemon_flag){
         //Fork
-        process_id = fork();
-        if (process_id < 0){
+        if ((pid = fork()) < 0){
             fprintf(stderr, "Error: Failed to fork! Terminating...\n");
             exit(EXIT_FAILURE);
         }
 
         //Parent process, log pid of child and exit
-        if (process_id){
-            run_fp = fopen(pid_file, "w+");
-            if (!run_fp){
+        if (pid){
+            if ((run_fp = fopen(pid_file, "w+")) == NULL){
                 fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", pid_file);
-                kill(process_id, SIGINT);
+                kill(pid, SIGINT);
                 exit(EXIT_FAILURE);
             }
-            fprintf(run_fp, "%d\n", process_id);
+            fprintf(run_fp, "%d\n", pid);
             fflush(run_fp);
             fclose(run_fp);
             exit(EXIT_SUCCESS);
         }
 
         //Child process, create new session for process group leader
-        sid = setsid();
-        if (sid < 0){
+        if ((sid = setsid()) < 0){
+            fprintf(stderr, "Error: Failed to create new session! Terminating...\n");
             exit(EXIT_FAILURE);
         }
 
