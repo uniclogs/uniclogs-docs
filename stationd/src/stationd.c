@@ -15,14 +15,27 @@
  * =====================================================================================
  */
 
-#include "stationd.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+#include <pthread.h>
 
-#define PID_FILE "/run/stationd/stationd.pid"
+#include "statemachine.h" //stationd State machine
+#include "server.h"       //stationd Token processing server
+
+#define DEFAULT_PORT "8080"
+#define DEFAULT_PID_FILE "/run/stationd/stationd.pid"
 
 static int daemon_flag = 0;
 
 int main(int argc, char *argv[]){
     int c;
+    char *port = DEFAULT_PORT;
+    char *pid_file = DEFAULT_PID_FILE;
     FILE *run_fp = NULL;
     pid_t process_id = 0;
     pid_t sid = 0;
@@ -57,9 +70,9 @@ int main(int argc, char *argv[]){
 
         //Parent process, log pid of child and exit
         if (process_id){
-            run_fp = fopen(PID_FILE, "w+");
+            run_fp = fopen(pid_file, "w+");
             if (!run_fp){
-                fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", PID_FILE);
+                fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", pid_file);
                 kill(process_id, SIGINT);
                 exit(EXIT_FAILURE);
             }
