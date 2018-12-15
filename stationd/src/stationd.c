@@ -42,19 +42,21 @@ int main(int argc, char *argv[]){
     pthread_t statethread, servthread;
 
     //Command line argument processing
-    while ((c = getopt(argc, argv, "dp:")) != -1){
+    while ((c = getopt(argc, argv, "dp:r:")) != -1){
         switch (c){
             case 'd':
-                /*daemon_flag = 1;*/
+                daemon_flag = 1;
                 break;
             case 'p':
                 port = optarg;
                 break;
-
+            case 'r':
+                pid_file = optarg;
+                break;
             case '?':
 
             default:
-                fprintf(stderr, "Usage: %s [-d] [-p portnum]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-d] [-p portnum] [-r pid_file]\n", argv[0]);
                 exit(1);
         }
     }
@@ -86,14 +88,17 @@ int main(int argc, char *argv[]){
             exit(EXIT_FAILURE);
         }
 
-        //Close std streams
-        fclose(stdin);
-        fclose(stdout);
-        fclose(stderr);
+        umask(0);
+        chdir("/");
+
+        //Redirect std streams to /dev/null
+        freopen("/dev/null", "r", stdin);
+        freopen("/dev/null", "w+", stdout);
+        freopen("/dev/null", "w+", stderr);
     }
 
-    pthread_create(&servthread, NULL, udp_serv, NULL);
-    pthread_join(servthread, NULL);
+    /*pthread_create(&servthread, NULL, udp_serv, NULL);*/
+    /*pthread_join(servthread, NULL);*/
 
     return EXIT_SUCCESS;
 }
