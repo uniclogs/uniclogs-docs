@@ -15,33 +15,54 @@
  * =====================================================================================
  */
 
-#include "stationd.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <signal.h>
+#include <syslog.h>
+#include <pthread.h>
 
-#define PID_FILE "/run/stationd/stationd.pid"
+#include "statemachine.h" //stationd State machine
+#include "server.h"       //stationd Token processing server
 
-static int daemon_flag = 0;
+#define DEFAULT_PORT "8080"
+#define DEFAULT_PID_FILE "/run/stationd/stationd.pid"
+
+static bool daemon_flag = false;
+static int verbose_flag = false;
 
 int main(int argc, char *argv[]){
     int c;
+    char *port = DEFAULT_PORT;
+    char *pid_file = DEFAULT_PID_FILE;
     FILE *run_fp = NULL;
-    pid_t process_id = 0;
-    pid_t sid = 0;
+    pid_t pid = 0, sid = 0;
     pthread_t statethread, servthread;
 
     //Command line argument processing
-    while ((c = getopt(argc, argv, "dp:")) != -1){
+    while ((c = getopt(argc, argv, "dp:r:v")) != -1){
         switch (c){
             case 'd':
-                /*daemon_flag = 1;*/
+                daemon_flag = true;
                 break;
             case 'p':
-                //TODO: Set port override
+                port = optarg;
                 break;
-
+            case 'r':
+                pid_file = optarg;
+                break;
+            case 'v':
+                verbose_flag = true;
+                break;
             case '?':
 
             default:
-                fprintf(stderr, "Usage: %s [-d] [-p portnum]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-d] [-p portnum] [-r pid_file] [-v]\n", argv[0]);
                 exit(1);
         }
     }
@@ -49,39 +70,54 @@ int main(int argc, char *argv[]){
     //Run as daemon if needed
     if (daemon_flag){
         //Fork
-        process_id = fork();
-        if (process_id < 0){
+        if ((pid = fork()) < 0){
             fprintf(stderr, "Error: Failed to fork! Terminating...\n");
             exit(EXIT_FAILURE);
         }
 
         //Parent process, log pid of child and exit
-        if (process_id){
-            run_fp = fopen(PID_FILE, "w+");
-            if (!run_fp){
-                fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", PID_FILE);
+        if (pid){
+            if ((run_fp = fopen(pid_file, "w+")) == NULL){
+                fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", pid_file);
+                kill(pid, SIGINT);
                 exit(EXIT_FAILURE);
             }
-            fprintf(run_fp, "%d\n", process_id);
+            fprintf(run_fp, "%d\n", pid);
             fflush(run_fp);
             fclose(run_fp);
             exit(EXIT_SUCCESS);
         }
 
         //Child process, create new session for process group leader
-        sid = setsid();
-        if (sid < 0){
+        if ((sid = setsid()) < 0){
+            fprintf(stderr, "Error: Failed to create new session! Terminating...\n");
             exit(EXIT_FAILURE);
         }
 
-        //Close std streams
-        fclose(stdin);
-        fclose(stdout);
-        fclose(stderr);
+        //Set default umask and cd to root to avoid locking up any filesystems
+        umask(0);
+        chdir("/");
+
+        //Redirect std streams to /dev/null
+        freopen("/dev/null", "r", stdin);
+        freopen("/dev/null", "w+", stdout);
+        freopen("/dev/null", "w+", stderr);
     }
 
-    pthread_create(&servthread, NULL, udp_serv, NULL);
+    //Open syslog for all logging purposes
+    if (verbose_flag){
+        setlogmask(LOG_UPTO(LOG_DEBUG));
+    } else {
+        setlogmask(LOG_UPTO(LOG_NOTICE));
+    }
+    openlog(argv[0], LOG_PID|LOG_CONS, LOG_DAEMON);
+
+    //Register signal handlers
+
+    //Create threads
+    pthread_create(&servthread, NULL, udp_serv, port);
     pthread_join(servthread, NULL);
 
+    closelog();
     return EXIT_SUCCESS;
 }
