@@ -30,8 +30,12 @@
 #include "statemachine.h" //stationd State machine
 #include "server.h"       //stationd Token processing server
 
+#ifndef DEFAULT_PORT
 #define DEFAULT_PORT "8080"
+#endif
+#ifndef DEFAULT_PID_FILE
 #define DEFAULT_PID_FILE "/run/stationd/stationd.pid"
+#endif
 
 static bool daemon_flag = false;
 static int verbose_flag = false;
