@@ -72,8 +72,8 @@ void *udp_serv(void *argp)
     freeaddrinfo(servinfo);
 
     addrlen = sizeof(remaddr);
-    syslog(LOG_DEBUG, "Waiting on port %s...", (char *)argp);
-    fprintf(stdout, "Waiting on port %s...\n", (char *)argp);
+    syslog(LOG_INFO, "Starting UDP server on port %s...", (char *)argp);
+    fprintf(stdout, "Starting UDP server on port %s...\n", (char *)argp);
     while (1) {
         if ((recvlen = recvfrom(sd, buf, MAXBUF - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
         {

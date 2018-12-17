@@ -79,26 +79,28 @@ int main(int argc, char *argv[]){
             exit(EXIT_FAILURE);
         }
 
-        //Parent process, log pid of child and exit
+        //Parent process exits
         if (pid){
-            if ((run_fp = fopen(pid_file, "w+")) == NULL){
-                fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", pid_file);
-                kill(pid, SIGINT);
-                exit(EXIT_FAILURE);
-            }
-            fprintf(run_fp, "%d\n", pid);
-            fflush(run_fp);
-            fclose(run_fp);
             exit(EXIT_SUCCESS);
         }
 
-        //Child process, create new session for process group leader
+        //Child process continues on
+        //Log PID
+        if ((run_fp = fopen(pid_file, "w+")) == NULL){
+            fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", pid_file);
+            exit(EXIT_FAILURE);
+        }
+        fprintf(run_fp, "%d\n", getpid());
+        fflush(run_fp);
+        fclose(run_fp);
+
+        //Create new session for process group leader
         if ((sid = setsid()) < 0){
             fprintf(stderr, "Error: Failed to create new session! Terminating...\n");
             exit(EXIT_FAILURE);
         }
 
-        //Set default umask and cd to root to avoid locking up any filesystems
+        //Set default umask and cd to root to avoid blocking filesystems
         umask(0);
         chdir("/");
 
