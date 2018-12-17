@@ -17,9 +17,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <syslog.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -28,7 +30,6 @@
 #include "server.h"
 
 #define MAXBUF 2048
-#define PORT "8080"
 
 void *udp_serv(void *argp)
 {
@@ -43,41 +44,47 @@ void *udp_serv(void *argp)
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
 
-    if ((status = getaddrinfo(NULL, PORT, &hints, &servinfo))) {
+    if ((status = getaddrinfo(NULL, (char *)argp, &hints, &servinfo))) {
+        syslog(LOG_ERR, "getaddrinfo error: %s", gai_strerror(status));
         fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
         exit(EXIT_FAILURE);
     }
     for (p = servinfo; p != NULL; p = p->ai_next)
     {
         if ((sd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
-            perror("Error: Cannot create socket\n");
+            syslog(LOG_ERR, "Error: Cannot create socket: %s", strerror(errno));
+            fprintf(stderr, "Error: Cannot create socket: %s\n", strerror(errno));
             continue;
         }
         if (bind(sd, p->ai_addr, p->ai_addrlen) < 0) {
             close(sd);
-            perror("Error: Bind failed\n");
+            syslog(LOG_ERR, "Error: Bind failed: %s", strerror(errno));
+            fprintf(stderr, "Error: Bind failed: %s\n", strerror(errno));
             continue;
         }
         break;
     }
     if (p == NULL) {
+        syslog(LOG_ERR, "Error: Failed to bind socket");
         fprintf(stderr, "Error: Failed to bind socket\n");
         exit(EXIT_FAILURE);
     }
     freeaddrinfo(servinfo);
 
     addrlen = sizeof(remaddr);
+    syslog(LOG_DEBUG, "Waiting on port %s...", (char *)argp);
+    fprintf(stdout, "Waiting on port %s...\n", (char *)argp);
     while (1) {
-        printf("Waiting on port %s...\n", PORT);
         if ((recvlen = recvfrom(sd, buf, MAXBUF - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
         {
-            perror("Error: Receive failure\n");
+            syslog(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
+            fprintf(stderr, "Error: Receive failure: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
-        printf("Received %d bytes\n", recvlen);
         if (recvlen > 0) {
             buf[recvlen] = '\0';
-            printf("Received message: \"%s\"\n", buf);
+            syslog(LOG_DEBUG, "Received %d byte message: \"%s\"", recvlen, buf);
+            fprintf(stdout, "Received %d byte message: \"%s\"\n", recvlen, buf);
             if (!strncmp("q", buf, MAXBUF)) {
                 break;
             }

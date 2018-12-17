@@ -114,8 +114,9 @@ int main(int argc, char *argv[]){
 
     //Register signal handlers
 
-    /*pthread_create(&servthread, NULL, udp_serv, NULL);*/
-    /*pthread_join(servthread, NULL);*/
+    //Create threads
+    pthread_create(&servthread, NULL, udp_serv, port);
+    pthread_join(servthread, NULL);
 
     closelog();
     return EXIT_SUCCESS;
