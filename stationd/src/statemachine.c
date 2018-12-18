@@ -96,9 +96,8 @@ void *statemachine(void *argp){
             changeState();
             /*raise(SIGUSR1);*/
     }
-    i2c_exit();
-    syslog (LOG_INFO,"State Machine Shutdown");
 
+    raise(SIGTERM);
     return 0;
 }
 
