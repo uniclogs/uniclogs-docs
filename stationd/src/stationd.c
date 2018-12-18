@@ -137,5 +137,8 @@ int main(int argc, char *argv[]){
 
 void sig_exit(int sig){
     i2c_exit();
-    syslog (LOG_INFO,"State Machine Shutdown");
+    syslog (LOG_INFO,"Shutting Down...");
+    sem_destroy(&msgpending);
+    closelog();
+    exit(EXIT_SUCCESS);
 }
