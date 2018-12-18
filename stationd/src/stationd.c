@@ -35,6 +35,8 @@
 static bool daemon_flag = false;
 static int verbose_flag = false;
 
+void sig_exit(int sig);
+
 int main(int argc, char *argv[]){
     int c;
     char *port = DEFAULT_PORT;
@@ -42,6 +44,9 @@ int main(int argc, char *argv[]){
     FILE *run_fp = NULL;
     pid_t pid = 0, sid = 0;
     pthread_t statethread, servthread;
+
+    //Register signal handlers
+    signal(SIGINT, sig_exit);
 
     //Initialize message pending semaphore
     sem_init(&msgpending, 0, 1);
@@ -127,4 +132,9 @@ int main(int argc, char *argv[]){
     sem_destroy(&msgpending);
     closelog();
     return EXIT_SUCCESS;
+}
+
+void sig_exit(int sig){
+    i2c_exit();
+    syslog (LOG_INFO,"State Machine Shutdown");
 }
