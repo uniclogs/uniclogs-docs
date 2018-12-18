@@ -21,35 +21,7 @@
 #define U_LNA    15
 
 
-char *inputTokens[] = {
-    "NO_ACTION",
-    "V_TX",
-    "U_TX",
-    "L_TX",
-    "PWR_ON",
-    "OPERATE",
-    "S_ON",
-    "S_OFF",
-    "KILL",
-
-    "V_LEFT",
-    "V_RIGHT",
-    "V_TX_ON",
-    "V_TX_OFF",
-    "SHUTDOWN",
-
-    "U_LEFT",
-    "U_RIGHT",
-    "U_TX_ON",
-    "U_TX_OFF",
-
-    "L_TX_ON",
-    "L_TX_OFF",
-
-    "EXIT",
-    "STATUS",
-    "MAX_TOKENS"
-};
+extern const char *inputTokens[];
 
 typedef enum{
     NO_ACTION,
