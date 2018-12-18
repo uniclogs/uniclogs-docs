@@ -802,7 +802,7 @@ int MPC23017BitClear(int bit){
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl bit clear error return code %d \n",rc);
+        syslog(LOG_ERR,"ioctl bit clear error: %s",strerror(errno));
 }
 
 
@@ -828,7 +828,7 @@ int MPC23017BitReset(void){
     reg_gpioa_bits = 0x00;
     syslog(LOG_INFO,"GPIOA reset %d \n",rc);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl gpioa reset error return code %d \n",rc);
+        syslog(LOG_ERR,"ioctl gpioa reset error: %s",strerror(errno));
 
     //reset GPIOB
     buf[0] = 0x13;
@@ -845,7 +845,7 @@ int MPC23017BitReset(void){
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     syslog(LOG_INFO,"GPIOB reset %d \n",rc);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl gpiob reset error return code %d \n",rc);
+        syslog(LOG_ERR,"ioctl gpiob reset error: %s",strerror(errno));
 
     reg_gpioa_bits = 0x00;
     reg_gpiob_bits = 0x00;
