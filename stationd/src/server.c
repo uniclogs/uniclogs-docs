@@ -70,8 +70,9 @@ void *udp_serv(void *argp)
         exit(EXIT_FAILURE);
     }
     freeaddrinfo(servinfo);
-
     addrlen = sizeof(remaddr);
+
+    //Start input handling UDP server
     syslog(LOG_INFO, "Starting UDP server on port %s...", (char *)argp);
     fprintf(stdout, "Starting UDP server on port %s...\n", (char *)argp);
     while (1) {
@@ -91,6 +92,8 @@ void *udp_serv(void *argp)
         }
     }
 
+    syslog(LOG_INFO, "Shutting down UDP server...");
+    fprintf(stdout, "Shutting down  UDP server...\n");
     close(sd);
     pthread_exit(NULL);
 }
