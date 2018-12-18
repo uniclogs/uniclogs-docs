@@ -92,6 +92,7 @@ void *udp_serv(void *argp)
             fprintf(stdout, "Received %d byte message: \"%s\"\n", recvlen, msg);
         }
         sem_post(&msgpending);
+        sleep(1);
     }
 
     syslog(LOG_INFO, "Shutting down UDP server...");

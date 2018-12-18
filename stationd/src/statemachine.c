@@ -227,6 +227,7 @@ int getInput(void){
         }
     }
     sem_post(&msgpending);
+    sleep(1);
 
     if(i == MAX_TOKENS) {
         syslog (LOG_WARNING,"Not a known token. No action taken. \n");
