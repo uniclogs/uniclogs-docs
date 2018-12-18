@@ -47,6 +47,7 @@ int main(int argc, char *argv[]){
 
     //Register signal handlers
     signal(SIGINT, sig_exit);
+    signal(SIGTERM, sig_exit);
 
     //Initialize message pending semaphore
     sem_init(&msgpending, 0, 1);
