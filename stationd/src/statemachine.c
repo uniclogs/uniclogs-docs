@@ -749,7 +749,7 @@ int MPC23017BitSet(int bit){
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl bit set error return code %d \n",rc);
+        syslog(LOG_ERR,"ioctl bit set error: %s",strerror(errno));
 
 }
 
