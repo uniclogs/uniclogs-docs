@@ -10,6 +10,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <signal.h>
+#include <errno.h>
 #include <syslog.h>
 
 #include "common.h"
