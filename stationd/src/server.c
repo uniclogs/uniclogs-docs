@@ -85,7 +85,7 @@ void *udp_serv(void *argp)
         }
         if (recvlen > 0) {
             msg[recvlen] = '\0';
-            for (int c = 0; msg[c]; i++) {
+            for (int c = 0; msg[c]; c++) {
                 msg[c] = toupper(msg[c]);
             }
             syslog(LOG_DEBUG, "Received %d byte message: \"%s\"", recvlen, msg);

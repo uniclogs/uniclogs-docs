@@ -153,7 +153,6 @@ void handle_alarm_signal(int sig);
 int initialize(void);
 int i2c_exit(void);
 int getInput(void);
-void upper_string(char s[]);
 int processToken(void);
 int processVHFTokens(void);
 int processUHFTokens(void);
