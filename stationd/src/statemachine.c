@@ -14,60 +14,26 @@
 
 #include "statemachine.h"
 
-char *inputTokens[] = {
-    "NO_ACTION",
-    "V_TX",
-    "U_TX",
-    "L_TX",
-    "PWR_ON",
-    "OPERATE",
-    "S_ON",
-    "S_OFF",
-    "KILL",
-
-    "V_LEFT",
-    "V_RIGHT",
-    "V_TX_ON",
-    "V_TX_OFF",
-    "SHUTDOWN",
-
-    "U_LEFT",
-    "U_RIGHT",
-    "U_TX_ON",
-    "U_TX_OFF",
-
-    "L_TX_ON",
-    "L_TX_OFF",
-
-    "EXIT",
-    "STATUS",
-    "MAX_TOKENS"
-};
 
 //I2C bus
-char *filename = I2C_DEV;
-int file_i2c;
-int addr = I2C_ADDR;                           //The I2C address of the slave
-uint8_t reg_gpioa_bits;
-uint8_t reg_gpiob_bits;
+static char *i2cdev = DEFAULT_I2C_DEV;
+static int file_i2c;
+static int i2caddr = DEFAULT_I2C_ADDR;                           //The I2C address of the slave
+static uint8_t reg_gpioa_bits;
+static uint8_t reg_gpiob_bits;
 
 
 /*
    Overview
    ---------
    The code is checks for input token in a loop using getInput().The token is validated in processToken().
-   If the token is good, approriate nextstate is stored in pwr_Config and SIGUSR1 signal is raised.
-   The signal then calls changeState() to change the state based on the details in pwr_Config which were
-   set up based on the token.
-   */
+   If the token is good, approriate nextstate is stored in pwr_Config and changeState() is called.
+*/
 
-int statemachine(){
-    syslog (LOG_INFO,"Started State Machine.");
+void *statemachine(void *argp){
+    syslog (LOG_INFO,"Started State Machine");
     initialize();
     //define signals that will be handled.
-    signal(SIGINT, handle_kill_signal);
-    signal(SIGABRT, handle_kill_signal);
-    signal(SIGUSR1, handle_token_signal);  //All user tokens creates this signal.
     signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
 
     while(1){
@@ -81,7 +47,6 @@ int statemachine(){
         }
 
         if(pwrConfig.token == EXIT){
-            i2c_exit();
             break;
         }
 
@@ -98,26 +63,14 @@ int statemachine(){
         processToken();
 
         if (pwrConfig.token != NO_ACTION)
-            raise(SIGUSR1);
+            changeState();
+            /*raise(SIGUSR1);*/
     }
-    syslog (LOG_INFO,"powerboard code exited. \n");
+    i2c_exit();
+    syslog (LOG_INFO,"State Machine Shutdown");
 
     return 0;
 }
-
-
-void handle_kill_signal(int sig){
-    i2c_exit();
-    syslog (LOG_INFO,"powerboard code exited. \n");
-
-    exit(0);
-}
-
-
-void handle_token_signal(int sig){
-    changeState();
-}
-
 
 void handle_alarm_signal(int sig){
     if (pwrConfig.state == V_TRAN && pwrConfig.sec_state == V_PA_COOL){
@@ -145,7 +98,7 @@ void handle_alarm_signal(int sig){
 }
 
 
-int initialize(){
+int initialize(void){
 
     uint8_t buffer[3] = {0};
     uint8_t length;
@@ -153,11 +106,10 @@ int initialize(){
     pwrConfig.state = PWR_UP;
     pwrConfig.sec_state = NONE;
 
-    if ((file_i2c = open(filename, O_RDWR)) < 0)
+    if ((file_i2c = open(i2cdev, O_RDWR)) < 0)
     {
-        //ERROR HANDLING: you can check errno to see what went wrong
         syslog (LOG_ERR,"Failed to open the i2c bus");
-        return 1;
+        exit(EXIT_FAILURE);
     }
     else
     {
@@ -165,12 +117,10 @@ int initialize(){
     }
 
     //acquire i2c bus
-    int addr = 0x20;          //<<<<<The I2C address of the slave
-    if (ioctl(file_i2c, I2C_SLAVE, addr) < 0)
+    if (ioctl(file_i2c, I2C_SLAVE, i2caddr) < 0)
     {
         syslog (LOG_ERR,"Failed to acquire bus access and/or talk to slave.");
-        //ERROR HANDLING; you can check errno to see what went wrong
-        return 1;
+        exit(EXIT_FAILURE);
     }
     else
     {
@@ -187,7 +137,7 @@ int initialize(){
     buf[0] = 0x00;
     buf[1] = 0x00;
 
-    iomsg[0].addr = addr;
+    iomsg[0].addr = i2caddr;
     iomsg[0].flags = 0;
     iomsg[0].buf = buf;
     iomsg[0].len = 2;
@@ -204,7 +154,7 @@ int initialize(){
     buf[0] = 0x01;
     buf[1] = 0x00;
 
-    iomsg[0].addr = addr;
+    iomsg[0].addr = i2caddr;
     iomsg[0].flags = 0;
     iomsg[0].buf = buf;
     iomsg[0].len = 2;
@@ -222,7 +172,7 @@ int initialize(){
 
 
 //Handles proper exit after a crash or user EXIT token
-int i2c_exit(){
+int i2c_exit(void){
     int rc;
 
     MPC23017BitReset();
@@ -234,9 +184,8 @@ int i2c_exit(){
 }
 
 
-
 //Get user token and validate with list of input tokens.
-int getInput(){
+int getInput(void){
     char input[50]="\0";
     int i;
 
@@ -246,15 +195,16 @@ int getInput(){
     upper_string(input);
 
     for(i=0;i<MAX_TOKENS;i++){
-        if(!strcmp( input ,inputTokens[i])){
+        if(!strcmp(input, inputTokens[i])){
             pwrConfig.token = i;
             syslog (LOG_INFO,"Token entered %s \n",inputTokens[i]);
             break;
         }
     }
 
-    if(i == MAX_TOKENS)
+    if(i == MAX_TOKENS) {
         syslog (LOG_WARNING,"Not a known token. No action taken. \n");
+    }
 
 }
 
@@ -269,7 +219,7 @@ void upper_string(char s[]) {
 }
 
 
-int processToken(){
+int processToken(void){
 
     if(pwrConfig.token == KILL){
         pwrConfig.next_state = PWR_UP;
@@ -338,7 +288,7 @@ int processToken(){
 }
 
 
-int processVHFTokens(){
+int processVHFTokens(void){
     switch(pwrConfig.sec_state){
         case VHF_TRANSMIT:
         case V_SWITCH:
@@ -379,7 +329,7 @@ int processVHFTokens(){
 }
 
 
-int processUHFTokens(){
+int processUHFTokens(void){
     switch(pwrConfig.sec_state){
         case UHF_TRANSMIT:
         case U_SWITCH:
@@ -420,7 +370,7 @@ int processUHFTokens(){
 }
 
 
-int processLBandTokens(){
+int processLBandTokens(void){
     switch(pwrConfig.sec_state){
         case L_TRANSMIT:
         case L_SWITCH:
@@ -462,53 +412,53 @@ int processLBandTokens(){
 
 
 
-int BandSwitchErrorRecovery(){
+int BandSwitchErrorRecovery(void){
     syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken.");
     syslog(LOG_WARNING,"Please reenter your token and manually validate the action.");
     pwrConfig.next_state = BAND_SWITCH;
 }
 
 
-int tokenError(){
+int tokenError(void){
     syslog (LOG_WARNING,"Token not valid for the state. Please refer to state diagram. No action taken.");
     pwrConfig.token = NO_ACTION;
 }
 
-int VHFErrorRecovery(){
+int VHFErrorRecovery(void){
     syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
     syslog(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
     pwrConfig.next_state = V_SWITCH;
 }
 
-int UHFErrorRecovery(){
+int UHFErrorRecovery(void){
     syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
     syslog(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
     pwrConfig.next_state = U_SWITCH;
 }
 
-int LErrorRecovery(){
+int LErrorRecovery(void){
     syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
     syslog(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
     pwrConfig.next_state = L_SWITCH;
 }
 
-void stateError(){
+void stateError(void){
     syslog(LOG_ERR,"ERROR: There is a program error. Contact coder. \n");
     syslog(LOG_ERR,"Results unpredictable. Please Kill and start over. \n");
 }
 
-void stateWarning(){
+void stateWarning(void){
     syslog(LOG_WARNING,"The system should not have been in this state. KILL token likely entered before.");
 }
 
 
-int CoolDown_Wait(){
+int CoolDown_Wait(void){
     syslog(LOG_WARNING,"Waiting for cooldown.No action taken.If required, force exit via KILL or EXIT tokens. \n");
     pwrConfig.token = NO_ACTION;
 }
 
 
-int changeState(){
+int changeState(void){
 
     uint8_t temporary;
 
@@ -773,7 +723,7 @@ int MPC23017BitSet(int bit){
     buf[0] = reg_address;
     buf[1] = reg_value;
 
-    iomsg[0].addr = addr;
+    iomsg[0].addr = i2caddr;
     iomsg[0].flags = 0;
     iomsg[0].buf = buf;
     iomsg[0].len = 2;
@@ -825,7 +775,7 @@ int MPC23017BitClear(int bit){
     buf[0] = reg_address;
     buf[1] = reg_value;
 
-    iomsg[0].addr = addr;
+    iomsg[0].addr = i2caddr;
     iomsg[0].flags = 0;
     iomsg[0].buf = buf;
     iomsg[0].len = 2;
@@ -839,7 +789,7 @@ int MPC23017BitClear(int bit){
 }
 
 
-int MPC23017BitReset(){
+int MPC23017BitReset(void){
     struct i2c_rdwr_ioctl_data msgset;
     struct i2c_msg iomsg[2];
     uint8_t buf[2];
@@ -849,7 +799,7 @@ int MPC23017BitReset(){
     buf[0] = 0x12;
     buf[1] = 0x00;
 
-    iomsg[0].addr = addr;
+    iomsg[0].addr = i2caddr;
     iomsg[0].flags = 0;
     iomsg[0].buf = buf;
     iomsg[0].len = 2;
@@ -867,7 +817,7 @@ int MPC23017BitReset(){
     buf[0] = 0x13;
     buf[1] = 0x00;
 
-    iomsg[0].addr = addr;
+    iomsg[0].addr = i2caddr;
     iomsg[0].flags = 0;
     iomsg[0].buf = buf;
     iomsg[0].len = 2;

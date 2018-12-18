@@ -20,8 +20,42 @@
 #define V_LNA    14
 #define U_LNA    15
 
-#define I2C_DEV  "/dev/i2c-0"
-#define I2C_ADDR 0x20
+#ifndef DEFAULT_I2C_DEV
+#define DEFAULT_I2C_DEV  "/dev/i2c-0"
+#endif
+#ifndef DEFAULT_I2C_ADDR
+#define DEFAULT_I2C_ADDR 0x20
+#endif
+
+char *inputTokens[] = {
+    "NO_ACTION",
+    "V_TX",
+    "U_TX",
+    "L_TX",
+    "PWR_ON",
+    "OPERATE",
+    "S_ON",
+    "S_OFF",
+    "KILL",
+
+    "V_LEFT",
+    "V_RIGHT",
+    "V_TX_ON",
+    "V_TX_OFF",
+    "SHUTDOWN",
+
+    "U_LEFT",
+    "U_RIGHT",
+    "U_TX_ON",
+    "U_TX_OFF",
+
+    "L_TX_ON",
+    "L_TX_OFF",
+
+    "EXIT",
+    "STATUS",
+    "MAX_TOKENS"
+};
 
 typedef enum{
     NO_ACTION,
@@ -118,7 +152,7 @@ struct pwr_Config {
 } pwrConfig;
 
 
-int statemachine();
+void *statemachine(void *argp);
 void handle_kill_signal(int sig);
 void handle_token_signal(int sig);
 void handle_alarm_signal(int sig);
