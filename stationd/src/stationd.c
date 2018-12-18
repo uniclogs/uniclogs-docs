@@ -27,15 +27,10 @@
 #include <syslog.h>
 #include <pthread.h>
 
+#include "common.h"
 #include "statemachine.h" //stationd State machine
 #include "server.h"       //stationd Token processing server
 
-#ifndef DEFAULT_PORT
-#define DEFAULT_PORT "8080"
-#endif
-#ifndef DEFAULT_PID_FILE
-#define DEFAULT_PID_FILE "/run/stationd/stationd.pid"
-#endif
 
 static bool daemon_flag = false;
 static int verbose_flag = false;
@@ -47,6 +42,9 @@ int main(int argc, char *argv[]){
     FILE *run_fp = NULL;
     pid_t pid = 0, sid = 0;
     pthread_t statethread, servthread;
+
+    //Initialize message pending semaphore
+    sem_init(&msgpending, 0, 1);
 
     //Command line argument processing
     while ((c = getopt(argc, argv, "dp:r:v")) != -1){
@@ -122,8 +120,11 @@ int main(int argc, char *argv[]){
 
     //Create threads
     pthread_create(&servthread, NULL, udp_serv, port);
+    pthread_create(&statethread, NULL, statemachine, NULL);
     pthread_join(servthread, NULL);
+    pthread_join(statethread, NULL);
 
+    sem_destroy(&msgpending);
     closelog();
     return EXIT_SUCCESS;
 }

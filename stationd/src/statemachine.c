@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <syslog.h>
 
+#include "common.h"
 #include "statemachine.h"
 
 
@@ -186,36 +187,22 @@ int i2c_exit(void){
 
 //Get user token and validate with list of input tokens.
 int getInput(void){
-    char input[50]="\0";
     int i;
 
-    printf("\nEnter input token: ");
-    scanf("%s", input);
-
-    upper_string(input);
-
+    sem_wait(&msgpending);
     for(i=0;i<MAX_TOKENS;i++){
-        if(!strcmp(input, inputTokens[i])){
+        if(!strcmp(msg, inputTokens[i])){
             pwrConfig.token = i;
             syslog (LOG_INFO,"Token entered %s \n",inputTokens[i]);
             break;
         }
     }
+    sem_post(&msgpending);
 
     if(i == MAX_TOKENS) {
         syslog (LOG_WARNING,"Not a known token. No action taken. \n");
     }
 
-}
-
-
-void upper_string(char s[]) {
-    int c = 0;
-
-    while (s[c]) {
-        s[c] = toupper(s[c]);
-        c++;
-    }
 }
 
 

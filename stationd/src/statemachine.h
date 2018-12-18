@@ -20,12 +20,6 @@
 #define V_LNA    14
 #define U_LNA    15
 
-#ifndef DEFAULT_I2C_DEV
-#define DEFAULT_I2C_DEV  "/dev/i2c-0"
-#endif
-#ifndef DEFAULT_I2C_ADDR
-#define DEFAULT_I2C_ADDR 0x20
-#endif
 
 char *inputTokens[] = {
     "NO_ACTION",
@@ -156,26 +150,26 @@ void *statemachine(void *argp);
 void handle_kill_signal(int sig);
 void handle_token_signal(int sig);
 void handle_alarm_signal(int sig);
-int initialize();
-int i2c_exit();
-int getInput();
+int initialize(void);
+int i2c_exit(void);
+int getInput(void);
 void upper_string(char s[]);
-int processToken();
-int processVHFTokens();
-int processUHFTokens();
-int processLBandTokens();
-int BandSwitchErrorRecovery();
-int VHFErrorRecovery();
-int UHFErrorRecovery();
-int LErrorRecovery();
-int CoolDown_Wait();
-int tokenError();
-void stateError();
-void stateWarning();
-int changeState();
+int processToken(void);
+int processVHFTokens(void);
+int processUHFTokens(void);
+int processLBandTokens(void);
+int BandSwitchErrorRecovery(void);
+int VHFErrorRecovery(void);
+int UHFErrorRecovery(void);
+int LErrorRecovery(void);
+int CoolDown_Wait(void);
+int tokenError(void);
+void stateError(void);
+void stateWarning(void);
+int changeState(void);
 int MPC23017BitSet(int bit);
 int MPC23017BitClear(int bit);
-int MPC23017BitReset();
+int MPC23017BitReset(void);
 int MPC23017BitRead(int bit);
 
 #endif

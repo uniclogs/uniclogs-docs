@@ -26,10 +26,11 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
+#include <ctype.h>
 
+#include "common.h"
 #include "server.h"
 
-#define MAXBUF 2048
 
 void *udp_serv(void *argp)
 {
@@ -37,7 +38,6 @@ void *udp_serv(void *argp)
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage remaddr;
     socklen_t addrlen;
-    char buf[MAXBUF];
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
@@ -76,20 +76,22 @@ void *udp_serv(void *argp)
     syslog(LOG_INFO, "Starting UDP server on port %s...", (char *)argp);
     fprintf(stdout, "Starting UDP server on port %s...\n", (char *)argp);
     while (1) {
-        if ((recvlen = recvfrom(sd, buf, MAXBUF - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
+        sem_wait(&msgpending);
+        if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
         {
             syslog(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
             fprintf(stderr, "Error: Receive failure: %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
         if (recvlen > 0) {
-            buf[recvlen] = '\0';
-            syslog(LOG_DEBUG, "Received %d byte message: \"%s\"", recvlen, buf);
-            fprintf(stdout, "Received %d byte message: \"%s\"\n", recvlen, buf);
-            if (!strncmp("q", buf, MAXBUF)) {
-                break;
+            msg[recvlen] = '\0';
+            for (int c = 0; msg[c]; i++) {
+                msg[c] = toupper(msg[c]);
             }
+            syslog(LOG_DEBUG, "Received %d byte message: \"%s\"", recvlen, msg);
+            fprintf(stdout, "Received %d byte message: \"%s\"\n", recvlen, msg);
         }
+        sem_post(&msgpending);
     }
 
     syslog(LOG_INFO, "Shutting down UDP server...");
