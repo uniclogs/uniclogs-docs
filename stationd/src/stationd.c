@@ -32,8 +32,8 @@
 #include "server.h"       //stationd Token processing server
 
 
-static bool daemon_flag = false;
-static int verbose_flag = false;
+bool daemon_flag = false;
+bool verbose_flag = false;
 
 void sig_exit(int sig);
 

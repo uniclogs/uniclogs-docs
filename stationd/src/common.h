@@ -1,6 +1,9 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#include <stdarg.h>
+#include <stdbool.h>
+#include <syslog.h>
 #include <semaphore.h>
 
 #ifndef DEFAULT_PORT
@@ -21,5 +24,10 @@
 
 sem_t msgpending;
 char msg[MAXMSG];
+
+extern bool daemon_flag;
+extern bool verbose_flag;
+
+void logmsg(int priority, const char *msg, va_list args);
 
 #endif
