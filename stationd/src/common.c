@@ -9,7 +9,7 @@ void logmsg(int priority, const char *fmt, ...){
     va_list args;
     va_start(args, fmt);
     vsyslog(priority, fmt, args);
-    vfprintf((priority>4?stdout:stderr), msg, args);
+    vfprintf((priority>4?stdout:stderr), fmt, args);
     fprintf((priority>4?stdout:stderr), "\n");
     va_end(args);
 }
