@@ -10,5 +10,6 @@ void logmsg(int priority, const char *fmt, ...){
     va_start(args, fmt);
     vsyslog(priority, fmt, args);
     vfprintf((priority>4?stdout:stderr), msg, args);
+    fprintf((priority>4?stdout:stderr), "\n");
     va_end(args);
 }

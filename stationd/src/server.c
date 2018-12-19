@@ -21,7 +21,6 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <syslog.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -44,43 +43,37 @@ void *udp_serv(void *argp)
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
 
+    logmsg(LOG_INFO, "Starting UDP server on port %s...", (char *)argp);
     if ((status = getaddrinfo(NULL, (char *)argp, &hints, &servinfo))) {
-        syslog(LOG_ERR, "getaddrinfo error: %s", gai_strerror(status));
-        fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
+        logmsg(LOG_ERR, "getaddrinfo error: %s", gai_strerror(status));
         exit(EXIT_FAILURE);
     }
     for (p = servinfo; p != NULL; p = p->ai_next)
     {
         if ((sd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
-            syslog(LOG_ERR, "Error: Cannot create socket: %s", strerror(errno));
-            fprintf(stderr, "Error: Cannot create socket: %s\n", strerror(errno));
+            logmsg(LOG_ERR, "Error: Cannot create socket: %s", strerror(errno));
             continue;
         }
         if (bind(sd, p->ai_addr, p->ai_addrlen) < 0) {
             close(sd);
-            syslog(LOG_ERR, "Error: Bind failed: %s", strerror(errno));
-            fprintf(stderr, "Error: Bind failed: %s\n", strerror(errno));
+            logmsg(LOG_ERR, "Error: Bind failed: %s", strerror(errno));
             continue;
         }
         break;
     }
     if (p == NULL) {
-        syslog(LOG_ERR, "Error: Failed to bind socket");
-        fprintf(stderr, "Error: Failed to bind socket\n");
+        logmsg(LOG_ERR, "Error: Failed to bind socket");
         exit(EXIT_FAILURE);
     }
     freeaddrinfo(servinfo);
     addrlen = sizeof(remaddr);
 
     //Start input handling UDP server
-    syslog(LOG_INFO, "Starting UDP server on port %s...", (char *)argp);
-    fprintf(stdout, "Starting UDP server on port %s...\n", (char *)argp);
     while (1) {
         sem_wait(&msgpending);
         if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
         {
-            syslog(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
-            fprintf(stderr, "Error: Receive failure: %s\n", strerror(errno));
+            logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
             exit(EXIT_FAILURE);
         }
         if (recvlen > 0) {
@@ -88,15 +81,13 @@ void *udp_serv(void *argp)
             for (int c = 0; msg[c]; c++) {
                 msg[c] = toupper(msg[c]);
             }
-            syslog(LOG_DEBUG, "Received %d byte message: \"%s\"", recvlen, msg);
-            fprintf(stdout, "Received %d byte message: \"%s\"\n", recvlen, msg);
+            logmsg(LOG_DEBUG, "Received %d byte message: \"%s\"", recvlen, msg);
         }
         sem_post(&msgpending);
         sleep(1);
     }
 
-    syslog(LOG_INFO, "Shutting down UDP server...");
-    fprintf(stdout, "Shutting down  UDP server...\n");
+    logmsg(LOG_INFO, "Shutting down UDP server...");
     close(sd);
     pthread_exit(NULL);
 }

@@ -11,7 +11,6 @@
 #include <ctype.h>
 #include <signal.h>
 #include <errno.h>
-#include <syslog.h>
 
 #include "common.h"
 #include "statemachine.h"
@@ -62,7 +61,7 @@ static uint8_t reg_gpiob_bits;
 */
 
 void *statemachine(void *argp){
-    syslog (LOG_INFO,"Started State Machine");
+    logmsg (LOG_INFO,"Started State Machine");
     initialize();
     //define signals that will be handled.
     signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
@@ -138,23 +137,23 @@ int initialize(void){
 
     if ((file_i2c = open(i2cdev, O_RDWR)) < 0)
     {
-        syslog (LOG_ERR,"Failed to open the i2c bus");
+        logmsg (LOG_ERR,"Failed to open the i2c bus");
         exit(EXIT_FAILURE);
     }
     else
     {
-        syslog (LOG_INFO,"Successfully opened I2C bus \n");
+        logmsg (LOG_INFO,"Successfully opened I2C bus \n");
     }
 
     //acquire i2c bus
     if (ioctl(file_i2c, I2C_SLAVE, i2caddr) < 0)
     {
-        syslog (LOG_ERR,"Failed to acquire bus access and/or talk to slave.");
+        logmsg (LOG_ERR,"Failed to acquire bus access and/or talk to slave.");
         exit(EXIT_FAILURE);
     }
     else
     {
-        syslog (LOG_INFO,"Successfully acquired bus. \n");
+        logmsg (LOG_INFO,"Successfully acquired bus. \n");
     }
 
 
@@ -177,7 +176,7 @@ int initialize(void){
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     if (rc < 0)
-        syslog (LOG_ERR,"ioctl error return code : %d \n",rc);
+        logmsg (LOG_ERR,"ioctl error return code : %d \n",rc);
 
 
     //make GPIOB as output
@@ -194,7 +193,7 @@ int initialize(void){
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     if (rc < 0)
-        syslog (LOG_ERR,"ioctl error return code : %d \n",rc);
+        logmsg (LOG_ERR,"ioctl error return code : %d \n",rc);
 
     MPC23017BitReset();
 
@@ -208,7 +207,7 @@ int i2c_exit(void){
     MPC23017BitReset();
 
     rc=close(file_i2c);
-    syslog (LOG_INFO,"closed i2c file with rc : %d \n",rc);
+    logmsg (LOG_INFO,"closed i2c file with rc : %d \n",rc);
 
     return rc;
 }
@@ -222,7 +221,7 @@ int getInput(void){
     for(i=0;i<MAX_TOKENS;i++){
         if(!strcmp(msg, inputTokens[i])){
             pwrConfig.token = i;
-            syslog (LOG_INFO,"Token entered %s \n",inputTokens[i]);
+            logmsg (LOG_INFO,"Token entered %s \n",inputTokens[i]);
             break;
         }
     }
@@ -230,7 +229,7 @@ int getInput(void){
     sleep(1);
 
     if(i == MAX_TOKENS) {
-        syslog (LOG_WARNING,"Not a known token. No action taken. \n");
+        logmsg (LOG_WARNING,"Not a known token. No action taken. \n");
     }
 
 }
@@ -430,47 +429,47 @@ int processLBandTokens(void){
 
 
 int BandSwitchErrorRecovery(void){
-    syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken.");
-    syslog(LOG_WARNING,"Please reenter your token and manually validate the action.");
+    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken.");
+    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action.");
     pwrConfig.next_state = BAND_SWITCH;
 }
 
 
 int tokenError(void){
-    syslog (LOG_WARNING,"Token not valid for the state. Please refer to state diagram. No action taken.");
+    logmsg (LOG_WARNING,"Token not valid for the state. Please refer to state diagram. No action taken.");
     pwrConfig.token = NO_ACTION;
 }
 
 int VHFErrorRecovery(void){
-    syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
-    syslog(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
+    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
+    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
     pwrConfig.next_state = V_SWITCH;
 }
 
 int UHFErrorRecovery(void){
-    syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
-    syslog(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
+    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
+    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
     pwrConfig.next_state = U_SWITCH;
 }
 
 int LErrorRecovery(void){
-    syslog(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
-    syslog(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
+    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
+    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
     pwrConfig.next_state = L_SWITCH;
 }
 
 void stateError(void){
-    syslog(LOG_ERR,"ERROR: There is a program error. Contact coder. \n");
-    syslog(LOG_ERR,"Results unpredictable. Please Kill and start over. \n");
+    logmsg(LOG_ERR,"ERROR: There is a program error. Contact coder. \n");
+    logmsg(LOG_ERR,"Results unpredictable. Please Kill and start over. \n");
 }
 
 void stateWarning(void){
-    syslog(LOG_WARNING,"The system should not have been in this state. KILL token likely entered before.");
+    logmsg(LOG_WARNING,"The system should not have been in this state. KILL token likely entered before.");
 }
 
 
 int CoolDown_Wait(void){
-    syslog(LOG_WARNING,"Waiting for cooldown.No action taken.If required, force exit via KILL or EXIT tokens. \n");
+    logmsg(LOG_WARNING,"Waiting for cooldown.No action taken.If required, force exit via KILL or EXIT tokens. \n");
     pwrConfig.token = NO_ACTION;
 }
 
@@ -750,7 +749,7 @@ int MPC23017BitSet(int bit){
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl bit set error: %s",strerror(errno));
+        logmsg(LOG_ERR,"ioctl bit set error: %s",strerror(errno));
 
 }
 
@@ -802,7 +801,7 @@ int MPC23017BitClear(int bit){
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl bit clear error: %s",strerror(errno));
+        logmsg(LOG_ERR,"ioctl bit clear error: %s",strerror(errno));
 }
 
 
@@ -826,9 +825,9 @@ int MPC23017BitReset(void){
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     reg_gpioa_bits = 0x00;
-    syslog(LOG_INFO,"GPIOA reset %d \n",rc);
+    logmsg(LOG_INFO,"GPIOA reset %d \n",rc);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl gpioa reset error: %s",strerror(errno));
+        logmsg(LOG_ERR,"ioctl gpioa reset error: %s",strerror(errno));
 
     //reset GPIOB
     buf[0] = 0x13;
@@ -843,9 +842,9 @@ int MPC23017BitReset(void){
     msgset.nmsgs = 1;
 
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
-    syslog(LOG_INFO,"GPIOB reset %d \n",rc);
+    logmsg(LOG_INFO,"GPIOB reset %d \n",rc);
     if (rc < 0)
-        syslog(LOG_ERR,"ioctl gpiob reset error: %s",strerror(errno));
+        logmsg(LOG_ERR,"ioctl gpiob reset error: %s",strerror(errno));
 
     reg_gpioa_bits = 0x00;
     reg_gpiob_bits = 0x00;
