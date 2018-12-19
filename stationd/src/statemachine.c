@@ -61,7 +61,7 @@ static uint8_t reg_gpiob_bits;
 */
 
 void *statemachine(void *argp){
-    logmsg (LOG_INFO,"Started State Machine");
+    logmsg (LOG_INFO,"Starting State Machine...");
     initialize();
     //define signals that will be handled.
     signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
@@ -81,12 +81,11 @@ void *statemachine(void *argp){
         }
 
         if(pwrConfig.token == STATUS){
-            printf("Pin status: 0x%x 0x%x \n",reg_gpioa_bits,reg_gpiob_bits);
-            printf("State: %d \n", pwrConfig.state);
-            printf("Secondary state: %d \n", pwrConfig.sec_state);
-
-            printf("Next State: %d \n", pwrConfig.next_state);
-            printf("Next Secondary state: %d \n", pwrConfig.next_sec_state);
+            logmsg(LOG_NOTICE, "Pin status: 0x%x 0x%x \n",reg_gpioa_bits,reg_gpiob_bits);
+            logmsg(LOG_NOTICE, "State: %d \n", pwrConfig.state);
+            logmsg(LOG_NOTICE, "Secondary state: %d \n", pwrConfig.sec_state);
+            logmsg(LOG_NOTICE, "Next State: %d \n", pwrConfig.next_state);
+            logmsg(LOG_NOTICE, "Next Secondary state: %d \n", pwrConfig.next_sec_state);
             continue;
         }
 
