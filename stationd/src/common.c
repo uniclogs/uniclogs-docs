@@ -5,8 +5,10 @@
 
 #include "common.h"
 
-void logmsg(int priority, const char *msg, va_list args){
-    syslog(priority, msg, args);
-    fprintf((priority > 4 ? stdout : stderr), msg, args);
-    fprintf((priority > 4 ? stdout : stderr), "\n");
+void logmsg(int priority, const char *fmt, ...){
+    va_list args;
+    va_start(args, fmt);
+    vsyslog(priority, fmt, args);
+    vfprintf((priority>4?stdout:stderr), msg, args);
+    va_end(args);
 }

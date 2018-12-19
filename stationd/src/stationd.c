@@ -75,8 +75,17 @@ int main(int argc, char *argv[]){
         }
     }
 
+    //Open syslog for all logging purposes
+    if (verbose_flag){
+        setlogmask(LOG_UPTO(LOG_DEBUG));
+    } else {
+        setlogmask(LOG_UPTO(LOG_NOTICE));
+    }
+    openlog(argv[0], LOG_PID|LOG_CONS, LOG_DAEMON);
+
     //Run as daemon if needed
     if (daemon_flag){
+        logmsg(LOG_INFO, "Starting Daemon...");
         //Fork
         if ((pid = fork()) < 0){
             fprintf(stderr, "Error: Failed to fork! Terminating...\n");
@@ -113,16 +122,6 @@ int main(int argc, char *argv[]){
         freopen("/dev/null", "w+", stdout);
         freopen("/dev/null", "w+", stderr);
     }
-
-    //Open syslog for all logging purposes
-    if (verbose_flag){
-        setlogmask(LOG_UPTO(LOG_DEBUG));
-    } else {
-        setlogmask(LOG_UPTO(LOG_NOTICE));
-    }
-    openlog(argv[0], LOG_PID|LOG_CONS, LOG_DAEMON);
-
-    //Register signal handlers
 
     //Create threads
     pthread_create(&servthread, NULL, udp_serv, port);

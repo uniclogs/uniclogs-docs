@@ -28,6 +28,6 @@ char msg[MAXMSG];
 extern bool daemon_flag;
 extern bool verbose_flag;
 
-void logmsg(int priority, const char *msg, va_list args);
+void logmsg(int priority, const char *fmt, ...);
 
 #endif
