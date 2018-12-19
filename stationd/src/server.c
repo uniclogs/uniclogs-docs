@@ -43,9 +43,9 @@ void *udp_serv(void *argp)
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
 
-    logmsg(LOG_INFO, "Starting UDP server on port %s...", (char *)argp);
+    logmsg(LOG_INFO, "Starting UDP server on port %s...\n", (char *)argp);
     if ((status = getaddrinfo(NULL, (char *)argp, &hints, &servinfo))) {
-        logmsg(LOG_ERR, "getaddrinfo error: %s", gai_strerror(status));
+        logmsg(LOG_ERR, "getaddrinfo error: %s\n", gai_strerror(status));
         exit(EXIT_FAILURE);
     }
     for (p = servinfo; p != NULL; p = p->ai_next)
@@ -62,7 +62,7 @@ void *udp_serv(void *argp)
         break;
     }
     if (p == NULL) {
-        logmsg(LOG_ERR, "Error: Failed to bind socket");
+        logmsg(LOG_ERR, "Error: Failed to bind socket\n");
         exit(EXIT_FAILURE);
     }
     freeaddrinfo(servinfo);
@@ -81,13 +81,13 @@ void *udp_serv(void *argp)
             for (int c = 0; msg[c]; c++) {
                 msg[c] = toupper(msg[c]);
             }
-            logmsg(LOG_DEBUG, "Received %d byte message: \"%s\"", recvlen, msg);
+            logmsg(LOG_DEBUG, "Received %d byte message: \"%s\"\n", recvlen, msg);
         }
         sem_post(&msgpending);
         sleep(1);
     }
 
-    logmsg(LOG_INFO, "Shutting down UDP server...");
+    logmsg(LOG_INFO, "Shutting down UDP server...\n");
     close(sd);
     pthread_exit(NULL);
 }

@@ -87,7 +87,7 @@ int main(int argc, char *argv[]){
     if (daemon_flag){
         //Fork
         if ((pid = fork()) < 0){
-            logmsg(LOG_ERR, "Error: Failed to fork! Terminating...");
+            logmsg(LOG_ERR, "Error: Failed to fork!\n");
             exit(EXIT_FAILURE);
         }
 
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]){
         //Child process continues on
         //Log PID
         if ((run_fp = fopen(pid_file, "w+")) == NULL){
-            logmsg(LOG_ERR, "Error: Unable to open file %s\nTerminating...", pid_file);
+            logmsg(LOG_ERR, "Error: Unable to open file %s\n", pid_file);
             exit(EXIT_FAILURE);
         }
         fprintf(run_fp, "%d\n", getpid());
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]){
 
         //Create new session for process group leader
         if ((sid = setsid()) < 0){
-            logmsg(LOG_ERR, "Error: Failed to create new session!\nTerminating...");
+            logmsg(LOG_ERR, "Error: Failed to create new session!\n");
             exit(EXIT_FAILURE);
         }
 
@@ -123,13 +123,13 @@ int main(int argc, char *argv[]){
     }
 
     //Create threads
-    logmsg(LOG_INFO, "Starting threads...");
+    logmsg(LOG_INFO, "Starting threads...\n");
     pthread_create(&servthread, NULL, udp_serv, port);
     pthread_create(&statethread, NULL, statemachine, NULL);
     pthread_join(servthread, NULL);
     pthread_join(statethread, NULL);
 
-    logmsg(LOG_INFO, "Shutting Down...");
+    logmsg(LOG_INFO, "Shutting Down...\n");
     i2c_exit();
     sem_destroy(&msgpending);
     closelog();
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]){
 }
 
 void sig_exit(int sig){
-    logmsg(LOG_INFO,"Shutting Down...");
+    logmsg(LOG_INFO,"Shutting Down...\n");
     i2c_exit();
     sem_destroy(&msgpending);
     closelog();
