@@ -119,8 +119,6 @@ struct pwr_Config {
 
 
 void *statemachine(void *argp);
-void handle_kill_signal(int sig);
-void handle_token_signal(int sig);
 void handle_alarm_signal(int sig);
 int initialize(void);
 int i2c_exit(void);

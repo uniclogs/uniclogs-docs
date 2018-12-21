@@ -127,41 +127,25 @@ void handle_alarm_signal(int sig){
 
 
 int initialize(void){
-
-    uint8_t buffer[3] = {0};
-    uint8_t length;
+    struct i2c_rdwr_ioctl_data msgset;
+    struct i2c_msg iomsg[2];
+    uint8_t buf[2];
 
     pwrConfig.state = PWR_UP;
     pwrConfig.sec_state = NONE;
 
-    if ((file_i2c = open(i2cdev, O_RDWR)) < 0)
-    {
-        logmsg (LOG_ERR,"Failed to open the i2c bus");
+    if ((file_i2c = open(i2cdev, O_RDWR)) < 0){
+        logmsg(LOG_ERR,"Error: Failed to open the i2c bus: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
-    }
-    else
-    {
-        logmsg (LOG_INFO,"Successfully opened I2C bus \n");
     }
 
     //acquire i2c bus
-    if (ioctl(file_i2c, I2C_SLAVE, i2caddr) < 0)
-    {
-        logmsg (LOG_ERR,"Failed to acquire bus access and/or talk to slave.");
+    if (ioctl(file_i2c, I2C_SLAVE, i2caddr) < 0){
+        logmsg(LOG_ERR,"Error: Failed to acquire bus access and/or talk to slave: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
-    else
-    {
-        logmsg (LOG_INFO,"Successfully acquired bus. \n");
-    }
 
-
-    //make GPIOA as output
-    struct i2c_rdwr_ioctl_data msgset;
-    struct i2c_msg iomsg[2];
-    uint8_t buf[2];
-    int rc;
-
+    //Configure GPIOA as output
     buf[0] = 0x00;
     buf[1] = 0x00;
 
@@ -173,12 +157,12 @@ int initialize(void){
     msgset.msgs = iomsg;
     msgset.nmsgs = 1;
 
-    rc = ioctl(file_i2c,I2C_RDWR,&msgset);
-    if (rc < 0)
-        logmsg (LOG_ERR,"ioctl error return code : %d \n",rc);
+    if(ioctl(file_i2c,I2C_RDWR,&msgset) < 0){
+        logmsg (LOG_ERR,"Error: ioctl error: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
 
-
-    //make GPIOB as output
+    //Configure GPIOB as output
     buf[0] = 0x01;
     buf[1] = 0x00;
 
@@ -190,12 +174,11 @@ int initialize(void){
     msgset.msgs = iomsg;
     msgset.nmsgs = 1;
 
-    rc = ioctl(file_i2c,I2C_RDWR,&msgset);
-    if (rc < 0)
-        logmsg (LOG_ERR,"ioctl error return code : %d \n",rc);
+    if (ioctl(file_i2c,I2C_RDWR,&msgset) < 0){
+        logmsg (LOG_ERR,"Error: ioctl error: %s \n", strerror(errno));
+    }
 
     MPC23017BitReset();
-
 }
 
 
@@ -710,11 +693,9 @@ int changeState(void){
 //Set a bit value using ioctl in one of GPIOs and update the program variable.
 int MPC23017BitSet(int bit){
 
-    uint8_t buffer[3] = {0};
     uint8_t shift_value = 0;
     uint8_t reg_address = 0;
     uint8_t reg_value = 0;
-    uint8_t length;
 
     struct i2c_rdwr_ioctl_data msgset;
     struct i2c_msg iomsg[2];
@@ -754,12 +735,10 @@ int MPC23017BitSet(int bit){
 
 
 int MPC23017BitClear(int bit){
-    uint8_t buffer[3] = {0};
     uint8_t shift_value = 0;
     uint8_t reg_address = 0;
     uint8_t reg_value = 0;
     uint8_t mask = 0xFF;
-    uint8_t length;
 
     struct i2c_rdwr_ioctl_data msgset;
     struct i2c_msg iomsg[2];
@@ -847,7 +826,6 @@ int MPC23017BitReset(void){
 
     reg_gpioa_bits = 0x00;
     reg_gpiob_bits = 0x00;
-
 }
 
 //This does not read the actual value. It reads the data from program variables
@@ -868,6 +846,4 @@ int MPC23017BitRead(int bit){
         return 0;
     else
         return 1;
-
 }
-
