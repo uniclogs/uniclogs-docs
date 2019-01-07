@@ -121,7 +121,7 @@ struct pwr_Config {
 void *statemachine(void *argp);
 void handle_alarm_signal(int sig);
 int initialize(void);
-int i2c_exit(void);
+void i2c_exit(void);
 int getInput(void);
 int processToken(void);
 int processVHFTokens(void);

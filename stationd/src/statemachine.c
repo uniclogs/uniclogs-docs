@@ -61,7 +61,7 @@ static uint8_t reg_gpiob_bits;
 */
 
 void *statemachine(void *argp){
-    logmsg (LOG_INFO,"Starting State Machine...");
+    logmsg (LOG_INFO,"Starting State Machine...\n");
     initialize();
     //define signals that will be handled.
     signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
@@ -81,11 +81,11 @@ void *statemachine(void *argp){
         }
 
         if(pwrConfig.token == STATUS){
-            logmsg(LOG_NOTICE, "Pin status: 0x%x 0x%x \n",reg_gpioa_bits,reg_gpiob_bits);
-            logmsg(LOG_NOTICE, "State: %d \n", pwrConfig.state);
-            logmsg(LOG_NOTICE, "Secondary state: %d \n", pwrConfig.sec_state);
-            logmsg(LOG_NOTICE, "Next State: %d \n", pwrConfig.next_state);
-            logmsg(LOG_NOTICE, "Next Secondary state: %d \n", pwrConfig.next_sec_state);
+            logmsg(LOG_NOTICE, "Pin status: 0x%x 0x%x\n",reg_gpioa_bits,reg_gpiob_bits);
+            logmsg(LOG_NOTICE, "State: %d\n", pwrConfig.state);
+            logmsg(LOG_NOTICE, "Secondary state: %d\n", pwrConfig.sec_state);
+            logmsg(LOG_NOTICE, "Next State: %d\n", pwrConfig.next_state);
+            logmsg(LOG_NOTICE, "Next Secondary state: %d\n", pwrConfig.next_sec_state);
             continue;
         }
 
@@ -93,7 +93,6 @@ void *statemachine(void *argp){
 
         if (pwrConfig.token != NO_ACTION)
             changeState();
-            /*raise(SIGUSR1);*/
     }
 
     raise(SIGTERM);
@@ -175,7 +174,7 @@ int initialize(void){
     msgset.nmsgs = 1;
 
     if (ioctl(file_i2c,I2C_RDWR,&msgset) < 0){
-        logmsg (LOG_ERR,"Error: ioctl error: %s \n", strerror(errno));
+        logmsg (LOG_ERR,"Error: ioctl error: %s\n", strerror(errno));
     }
 
     MPC23017BitReset();
@@ -183,15 +182,12 @@ int initialize(void){
 
 
 //Handles proper exit after a crash or user EXIT token
-int i2c_exit(void){
-    int rc;
-
+void i2c_exit(void){
     MPC23017BitReset();
 
-    rc=close(file_i2c);
-    logmsg (LOG_INFO,"closed i2c file with rc : %d \n",rc);
-
-    return rc;
+    if (close(file_i2c) < 0){
+        logmsg(LOG_ERR,"Error: Failed to close I2C device: %s\n", strerror(errno));
+    }
 }
 
 
@@ -203,7 +199,7 @@ int getInput(void){
     for(i=0;i<MAX_TOKENS;i++){
         if(!strcmp(msg, inputTokens[i])){
             pwrConfig.token = i;
-            logmsg (LOG_INFO,"Token entered %s \n",inputTokens[i]);
+            logmsg (LOG_INFO,"Token entered %s\n",inputTokens[i]);
             break;
         }
     }
@@ -211,7 +207,7 @@ int getInput(void){
     sleep(1);
 
     if(i == MAX_TOKENS) {
-        logmsg (LOG_WARNING,"Not a known token. No action taken. \n");
+        logmsg (LOG_WARNING,"Not a known token. No action taken.\n");
     }
 
 }
