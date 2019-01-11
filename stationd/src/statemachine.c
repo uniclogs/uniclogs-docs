@@ -100,24 +100,28 @@ void *statemachine(void *argp){
 }
 
 void handle_alarm_signal(int sig){
-    if (pwrConfig.state == V_TRAN && pwrConfig.sec_state == V_PA_COOL){
+    if (pwrConfig.state == SYS_PWR_ON){
+        pwrConfig.state = STANDBY;
+        pwrConfig.sec_state = NONE;
+    }
+    else if (pwrConfig.state == V_TRAN && pwrConfig.sec_state == V_PA_COOL){
         pwrConfig.sec_state = V_PA_DOWN;
         MPC23017BitClear(V_PA);
         MPC23017BitClear(V_KEY);
-        pwrConfig.state = BAND_SWITCH;
+        pwrConfig.state = STANDBY;
         pwrConfig.sec_state = NONE;
     }
     else if (pwrConfig.state == U_TRAN && pwrConfig.sec_state == U_PA_COOL){
         pwrConfig.sec_state = U_PA_DOWN;
         MPC23017BitClear(U_PA);
         MPC23017BitClear(U_KEY);
-        pwrConfig.state = BAND_SWITCH;
+        pwrConfig.state = STANDBY;
         pwrConfig.sec_state = NONE;
     }
     else if (pwrConfig.state == L_TRAN && pwrConfig.sec_state == L_PA_COOL){
         pwrConfig.sec_state = L_PA_DOWN;
         MPC23017BitClear(L_PA);
-        pwrConfig.state = BAND_SWITCH;
+        pwrConfig.state = STANDBY;
         pwrConfig.sec_state = NONE;
     }
     else
@@ -130,7 +134,7 @@ int initialize(void){
     struct i2c_msg iomsg[2];
     uint8_t buf[2];
 
-    pwrConfig.state = PWR_UP;
+    pwrConfig.state = INIT;
     pwrConfig.sec_state = NONE;
 
     if ((file_i2c = open(i2cdev, O_RDWR)) < 0){
@@ -216,14 +220,14 @@ int getInput(void){
 int processToken(void){
 
     if(pwrConfig.token == KILL){
-        pwrConfig.next_state = PWR_UP;
+        pwrConfig.next_state = INIT;
         pwrConfig.next_sec_state =  NONE;
         return 0;
     }
 
     switch(pwrConfig.state){
         case SYS_KILL:
-        case PWR_UP:
+        case INIT:
             if(pwrConfig.token == PWR_ON)
                 pwrConfig.next_state = SYS_PWR_ON;
             else
@@ -231,11 +235,11 @@ int processToken(void){
             break;
         case SYS_PWR_ON:
             if(pwrConfig.token == OPERATE)
-                pwrConfig.next_state = BAND_SWITCH;
+                pwrConfig.next_state = STANDBY;
             else
                 tokenError();
             break;
-        case BAND_SWITCH:
+        case STANDBY:
             if(pwrConfig.token == S_ON)
                 pwrConfig.next_state = S_SYS_ON;
             else if(pwrConfig.token == S_OFF)
@@ -409,7 +413,7 @@ int processLBandTokens(void){
 int BandSwitchErrorRecovery(void){
     logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken.");
     logmsg(LOG_WARNING,"Please reenter your token and manually validate the action.");
-    pwrConfig.next_state = BAND_SWITCH;
+    pwrConfig.next_state = STANDBY;
 }
 
 
@@ -453,14 +457,13 @@ int CoolDown_Wait(void){
 
 
 int changeState(void){
-
     uint8_t temporary;
 
     switch(pwrConfig.next_state){
         case SYS_KILL:
-        case PWR_UP:
+        case INIT:
             MPC23017BitReset();
-            pwrConfig.state = PWR_UP;
+            pwrConfig.state = INIT;
             pwrConfig.sec_state = NONE;
             break;
         case SYS_PWR_ON:
@@ -468,17 +471,18 @@ int changeState(void){
             MPC23017BitSet(SDR_LIME);
             MPC23017BitSet(ROT_PWR);
             pwrConfig.state = SYS_PWR_ON;
+            alarm(60);
             break;
-        case BAND_SWITCH:
-            pwrConfig.state = BAND_SWITCH;
+        case STANDBY:
+            pwrConfig.state = STANDBY;
             break;
         case S_SYS_ON:
             MPC23017BitSet(S_PWR);
-            pwrConfig.state = BAND_SWITCH;
+            pwrConfig.state = STANDBY;
             break;
         case S_SYS_OFF:
             MPC23017BitClear(S_PWR);
-            pwrConfig.state = BAND_SWITCH;
+            pwrConfig.state = STANDBY;
             break;
 
         case V_TRAN:
@@ -696,7 +700,6 @@ int MPC23017BitSet(int bit){
     struct i2c_rdwr_ioctl_data msgset;
     struct i2c_msg iomsg[2];
     uint8_t buf[2];
-    int rc;
 
     if (bit<8){
         reg_address = 0x12;
@@ -723,9 +726,8 @@ int MPC23017BitSet(int bit){
     msgset.msgs = iomsg;
     msgset.nmsgs = 1;
 
-    rc = ioctl(file_i2c,I2C_RDWR,&msgset);
-    if (rc < 0)
-        logmsg(LOG_ERR,"ioctl bit set error: %s",strerror(errno));
+    if (ioctl(file_i2c,I2C_RDWR,&msgset) < 0)
+        logmsg(LOG_ERR,"ioctl bit set error: %s\n",strerror(errno));
 
 }
 
@@ -739,7 +741,6 @@ int MPC23017BitClear(int bit){
     struct i2c_rdwr_ioctl_data msgset;
     struct i2c_msg iomsg[2];
     uint8_t buf[2];
-    int rc;
 
     if (bit<8){
         reg_address = 0x12;
@@ -773,9 +774,8 @@ int MPC23017BitClear(int bit){
     msgset.msgs = iomsg;
     msgset.nmsgs = 1;
 
-    rc = ioctl(file_i2c,I2C_RDWR,&msgset);
-    if (rc < 0)
-        logmsg(LOG_ERR,"ioctl bit clear error: %s",strerror(errno));
+    if (ioctl(file_i2c,I2C_RDWR,&msgset) < 0)
+        logmsg(LOG_ERR,"ioctl bit clear error: %s\n",strerror(errno));
 }
 
 
@@ -801,7 +801,7 @@ int MPC23017BitReset(void){
     reg_gpioa_bits = 0x00;
     logmsg(LOG_INFO,"GPIOA reset %d \n",rc);
     if (rc < 0)
-        logmsg(LOG_ERR,"ioctl gpioa reset error: %s",strerror(errno));
+        logmsg(LOG_ERR,"ioctl gpioa reset error: %s\n",strerror(errno));
 
     //reset GPIOB
     buf[0] = 0x13;
@@ -818,7 +818,7 @@ int MPC23017BitReset(void){
     rc = ioctl(file_i2c,I2C_RDWR,&msgset);
     logmsg(LOG_INFO,"GPIOB reset %d \n",rc);
     if (rc < 0)
-        logmsg(LOG_ERR,"ioctl gpiob reset error: %s",strerror(errno));
+        logmsg(LOG_ERR,"ioctl gpiob reset error: %s\n",strerror(errno));
 
     reg_gpioa_bits = 0x00;
     reg_gpiob_bits = 0x00;

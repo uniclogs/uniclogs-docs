@@ -20,12 +20,10 @@
 #define V_LNA    14
 #define U_LNA    15
 
-
 extern const char *inputTokens[];
 
 typedef enum{
     NO_ACTION,
-
     V_TX,
     U_TX,
     L_TX,
@@ -55,9 +53,9 @@ typedef enum{
 } input_tokens;
 
 typedef enum{
-    PWR_UP,     // low power
+    INIT,     // low power
     SYS_PWR_ON,
-    BAND_SWITCH,
+    STANDBY,
     S_SYS_ON,
     S_SYS_OFF,
 
