@@ -226,7 +226,6 @@ int processToken(void){
     }
 
     switch(pwrConfig.state){
-        case SYS_KILL:
         case INIT:
             if(pwrConfig.token == PWR_ON)
                 pwrConfig.next_state = SYS_PWR_ON;
@@ -460,7 +459,6 @@ int changeState(void){
     uint8_t temporary;
 
     switch(pwrConfig.next_state){
-        case SYS_KILL:
         case INIT:
             MPC23017BitReset();
             pwrConfig.state = INIT;
@@ -692,7 +690,6 @@ int changeState(void){
 //All GPIO bit values are stored in program variable.
 //Set a bit value using ioctl in one of GPIOs and update the program variable.
 int MPC23017BitSet(int bit){
-
     uint8_t shift_value = 0;
     uint8_t reg_address = 0;
     uint8_t reg_value = 0;

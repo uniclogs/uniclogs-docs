@@ -53,7 +53,7 @@ typedef enum{
 } input_tokens;
 
 typedef enum{
-    INIT,     // low power
+    INIT,
     SYS_PWR_ON,
     STANDBY,
     S_SYS_ON,
@@ -61,9 +61,7 @@ typedef enum{
 
     V_TRAN,
     U_TRAN,
-    L_TRAN,
-
-    SYS_KILL
+    L_TRAN
 } pwr_state;
 
 typedef enum{
