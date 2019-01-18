@@ -1,9 +1,5 @@
-#include <stdint.h>
-#include <unistd.h>                        //Needed for I2C port
-#include <fcntl.h>                         //Needed for I2C port
-#include <sys/ioctl.h>                     //Needed for I2C port
-#include <linux/i2c-dev.h>                 //Needed for I2C port
-#include <linux/i2c.h>                     //Needed for I2C port
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
