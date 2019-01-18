@@ -52,7 +52,7 @@ const char *states[] = {
     "V_TRAN",
     "U_TRAN",
     "L_TRAN"
-} pwr_state;
+};
 
 const char *secstates[] = {
     "NONE",
@@ -91,7 +91,8 @@ const char *secstates[] = {
     "L_TRANS_OFF",
     "L_UHF_LHCP",
     "L_UHF_RHCP"
-}
+};
+
 //I2C bus
 static char *i2c_dev = DEFAULT_I2C_DEV;
 static int i2c_fd;
