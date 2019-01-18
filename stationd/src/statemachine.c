@@ -42,6 +42,56 @@ const char *inputTokens[] = {
     "MAX_TOKENS"
 };
 
+const char *states[] = {
+    "INIT",
+    "SYS_PWR_ON",
+    "STANDBY",
+    "S_SYS_ON",
+    "S_SYS_OFF",
+
+    "V_TRAN",
+    "U_TRAN",
+    "L_TRAN"
+} pwr_state;
+
+const char *secstates[] = {
+    "NONE",
+    "VHF_TRANSMIT",
+    "V_SWITCH",
+    "V_SHUTDOWN",
+    "V_PA_COOL",
+    "V_PA_DOWN",
+    "V_UHF_LHCP",
+    "V_UHF_RHCP",
+    "V_TRANS_ON",
+    "V_TRANS_OFF",
+    "V_LHCP",
+    "V_RHCP",
+
+    "UHF_TRANSMIT",
+    "U_SWITCH",
+    "U_SHUTDOWN",
+    "U_PA_COOL",
+    "U_PA_DOWN",
+    "U_VHF_LHCP",
+    "U_VHF_RHCP",
+    "U_TRANS_ON",
+    "U_TRANS_OFF",
+    "U_LHCP",
+    "U_RHCP",
+
+    "L_TRANSMIT",
+    "L_SWITCH",
+    "L_SHUTDOWN",
+    "L_PA_COOL",
+    "L_PA_DOWN",
+    "L_VHF_LHCP",
+    "L_VHF_RHCP",
+    "L_TRANS_ON",
+    "L_TRANS_OFF",
+    "L_UHF_LHCP",
+    "L_UHF_RHCP"
+}
 //I2C bus
 static char *i2c_dev = DEFAULT_I2C_DEV;
 static int i2c_fd;

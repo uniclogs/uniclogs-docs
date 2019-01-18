@@ -21,6 +21,8 @@
 #define U_LNA    15
 
 extern const char *inputTokens[];
+extern const char *states[];
+extern const char *secstates[];
 
 typedef enum{
     NO_ACTION,
@@ -100,7 +102,7 @@ typedef enum{
     L_TRANS_ON,
     L_TRANS_OFF,
     L_UHF_LHCP,
-    L_UHF_RHCP,
+    L_UHF_RHCP
 } secondary_states;
 
 
