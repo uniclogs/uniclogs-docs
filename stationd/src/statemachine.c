@@ -14,6 +14,7 @@
 
 #include "common.h"
 #include "statemachine.h"
+#include "mcp23017.h"
 
 const char *inputTokens[] = {
     "NO_ACTION",
@@ -46,11 +47,8 @@ const char *inputTokens[] = {
 };
 
 //I2C bus
-static char *i2cdev = DEFAULT_I2C_DEV;
-static int file_i2c;
-static int i2caddr = DEFAULT_I2C_ADDR;                           //The I2C address of the slave
-static uint8_t reg_gpioa_bits;
-static uint8_t reg_gpiob_bits;
+static char *i2c_dev = DEFAULT_I2C_DEV;
+static int i2c_fd;
 
 
 /*
@@ -62,12 +60,12 @@ static uint8_t reg_gpiob_bits;
 
 void *statemachine(void *argp){
     logmsg (LOG_INFO,"Starting State Machine...\n");
-    initialize();
+    init_statemachine();
     //define signals that will be handled.
     signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
 
     while(1){
-        // initialize token to NO_ACTION
+        // Default token to NO_ACTION
         pwrConfig.token = NO_ACTION;
 
         getInput();
@@ -81,7 +79,6 @@ void *statemachine(void *argp){
         }
 
         if(pwrConfig.token == STATUS){
-            logmsg(LOG_NOTICE, "Pin status: 0x%x 0x%x\n",reg_gpioa_bits,reg_gpiob_bits);
             logmsg(LOG_NOTICE, "State: %d\n", pwrConfig.state);
             logmsg(LOG_NOTICE, "Secondary state: %d\n", pwrConfig.sec_state);
             logmsg(LOG_NOTICE, "Next State: %d\n", pwrConfig.next_state);
@@ -106,21 +103,21 @@ void handle_alarm_signal(int sig){
     }
     else if (pwrConfig.state == V_TRAN && pwrConfig.sec_state == V_PA_COOL){
         pwrConfig.sec_state = V_PA_DOWN;
-        MPC23017BitClear(V_PA);
-        MPC23017BitClear(V_KEY);
+        MCP23017BitClear(i2c_fd, V_PA);
+        MCP23017BitClear(i2c_fd, V_KEY);
         pwrConfig.state = STANDBY;
         pwrConfig.sec_state = NONE;
     }
     else if (pwrConfig.state == U_TRAN && pwrConfig.sec_state == U_PA_COOL){
         pwrConfig.sec_state = U_PA_DOWN;
-        MPC23017BitClear(U_PA);
-        MPC23017BitClear(U_KEY);
+        MCP23017BitClear(i2c_fd, U_PA);
+        MCP23017BitClear(i2c_fd, U_KEY);
         pwrConfig.state = STANDBY;
         pwrConfig.sec_state = NONE;
     }
     else if (pwrConfig.state == L_TRAN && pwrConfig.sec_state == L_PA_COOL){
         pwrConfig.sec_state = L_PA_DOWN;
-        MPC23017BitClear(L_PA);
+        MCP23017BitClear(i2c_fd, L_PA);
         pwrConfig.state = STANDBY;
         pwrConfig.sec_state = NONE;
     }
@@ -129,46 +126,27 @@ void handle_alarm_signal(int sig){
 }
 
 
-int initialize(void){
-    struct i2c_rdwr_ioctl_data msgset;
-    struct i2c_msg iomsg[2];
-    uint8_t buf[2];
-
+int init_statemachine(void){
+    // Set initial state machine states
     pwrConfig.state = INIT;
     pwrConfig.sec_state = NONE;
 
-    if ((file_i2c = open(i2cdev, O_RDWR)) < 0){
-        logmsg(LOG_ERR,"Error: Failed to open the i2c bus: %s\n", strerror(errno));
+    // Open the I2C device for read/write
+    if ((i2c_fd = open(i2c_dev, O_RDWR)) < 0){
+        logmsg(LOG_ERR,"Error: Failed to open i2c device \'%s\': %s\n", i2c_dev, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    //acquire i2c bus
-    if (ioctl(file_i2c, I2C_SLAVE, i2caddr) < 0){
-        logmsg(LOG_ERR,"Error: Failed to acquire bus access and/or talk to slave: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    //Configure GPIOA as output
-    if(i2c_smbus_write_byte_data(file_i2c,0x00,0x00) < 0){
-        logmsg (LOG_ERR,"Error: ioctl error: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    //Configure GPIOB as output
-    if (i2c_smbus_write_byte_data(file_i2c,0x01,0x00) < 0){
-        logmsg (LOG_ERR,"Error: ioctl error: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    MPC23017BitReset();
+    // Initialize I2C devices
+    MCP23017Init(i2c_fd);
 }
 
 
 //Handles proper exit after a crash or user EXIT token
 void i2c_exit(void){
-    MPC23017BitReset();
+    MCP23017BitReset(i2c_fd);
 
-    if (close(file_i2c) < 0){
+    if (close(i2c_fd) < 0){
         logmsg(LOG_ERR,"Error: Failed to close I2C device: %s\n", strerror(errno));
     }
 }
@@ -439,14 +417,14 @@ int changeState(void){
 
     switch(pwrConfig.next_state){
         case INIT:
-            MPC23017BitReset();
+            MCP23017BitReset(i2c_fd);
             pwrConfig.state = INIT;
             pwrConfig.sec_state = NONE;
             break;
         case SYS_PWR_ON:
-            MPC23017BitSet(SDR_ROCK);
-            MPC23017BitSet(SDR_LIME);
-            MPC23017BitSet(ROT_PWR);
+            MCP23017BitSet(i2c_fd, SDR_ROCK);
+            MCP23017BitSet(i2c_fd, SDR_LIME);
+            MCP23017BitSet(i2c_fd, ROT_PWR);
             pwrConfig.state = SYS_PWR_ON;
             alarm(60);
             break;
@@ -454,11 +432,11 @@ int changeState(void){
             pwrConfig.state = STANDBY;
             break;
         case S_SYS_ON:
-            MPC23017BitSet(S_PWR);
+            MCP23017BitSet(i2c_fd, S_PWR);
             pwrConfig.state = STANDBY;
             break;
         case S_SYS_OFF:
-            MPC23017BitClear(S_PWR);
+            MCP23017BitClear(i2c_fd, S_PWR);
             pwrConfig.state = STANDBY;
             break;
 
@@ -466,18 +444,18 @@ int changeState(void){
             pwrConfig.state = V_TRAN;
             switch(pwrConfig.next_sec_state){
                 case VHF_TRANSMIT:
-                    MPC23017BitSet(U_LNA);
-                    MPC23017BitSet(V_PA);
-                    MPC23017BitSet(V_KEY);
+                    MCP23017BitSet(i2c_fd, U_LNA);
+                    MCP23017BitSet(i2c_fd, V_PA);
+                    MCP23017BitSet(i2c_fd, V_KEY);
                     pwrConfig.sec_state = V_SWITCH;
                     break;
                 case V_SWITCH:
                     break;
                 case V_SHUTDOWN:
-                    MPC23017BitClear(U_LNA);
-                    MPC23017BitClear(U_POL);
-                    MPC23017BitClear(V_POL);
-                    MPC23017BitClear(V_PTT);
+                    MCP23017BitClear(i2c_fd, U_LNA);
+                    MCP23017BitClear(i2c_fd, U_POL);
+                    MCP23017BitClear(i2c_fd, V_POL);
+                    MCP23017BitClear(i2c_fd, V_PTT);
                     pwrConfig.sec_state = V_SHUTDOWN;
 
                     pwrConfig.sec_state = V_PA_COOL;
@@ -487,44 +465,44 @@ int changeState(void){
                 case V_PA_DOWN:
                     break;
                 case V_UHF_LHCP:
-                    MPC23017BitSet(U_POL);
+                    MCP23017BitSet(i2c_fd, U_POL);
                     pwrConfig.sec_state = V_SWITCH;
                     break;
                 case V_UHF_RHCP:
-                    MPC23017BitClear(U_POL);
+                    MCP23017BitClear(i2c_fd, U_POL);
                     pwrConfig.sec_state = V_SWITCH;
                     break;
                 case V_TRANS_ON:
-                    MPC23017BitSet(V_PTT);
+                    MCP23017BitSet(i2c_fd, V_PTT);
                     pwrConfig.sec_state = V_SWITCH;
                     break;
                 case V_TRANS_OFF:
-                    MPC23017BitClear(V_PTT);
+                    MCP23017BitClear(i2c_fd, V_PTT);
                     pwrConfig.sec_state = V_SWITCH;
                     break;
                 case V_LHCP:
-                    temporary = MPC23017BitRead(V_PTT);
-                    MPC23017BitClear(V_PTT);
+                    temporary = MCP23017BitRead(i2c_fd, V_PTT);
+                    MCP23017BitClear(i2c_fd, V_PTT);
                     usleep(100);
-                    MPC23017BitSet(V_POL);
+                    MCP23017BitSet(i2c_fd, V_POL);
                     usleep(100);
                     if(temporary)
-                        MPC23017BitSet(V_PTT);
+                        MCP23017BitSet(i2c_fd, V_PTT);
                     else
-                        MPC23017BitClear(V_PTT);
+                        MCP23017BitClear(i2c_fd, V_PTT);
                     pwrConfig.sec_state = V_SWITCH;
                     break;
 
                 case V_RHCP:
-                    temporary = MPC23017BitRead(V_PTT);
-                    MPC23017BitClear(V_PTT);
+                    temporary = MCP23017BitRead(i2c_fd, V_PTT);
+                    MCP23017BitClear(i2c_fd, V_PTT);
                     usleep(100);
-                    MPC23017BitClear(V_POL);
+                    MCP23017BitClear(i2c_fd, V_POL);
                     usleep(100);
                     if(temporary)
-                        MPC23017BitSet(V_PTT);
+                        MCP23017BitSet(i2c_fd, V_PTT);
                     else
-                        MPC23017BitClear(V_PTT);
+                        MCP23017BitClear(i2c_fd, V_PTT);
                     pwrConfig.sec_state = V_SWITCH;
                     break;
                 default:
@@ -537,18 +515,18 @@ int changeState(void){
             pwrConfig.state = U_TRAN;
             switch(pwrConfig.next_sec_state){
                 case UHF_TRANSMIT:
-                    MPC23017BitSet(V_LNA);
-                    MPC23017BitSet(U_PA);
-                    MPC23017BitSet(U_KEY);
+                    MCP23017BitSet(i2c_fd, V_LNA);
+                    MCP23017BitSet(i2c_fd, U_PA);
+                    MCP23017BitSet(i2c_fd, U_KEY);
                     pwrConfig.sec_state = U_SWITCH;
                     break;
                 case U_SWITCH:
                     break;
                 case U_SHUTDOWN:
-                    MPC23017BitClear(V_LNA);
-                    MPC23017BitClear(V_POL);
-                    MPC23017BitClear(U_POL);
-                    MPC23017BitClear(U_PTT);
+                    MCP23017BitClear(i2c_fd, V_LNA);
+                    MCP23017BitClear(i2c_fd, V_POL);
+                    MCP23017BitClear(i2c_fd, U_POL);
+                    MCP23017BitClear(i2c_fd, U_PTT);
                     pwrConfig.sec_state = U_SHUTDOWN;
 
                     pwrConfig.sec_state = U_PA_COOL;
@@ -558,44 +536,44 @@ int changeState(void){
                 case U_PA_DOWN:
                     break;
                 case U_VHF_LHCP:
-                    MPC23017BitSet(V_POL);
+                    MCP23017BitSet(i2c_fd, V_POL);
                     pwrConfig.sec_state = U_SWITCH;
                     break;
                 case U_VHF_RHCP:
-                    MPC23017BitClear(V_POL);
+                    MCP23017BitClear(i2c_fd, V_POL);
                     pwrConfig.sec_state = U_SWITCH;
                     break;
                 case U_TRANS_ON:
-                    MPC23017BitSet(U_PTT);
+                    MCP23017BitSet(i2c_fd, U_PTT);
                     pwrConfig.sec_state = U_SWITCH;
                     break;
                 case U_TRANS_OFF:
-                    MPC23017BitClear(U_PTT);
+                    MCP23017BitClear(i2c_fd, U_PTT);
                     pwrConfig.sec_state = U_SWITCH;
                     break;
                 case U_LHCP:
-                    temporary = MPC23017BitRead(U_PTT);
-                    MPC23017BitClear(U_PTT);
+                    temporary = MCP23017BitRead(i2c_fd, U_PTT);
+                    MCP23017BitClear(i2c_fd, U_PTT);
                     usleep(100);
-                    MPC23017BitSet(U_POL);
+                    MCP23017BitSet(i2c_fd, U_POL);
                     usleep(100);
                     if(temporary)
-                        MPC23017BitSet(U_PTT);
+                        MCP23017BitSet(i2c_fd, U_PTT);
                     else
-                        MPC23017BitClear(U_PTT);
+                        MCP23017BitClear(i2c_fd, U_PTT);
                     pwrConfig.sec_state = U_SWITCH;
                     break;
 
                 case U_RHCP:
-                    temporary = MPC23017BitRead(U_PTT);
-                    MPC23017BitClear(U_PTT);
+                    temporary = MCP23017BitRead(i2c_fd, U_PTT);
+                    MCP23017BitClear(i2c_fd, U_PTT);
                     usleep(100);
-                    MPC23017BitClear(U_POL);
+                    MCP23017BitClear(i2c_fd, U_POL);
                     usleep(100);
                     if(temporary)
-                        MPC23017BitSet(U_PTT);
+                        MCP23017BitSet(i2c_fd, U_PTT);
                     else
-                        MPC23017BitClear(U_PTT);
+                        MCP23017BitClear(i2c_fd, U_PTT);
                     pwrConfig.sec_state = U_SWITCH;
                     break;
                 default:
@@ -608,19 +586,19 @@ int changeState(void){
             pwrConfig.state = L_TRAN;
             switch(pwrConfig.next_sec_state){
                 case L_TRANSMIT:
-                    MPC23017BitSet(U_LNA);
-                    MPC23017BitSet(V_LNA);
-                    MPC23017BitSet(L_PA);
+                    MCP23017BitSet(i2c_fd, U_LNA);
+                    MCP23017BitSet(i2c_fd, V_LNA);
+                    MCP23017BitSet(i2c_fd, L_PA);
                     pwrConfig.sec_state = L_SWITCH;
                     break;
                 case L_SWITCH:
                     break;
                 case L_SHUTDOWN:
-                    MPC23017BitClear(L_PTT);
-                    MPC23017BitClear(U_POL);
-                    MPC23017BitClear(V_POL);
-                    MPC23017BitClear(V_LNA);
-                    MPC23017BitClear(U_LNA);
+                    MCP23017BitClear(i2c_fd, L_PTT);
+                    MCP23017BitClear(i2c_fd, U_POL);
+                    MCP23017BitClear(i2c_fd, V_POL);
+                    MCP23017BitClear(i2c_fd, V_LNA);
+                    MCP23017BitClear(i2c_fd, U_LNA);
                     pwrConfig.sec_state = L_SHUTDOWN;
 
                     pwrConfig.sec_state = L_PA_COOL;
@@ -630,27 +608,27 @@ int changeState(void){
                 case L_PA_DOWN:
                     break;
                 case L_UHF_LHCP:
-                    MPC23017BitSet(U_POL);
+                    MCP23017BitSet(i2c_fd, U_POL);
                     pwrConfig.sec_state = L_SWITCH;
                     break;
                 case L_UHF_RHCP:
-                    MPC23017BitClear(U_POL);
+                    MCP23017BitClear(i2c_fd, U_POL);
                     pwrConfig.sec_state = L_SWITCH;
                     break;
                 case L_TRANS_ON:
-                    MPC23017BitSet(L_PTT);
+                    MCP23017BitSet(i2c_fd, L_PTT);
                     pwrConfig.sec_state = L_SWITCH;
                     break;
                 case L_TRANS_OFF:
-                    MPC23017BitClear(L_PTT);
+                    MCP23017BitClear(i2c_fd, L_PTT);
                     pwrConfig.sec_state = L_SWITCH;
                     break;
                 case L_VHF_LHCP:
-                    MPC23017BitSet(V_POL);
+                    MCP23017BitSet(i2c_fd, V_POL);
                     pwrConfig.sec_state = L_SWITCH;
                     break;
                 case L_VHF_RHCP:
-                    MPC23017BitClear(V_POL);
+                    MCP23017BitClear(i2c_fd, V_POL);
                     pwrConfig.sec_state = L_SWITCH;
                     break;
                 default:
@@ -663,159 +641,4 @@ int changeState(void){
             stateError();
             break;
     }
-}
-
-
-//All GPIO bit values are stored in program variable.
-//Set a bit value using ioctl in one of GPIOs and update the program variable.
-int MPC23017BitSet(int bit){
-    uint8_t shift_value = 0;
-    uint8_t reg_address = 0;
-    uint8_t reg_value = 0;
-
-    struct i2c_rdwr_ioctl_data msgset;
-    struct i2c_msg iomsg[2];
-    uint8_t buf[2];
-
-    if (bit<8){
-        reg_address = 0x12;
-        shift_value = bit;
-        reg_gpioa_bits = reg_gpioa_bits | (1 << shift_value);
-        reg_value = reg_gpioa_bits;
-    }
-    else{
-        reg_address = 0x13;
-        shift_value = bit - 8;
-        reg_gpiob_bits = reg_gpiob_bits | (1 << shift_value);
-        reg_value = reg_gpiob_bits;
-    }
-
-    //update register value
-    buf[0] = reg_address;
-    buf[1] = reg_value;
-
-    iomsg[0].addr = i2caddr;
-    iomsg[0].flags = 0;
-    iomsg[0].buf = buf;
-    iomsg[0].len = 2;
-
-    msgset.msgs = iomsg;
-    msgset.nmsgs = 1;
-
-    if (ioctl(file_i2c,I2C_RDWR,&msgset) < 0)
-        logmsg(LOG_ERR,"ioctl bit set error: %s\n",strerror(errno));
-
-}
-
-
-int MPC23017BitClear(int bit){
-    uint8_t shift_value = 0;
-    uint8_t reg_address = 0;
-    uint8_t reg_value = 0;
-    uint8_t mask = 0xFF;
-
-    struct i2c_rdwr_ioctl_data msgset;
-    struct i2c_msg iomsg[2];
-    uint8_t buf[2];
-
-    if (bit<8){
-        reg_address = 0x12;
-        shift_value = bit;
-        mask = 0xFF ^ (1 << shift_value);
-        reg_gpioa_bits = reg_gpioa_bits & mask;
-        reg_value   = reg_gpioa_bits;
-    }
-    else{
-        reg_address = 0x13;
-        shift_value = bit - 8;
-        mask = 0xFF ^ (1 << shift_value);
-        reg_gpiob_bits = reg_gpiob_bits & mask;
-        reg_value   = reg_gpiob_bits;
-    }
-
-
-    //new register value
-    mask = 0xFF ^ (1 << shift_value);
-    reg_value = reg_value & mask;
-
-    //write the new value
-    buf[0] = reg_address;
-    buf[1] = reg_value;
-
-    iomsg[0].addr = i2caddr;
-    iomsg[0].flags = 0;
-    iomsg[0].buf = buf;
-    iomsg[0].len = 2;
-
-    msgset.msgs = iomsg;
-    msgset.nmsgs = 1;
-
-    if (ioctl(file_i2c,I2C_RDWR,&msgset) < 0)
-        logmsg(LOG_ERR,"ioctl bit clear error: %s\n",strerror(errno));
-}
-
-
-int MPC23017BitReset(void){
-    struct i2c_rdwr_ioctl_data msgset;
-    struct i2c_msg iomsg[2];
-    uint8_t buf[2];
-    int rc;
-
-    //reset GPIOA
-    buf[0] = 0x12;
-    buf[1] = 0x00;
-
-    iomsg[0].addr = i2caddr;
-    iomsg[0].flags = 0;
-    iomsg[0].buf = buf;
-    iomsg[0].len = 2;
-
-    msgset.msgs = iomsg;
-    msgset.nmsgs = 1;
-
-    rc = ioctl(file_i2c,I2C_RDWR,&msgset);
-    reg_gpioa_bits = 0x00;
-    logmsg(LOG_INFO,"GPIOA reset %d \n",rc);
-    if (rc < 0)
-        logmsg(LOG_ERR,"ioctl gpioa reset error: %s\n",strerror(errno));
-
-    //reset GPIOB
-    buf[0] = 0x13;
-    buf[1] = 0x00;
-
-    iomsg[0].addr = i2caddr;
-    iomsg[0].flags = 0;
-    iomsg[0].buf = buf;
-    iomsg[0].len = 2;
-
-    msgset.msgs = iomsg;
-    msgset.nmsgs = 1;
-
-    rc = ioctl(file_i2c,I2C_RDWR,&msgset);
-    logmsg(LOG_INFO,"GPIOB reset %d \n",rc);
-    if (rc < 0)
-        logmsg(LOG_ERR,"ioctl gpiob reset error: %s\n",strerror(errno));
-
-    reg_gpioa_bits = 0x00;
-    reg_gpiob_bits = 0x00;
-}
-
-//This does not read the actual value. It reads the data from program variables
-int MPC23017BitRead(int bit){
-    uint8_t shift_value = 0;
-    uint8_t gpio_bits=0;
-
-    if (bit<8){
-        shift_value = bit;
-        gpio_bits = reg_gpioa_bits & (1 << shift_value);
-    }
-    else{
-        shift_value = bit - 8;
-        gpio_bits = reg_gpiob_bits & (1 << shift_value);
-    }
-
-    if (gpio_bits == 0 )
-        return 0;
-    else
-        return 1;
 }

@@ -116,7 +116,7 @@ struct pwr_Config {
 
 void *statemachine(void *argp);
 void handle_alarm_signal(int sig);
-int initialize(void);
+int init_statemachine(void);
 void i2c_exit(void);
 int getInput(void);
 int processToken(void);
@@ -132,9 +132,5 @@ int tokenError(void);
 void stateError(void);
 void stateWarning(void);
 int changeState(void);
-int MPC23017BitSet(int bit);
-int MPC23017BitClear(int bit);
-int MPC23017BitReset(void);
-int MPC23017BitRead(int bit);
 
 #endif
