@@ -15,8 +15,14 @@
 #ifndef DEFAULT_I2C_DEV
 #define DEFAULT_I2C_DEV  "/dev/i2c-0"
 #endif
-#ifndef DEFAULT_I2C_ADDR
-#define DEFAULT_I2C_ADDR 0x20
+#ifndef MCP9808_I2C_ADDR
+#define MCP9808_I2C_ADDR 0x18
+#endif
+#ifndef MCP23017_I2C_ADDR
+#define MCP23017_I2C_ADDR 0x20
+#endif
+#ifndef ADS1115_I2C_ADDR
+#define ADS1115_I2C_ADDR 0x48
 #endif
 #ifndef MAXMSG
 #define MAXMSG 50

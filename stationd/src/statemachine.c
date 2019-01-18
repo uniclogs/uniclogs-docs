@@ -149,36 +149,15 @@ int initialize(void){
     }
 
     //Configure GPIOA as output
-    buf[0] = 0x00;
-    buf[1] = 0x00;
-
-    iomsg[0].addr = i2caddr;
-    iomsg[0].flags = 0;
-    iomsg[0].buf = buf;
-    iomsg[0].len = 2;
-
-    msgset.msgs = iomsg;
-    msgset.nmsgs = 1;
-
-    if(ioctl(file_i2c,I2C_RDWR,&msgset) < 0){
+    if(i2c_smbus_write_byte_data(file_i2c,0x00,0x00) < 0){
         logmsg (LOG_ERR,"Error: ioctl error: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     //Configure GPIOB as output
-    buf[0] = 0x01;
-    buf[1] = 0x00;
-
-    iomsg[0].addr = i2caddr;
-    iomsg[0].flags = 0;
-    iomsg[0].buf = buf;
-    iomsg[0].len = 2;
-
-    msgset.msgs = iomsg;
-    msgset.nmsgs = 1;
-
-    if (ioctl(file_i2c,I2C_RDWR,&msgset) < 0){
+    if (i2c_smbus_write_byte_data(file_i2c,0x01,0x00) < 0){
         logmsg (LOG_ERR,"Error: ioctl error: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
     }
 
     MPC23017BitReset();
