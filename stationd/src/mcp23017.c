@@ -21,10 +21,10 @@ void MCP23017Init(int i2c_fd){
     }
 
     // Reset output pins
-    MPC23017BitReset(i2c_fd);
+    MCP23017BitReset(i2c_fd);
 }
 
-uint16_t MPC23017BitSet(int i2c_fd, uint8_t bit){
+uint16_t MCP23017BitSet(int i2c_fd, uint8_t bit){
     uint16_t regval;
 
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
@@ -43,7 +43,7 @@ uint16_t MPC23017BitSet(int i2c_fd, uint8_t bit){
 }
 
 
-uint16_t MPC23017BitClear(int i2c_fd, uint8_t bit){
+uint16_t MCP23017BitClear(int i2c_fd, uint8_t bit){
     uint16_t regval;
 
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
@@ -62,7 +62,7 @@ uint16_t MPC23017BitClear(int i2c_fd, uint8_t bit){
 
 }
 
-uint16_t MPC23017BitRead(int i2c_fd, uint8_t bit){
+uint16_t MCP23017BitRead(int i2c_fd, uint8_t bit){
     int regval;
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
         logmsg(LOG_ERR, "Error: Failed to read bit %d: %s\n", bit, strerror(errno));
@@ -71,7 +71,7 @@ uint16_t MPC23017BitRead(int i2c_fd, uint8_t bit){
     return ((regval >> bit) & 0x1);
 }
 
-void MPC23017BitReset(int i2c_fd){
+void MCP23017BitReset(int i2c_fd){
     // Reset GPIOA/GPIOB outputs
     if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, 0x0000) < 0){
         logmsg(LOG_ERR, "Error: Failed resetting GPIO output: %s\n", strerror(errno));

@@ -39,9 +39,9 @@
 
 void MCP23017Init(int i2c_fd);
 
-uint16_t MPC23017BitSet(int i2c_fd, uint8_t bit);
-uint16_t MPC23017BitClear(int i2c_fd, uint8_t bit);
-uint16_t MPC23017BitRead(int i2c_fd, uint8_t bit);
-void MPC23017BitReset(int i2c_fd);
+uint16_t MCP23017BitSet(int i2c_fd, uint8_t bit);
+uint16_t MCP23017BitClear(int i2c_fd, uint8_t bit);
+uint16_t MCP23017BitRead(int i2c_fd, uint8_t bit);
+void MCP23017BitReset(int i2c_fd);
 
 #endif
