@@ -3,22 +3,41 @@
 
 #include <stdint.h>
 
-#define ROT_PWR  0
-#define SDR_ROCK 1
-#define V_PA     2
-#define SDR_LIME 3
-#define L_PA     4
-#define U_PA     5
-#define U_PTT    6
-#define S_PWR    7
-#define L_PTT    8
-#define V_PTT    9
-#define V_POL    10
-#define U_POL    11
-#define U_KEY    12
-#define V_KEY    13
-#define V_LNA    14
-#define U_LNA    15
+#define BIT_MASK(n)     (0x1 << n)
+
+#define ROT_PWR_BIT     0
+#define SDR_ROCK_BIT    1
+#define V_PA_BIT        2
+#define SDR_LIME_BIT    3
+#define L_PA_BIT        4
+#define U_PA_BIT        5
+#define U_PTT_BIT       6
+#define S_PWR_BIT       7
+#define L_PTT_BIT       8
+#define V_PTT_BIT       9
+#define V_POL_BIT       10
+#define U_POL_BIT       11
+#define U_KEY_BIT       12
+#define V_KEY_BIT       13
+#define V_LNA_BIT       14
+#define U_LNA_BIT       15
+
+#define ROT_PWR         BIT_MASK(ROT_PWR_BIT)
+#define SDR_ROCK        BIT_MASK(SDR_ROCK_BIT)
+#define V_PA            BIT_MASK(V_PA_BIT)
+#define SDR_LIME        BIT_MASK(SDR_LIME_BIT)
+#define L_PA            BIT_MASK(L_PA_BIT)
+#define U_PA            BIT_MASK(U_PA_BIT)
+#define U_PTT           BIT_MASK(U_PTT_BIT)
+#define S_PWR           BIT_MASK(S_PWR_BIT)
+#define L_PTT           BIT_MASK(L_PTT_BIT)
+#define V_PTT           BIT_MASK(V_PTT_BIT)
+#define V_POL           BIT_MASK(V_POL_BIT)
+#define U_POL           BIT_MASK(U_POL_BIT)
+#define U_KEY           BIT_MASK(U_KEY_BIT)
+#define V_KEY           BIT_MASK(V_KEY_BIT)
+#define V_LNA           BIT_MASK(V_LNA_BIT)
+#define U_LNA           BIT_MASK(U_LNA_BIT)
 
 extern const char *inputTokens[];
 extern const char *states[];

@@ -24,7 +24,7 @@ void MCP23017Init(int i2c_fd){
     MCP23017BitReset(i2c_fd);
 }
 
-uint16_t MCP23017BitSet(int i2c_fd, uint8_t bit){
+int MCP23017BitSet(int i2c_fd, uint8_t bit){
     uint16_t regval;
 
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
@@ -43,7 +43,7 @@ uint16_t MCP23017BitSet(int i2c_fd, uint8_t bit){
 }
 
 
-uint16_t MCP23017BitClear(int i2c_fd, uint8_t bit){
+int MCP23017BitClear(int i2c_fd, uint8_t bit){
     uint16_t regval;
 
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
@@ -62,13 +62,46 @@ uint16_t MCP23017BitClear(int i2c_fd, uint8_t bit){
 
 }
 
-uint16_t MCP23017BitRead(int i2c_fd, uint8_t bit){
-    int regval;
+int MCP23017BitRead(int i2c_fd, uint8_t bit){
+    uint16_t regval;
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
         logmsg(LOG_ERR, "Error: Failed to read bit %d: %s\n", bit, strerror(errno));
         return regval;
     }
     return ((regval >> bit) & 0x1);
+}
+
+int MCP23017BitSetMask(int i2c_fd, uint16_t mask){
+    uint16_t regval;
+
+    if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
+        logmsg(LOG_ERR, "Error: Failed reading current GPIO output state: %s\n", strerror(errno));
+        return regval;
+    }
+
+    regval |= mask;
+
+    if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0){
+        logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
+        return -1;
+    }
+    return regval;
+}
+int MCP23017BitClearMask(int i2c_fd, uint16_t mask){
+    uint16_t regval;
+
+    if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
+        logmsg(LOG_ERR, "Error: Failed reading current GPIO output state: %s\n", strerror(errno));
+        return regval;
+    }
+
+    regval &= ~mask;
+
+    if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0){
+        logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
+        return -1;
+    }
+    return regval;
 }
 
 void MCP23017BitReset(int i2c_fd){
@@ -78,4 +111,3 @@ void MCP23017BitReset(int i2c_fd){
         exit(EXIT_FAILURE);
     }
 }
-
