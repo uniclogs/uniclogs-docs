@@ -113,29 +113,29 @@ void *statemachine(void *argp){
 
     while(1){
         // Default token to NO_ACTION
-        pwrConfig.token = NO_ACTION;
+        state_config.token = NO_ACTION;
 
         getInput();
 
-        if(pwrConfig.token == NO_ACTION){
+        if(state_config.token == NO_ACTION){
             continue;
         }
 
-        if(pwrConfig.token == EXIT){
+        if(state_config.token == EXIT){
             break;
         }
 
-        if(pwrConfig.token == STATUS){
-            logmsg(LOG_NOTICE, "State: %d\n", pwrConfig.state);
-            logmsg(LOG_NOTICE, "Secondary state: %d\n", pwrConfig.sec_state);
-            logmsg(LOG_NOTICE, "Next State: %d\n", pwrConfig.next_state);
-            logmsg(LOG_NOTICE, "Next Secondary state: %d\n", pwrConfig.next_sec_state);
+        if(state_config.token == STATUS){
+            logmsg(LOG_NOTICE, "State: %d\n", state_config.state);
+            logmsg(LOG_NOTICE, "Secondary state: %d\n", state_config.sec_state);
+            logmsg(LOG_NOTICE, "Next State: %d\n", state_config.next_state);
+            logmsg(LOG_NOTICE, "Next Secondary state: %d\n", state_config.next_sec_state);
             continue;
         }
 
         processToken();
 
-        if (pwrConfig.token != NO_ACTION)
+        if (state_config.token != NO_ACTION)
             changeState();
     }
 
@@ -143,40 +143,10 @@ void *statemachine(void *argp){
     return 0;
 }
 
-void handle_alarm_signal(int sig){
-    if (pwrConfig.state == SYS_PWR_ON){
-        pwrConfig.state = STANDBY;
-        pwrConfig.sec_state = NONE;
-    }
-    else if (pwrConfig.state == V_TRAN && pwrConfig.sec_state == V_PA_COOL){
-        pwrConfig.sec_state = V_PA_DOWN;
-        MCP23017BitClear(i2c_fd, V_PA_BIT);
-        MCP23017BitClear(i2c_fd, V_KEY_BIT);
-        pwrConfig.state = STANDBY;
-        pwrConfig.sec_state = NONE;
-    }
-    else if (pwrConfig.state == U_TRAN && pwrConfig.sec_state == U_PA_COOL){
-        pwrConfig.sec_state = U_PA_DOWN;
-        MCP23017BitClear(i2c_fd, U_PA_BIT);
-        MCP23017BitClear(i2c_fd, U_KEY_BIT);
-        pwrConfig.state = STANDBY;
-        pwrConfig.sec_state = NONE;
-    }
-    else if (pwrConfig.state == L_TRAN && pwrConfig.sec_state == L_PA_COOL){
-        pwrConfig.sec_state = L_PA_DOWN;
-        MCP23017BitClear(i2c_fd, L_PA_BIT);
-        pwrConfig.state = STANDBY;
-        pwrConfig.sec_state = NONE;
-    }
-    else
-        stateWarning();
-}
-
-
 int init_statemachine(void){
     // Set initial state machine states
-    pwrConfig.state = INIT;
-    pwrConfig.sec_state = NONE;
+    state_config.state = INIT;
+    state_config.sec_state = NONE;
 
     // Open the I2C device for read/write
     if ((i2c_fd = open(i2c_dev, O_RDWR)) < 0){
@@ -188,6 +158,34 @@ int init_statemachine(void){
     MCP23017Init(i2c_fd);
 }
 
+void handle_alarm_signal(int sig){
+    if (state_config.state == SYS_PWR_ON){
+        state_config.state = STANDBY;
+        state_config.sec_state = NONE;
+    }
+    else if (state_config.state == V_TRAN && state_config.sec_state == V_PA_COOL){
+        state_config.sec_state = V_PA_DOWN;
+        MCP23017BitClear(i2c_fd, V_PA_BIT);
+        MCP23017BitClear(i2c_fd, V_KEY_BIT);
+        state_config.state = STANDBY;
+        state_config.sec_state = NONE;
+    }
+    else if (state_config.state == U_TRAN && state_config.sec_state == U_PA_COOL){
+        state_config.sec_state = U_PA_DOWN;
+        MCP23017BitClear(i2c_fd, U_PA_BIT);
+        MCP23017BitClear(i2c_fd, U_KEY_BIT);
+        state_config.state = STANDBY;
+        state_config.sec_state = NONE;
+    }
+    else if (state_config.state == L_TRAN && state_config.sec_state == L_PA_COOL){
+        state_config.sec_state = L_PA_DOWN;
+        MCP23017BitClear(i2c_fd, L_PA_BIT);
+        state_config.state = STANDBY;
+        state_config.sec_state = NONE;
+    }
+    else
+        stateWarning();
+}
 
 //Handles proper exit after a crash or user EXIT token
 void i2c_exit(void){
@@ -201,63 +199,69 @@ void i2c_exit(void){
 
 //Get user token and validate with list of input tokens.
 int getInput(void){
-    int i;
+    token_t i;
 
     sem_wait(&msgpending);
-    for(i=0;i<MAX_TOKENS;i++){
-        if(!strcmp(msg, inputTokens[i])){
-            pwrConfig.token = i;
-            logmsg (LOG_INFO,"Token entered %s\n",inputTokens[i]);
-            break;
-        }
-    }
+    i = parse_token(msg);
     sem_post(&msgpending);
     sleep(1);
 
     if(i == MAX_TOKENS) {
-        logmsg (LOG_WARNING,"Not a known token. No action taken.\n");
+        logmsg (LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
+    } else {
+        state_config.token = i;
     }
 
 }
 
+token_t parse_token(const char *token){
+    token_t i;
+    for (i = 0; i < MAX_TOKENS; i++){
+        if (!strcmp(token, inputTokens[i])){
+            logmsg(LOG_DEBUG, "Token entered: %s\n", inputTokens[i]);
+            break;
+        }
+    }
+    return i;
+}
 
 int processToken(void){
 
-    if(pwrConfig.token == KILL){
-        pwrConfig.next_state = INIT;
-        pwrConfig.next_sec_state =  NONE;
+    if(state_config.token == KILL){
+        state_config.next_state = INIT;
+        state_config.next_sec_state =  NONE;
         return 0;
     }
 
-    switch(pwrConfig.state){
+    switch(state_config.state){
         case INIT:
-            if(pwrConfig.token == PWR_ON)
-                pwrConfig.next_state = SYS_PWR_ON;
+            if(state_config.token == PWR_ON)
+                state_config.next_state = SYS_PWR_ON;
             else
                 tokenError();
             break;
         case SYS_PWR_ON:
-            if(pwrConfig.token == OPERATE)
-                pwrConfig.next_state = STANDBY;
+            if(state_config.token == OPERATE)
+                state_config.next_state = STANDBY;
             else
                 tokenError();
             break;
         case STANDBY:
-            if(pwrConfig.token == S_ON)
-                pwrConfig.next_state = S_SYS_ON;
-            else if(pwrConfig.token == S_OFF)
-                pwrConfig.next_state = S_SYS_OFF;
-            else if(pwrConfig.token == V_TX){
-                pwrConfig.next_state = V_TRAN;
-                pwrConfig.next_sec_state = VHF_TRANSMIT;
+            if(state_config.token == S_ON)
+                state_config.next_state = S_SYS_ON;
+            else if(state_config.token == S_OFF)
+                state_config.next_state = S_SYS_OFF;
+            else if(state_config.token == V_TX){
+                state_config.next_state = V_TRAN;
+                state_config.next_sec_state = VHF_TRANSMIT;
             }
-            else if(pwrConfig.token == U_TX){
-                pwrConfig.next_state = U_TRAN;
-                pwrConfig.next_sec_state = UHF_TRANSMIT;
+            else if(state_config.token == U_TX){
+                state_config.next_state = U_TRAN;
+                state_config.next_sec_state = UHF_TRANSMIT;
             }
-            else if(pwrConfig.token == L_TX){
-                pwrConfig.next_state = L_TRAN;
-                pwrConfig.next_sec_state = L_TRANSMIT;
+            else if(state_config.token == L_TX){
+                state_config.next_state = L_TRAN;
+                state_config.next_sec_state = L_TRANSMIT;
             }
             else
                 tokenError();
@@ -290,23 +294,23 @@ int processToken(void){
 
 
 int processVHFTokens(void){
-    switch(pwrConfig.sec_state){
+    switch(state_config.sec_state){
         case VHF_TRANSMIT:
         case V_SWITCH:
-            if(pwrConfig.token == V_LEFT)
-                pwrConfig.next_sec_state =  V_LHCP;
-            else if(pwrConfig.token == V_RIGHT)
-                pwrConfig.next_sec_state =  V_RHCP;
-            else if(pwrConfig.token == V_TX_ON)
-                pwrConfig.next_sec_state =  V_TRANS_ON;
-            else if(pwrConfig.token == V_TX_OFF)
-                pwrConfig.next_sec_state =  V_TRANS_OFF;
-            else if(pwrConfig.token == U_RIGHT)
-                pwrConfig.next_sec_state =  V_UHF_RHCP;
-            else if(pwrConfig.token == U_LEFT)
-                pwrConfig.next_sec_state =  V_UHF_LHCP;
-            else if(pwrConfig.token == SHUTDOWN)
-                pwrConfig.next_sec_state =  V_SHUTDOWN;
+            if(state_config.token == V_LEFT)
+                state_config.next_sec_state =  V_LHCP;
+            else if(state_config.token == V_RIGHT)
+                state_config.next_sec_state =  V_RHCP;
+            else if(state_config.token == V_TX_ON)
+                state_config.next_sec_state =  V_TRANS_ON;
+            else if(state_config.token == V_TX_OFF)
+                state_config.next_sec_state =  V_TRANS_OFF;
+            else if(state_config.token == U_RIGHT)
+                state_config.next_sec_state =  V_UHF_RHCP;
+            else if(state_config.token == U_LEFT)
+                state_config.next_sec_state =  V_UHF_LHCP;
+            else if(state_config.token == SHUTDOWN)
+                state_config.next_sec_state =  V_SHUTDOWN;
             else
                 tokenError();
             break;
@@ -331,23 +335,23 @@ int processVHFTokens(void){
 
 
 int processUHFTokens(void){
-    switch(pwrConfig.sec_state){
+    switch(state_config.sec_state){
         case UHF_TRANSMIT:
         case U_SWITCH:
-            if(pwrConfig.token == U_LEFT)
-                pwrConfig.next_sec_state =  U_LHCP;
-            else if(pwrConfig.token == U_RIGHT)
-                pwrConfig.next_sec_state =  U_RHCP;
-            else if(pwrConfig.token == U_TX_ON)
-                pwrConfig.next_sec_state =  U_TRANS_ON;
-            else if(pwrConfig.token == U_TX_OFF)
-                pwrConfig.next_sec_state =  U_TRANS_OFF;
-            else if(pwrConfig.token == V_RIGHT)
-                pwrConfig.next_sec_state =  U_VHF_RHCP;
-            else if(pwrConfig.token == V_LEFT)
-                pwrConfig.next_sec_state =  U_VHF_LHCP;
-            else if(pwrConfig.token == SHUTDOWN)
-                pwrConfig.next_sec_state =  U_SHUTDOWN;
+            if(state_config.token == U_LEFT)
+                state_config.next_sec_state =  U_LHCP;
+            else if(state_config.token == U_RIGHT)
+                state_config.next_sec_state =  U_RHCP;
+            else if(state_config.token == U_TX_ON)
+                state_config.next_sec_state =  U_TRANS_ON;
+            else if(state_config.token == U_TX_OFF)
+                state_config.next_sec_state =  U_TRANS_OFF;
+            else if(state_config.token == V_RIGHT)
+                state_config.next_sec_state =  U_VHF_RHCP;
+            else if(state_config.token == V_LEFT)
+                state_config.next_sec_state =  U_VHF_LHCP;
+            else if(state_config.token == SHUTDOWN)
+                state_config.next_sec_state =  U_SHUTDOWN;
             else
                 tokenError();
             break;
@@ -372,23 +376,23 @@ int processUHFTokens(void){
 
 
 int processLBandTokens(void){
-    switch(pwrConfig.sec_state){
+    switch(state_config.sec_state){
         case L_TRANSMIT:
         case L_SWITCH:
-            if(pwrConfig.token == U_LEFT)
-                pwrConfig.next_sec_state =  L_UHF_LHCP;
-            else if(pwrConfig.token == U_RIGHT)
-                pwrConfig.next_sec_state =  L_UHF_RHCP;
-            else if(pwrConfig.token == L_TX_ON)
-                pwrConfig.next_sec_state =  L_TRANS_ON;
-            else if(pwrConfig.token == L_TX_OFF)
-                pwrConfig.next_sec_state =  L_TRANS_OFF;
-            else if(pwrConfig.token == V_RIGHT)
-                pwrConfig.next_sec_state =  L_VHF_RHCP;
-            else if(pwrConfig.token == V_LEFT)
-                pwrConfig.next_sec_state =  L_VHF_LHCP;
-            else if(pwrConfig.token == SHUTDOWN)
-                pwrConfig.next_sec_state =  L_SHUTDOWN;
+            if(state_config.token == U_LEFT)
+                state_config.next_sec_state =  L_UHF_LHCP;
+            else if(state_config.token == U_RIGHT)
+                state_config.next_sec_state =  L_UHF_RHCP;
+            else if(state_config.token == L_TX_ON)
+                state_config.next_sec_state =  L_TRANS_ON;
+            else if(state_config.token == L_TX_OFF)
+                state_config.next_sec_state =  L_TRANS_OFF;
+            else if(state_config.token == V_RIGHT)
+                state_config.next_sec_state =  L_VHF_RHCP;
+            else if(state_config.token == V_LEFT)
+                state_config.next_sec_state =  L_VHF_LHCP;
+            else if(state_config.token == SHUTDOWN)
+                state_config.next_sec_state =  L_SHUTDOWN;
             else
                 tokenError();
             break;
@@ -416,31 +420,31 @@ int processLBandTokens(void){
 int BandSwitchErrorRecovery(void){
     logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken.");
     logmsg(LOG_WARNING,"Please reenter your token and manually validate the action.");
-    pwrConfig.next_state = STANDBY;
+    state_config.next_state = STANDBY;
 }
 
 
 int tokenError(void){
     logmsg (LOG_WARNING,"Token not valid for the state. Please refer to state diagram. No action taken.");
-    pwrConfig.token = NO_ACTION;
+    state_config.token = NO_ACTION;
 }
 
 int VHFErrorRecovery(void){
     logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
     logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
-    pwrConfig.next_state = V_SWITCH;
+    state_config.next_state = V_SWITCH;
 }
 
 int UHFErrorRecovery(void){
     logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
     logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
-    pwrConfig.next_state = U_SWITCH;
+    state_config.next_state = U_SWITCH;
 }
 
 int LErrorRecovery(void){
     logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
     logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
-    pwrConfig.next_state = L_SWITCH;
+    state_config.next_state = L_SWITCH;
 }
 
 void stateError(void){
@@ -455,50 +459,50 @@ void stateWarning(void){
 
 int CoolDown_Wait(void){
     logmsg(LOG_WARNING,"Waiting for cooldown.No action taken.If required, force exit via KILL or EXIT tokens. \n");
-    pwrConfig.token = NO_ACTION;
+    state_config.token = NO_ACTION;
 }
 
 
 int changeState(void){
     uint8_t temporary;
 
-    switch(pwrConfig.next_state){
+    switch(state_config.next_state){
         case INIT:
             MCP23017BitReset(i2c_fd);
-            pwrConfig.state = INIT;
-            pwrConfig.sec_state = NONE;
+            state_config.state = INIT;
+            state_config.sec_state = NONE;
             break;
         case SYS_PWR_ON:
             MCP23017BitSetMask(i2c_fd, SDR_ROCK|SDR_LIME|ROT_PWR);
             /*MCP23017BitSet(i2c_fd, SDR_ROCK_BIT);*/
             /*MCP23017BitSet(i2c_fd, SDR_LIME_BIT);*/
             /*MCP23017BitSet(i2c_fd, ROT_PWR_BIT);*/
-            pwrConfig.state = SYS_PWR_ON;
+            state_config.state = SYS_PWR_ON;
             alarm(60);
             break;
         case STANDBY:
-            pwrConfig.state = STANDBY;
+            state_config.state = STANDBY;
             break;
         case S_SYS_ON:
             MCP23017BitSetMask(i2c_fd, S_PWR);
             /*MCP23017BitSet(i2c_fd, S_PWR_BIT);*/
-            pwrConfig.state = STANDBY;
+            state_config.state = STANDBY;
             break;
         case S_SYS_OFF:
             MCP23017BitClearMask(i2c_fd, S_PWR);
             /*MCP23017BitClear(i2c_fd, S_PWR_BIT);*/
-            pwrConfig.state = STANDBY;
+            state_config.state = STANDBY;
             break;
 
         case V_TRAN:
-            pwrConfig.state = V_TRAN;
-            switch(pwrConfig.next_sec_state){
+            state_config.state = V_TRAN;
+            switch(state_config.next_sec_state){
                 case VHF_TRANSMIT:
                     MCP23017BitSetMask(i2c_fd, U_LNA|V_PA|V_KEY);
                     /*MCP23017BitSet(i2c_fd, U_LNA_BIT);*/
                     /*MCP23017BitSet(i2c_fd, V_PA_BIT);*/
                     /*MCP23017BitSet(i2c_fd, V_KEY_BIT);*/
-                    pwrConfig.sec_state = V_SWITCH;
+                    state_config.sec_state = V_SWITCH;
                     break;
                 case V_SWITCH:
                     break;
@@ -508,9 +512,9 @@ int changeState(void){
                     /*MCP23017BitClear(i2c_fd, U_POL_BIT);*/
                     /*MCP23017BitClear(i2c_fd, V_POL_BIT);*/
                     /*MCP23017BitClear(i2c_fd, V_PTT_BIT);*/
-                    pwrConfig.sec_state = V_SHUTDOWN;
+                    state_config.sec_state = V_SHUTDOWN;
 
-                    pwrConfig.sec_state = V_PA_COOL;
+                    state_config.sec_state = V_PA_COOL;
                     alarm(120);
                     break;
                 case V_PA_COOL:
@@ -519,22 +523,22 @@ int changeState(void){
                 case V_UHF_LHCP:
                     MCP23017BitSetMask(i2c_fd, U_POL);
                     /*MCP23017BitSet(i2c_fd, U_POL_BIT);*/
-                    pwrConfig.sec_state = V_SWITCH;
+                    state_config.sec_state = V_SWITCH;
                     break;
                 case V_UHF_RHCP:
                     MCP23017BitClearMask(i2c_fd, U_POL);
                     /*MCP23017BitClear(i2c_fd, U_POL_BIT);*/
-                    pwrConfig.sec_state = V_SWITCH;
+                    state_config.sec_state = V_SWITCH;
                     break;
                 case V_TRANS_ON:
                     MCP23017BitSetMask(i2c_fd, V_PTT);
                     /*MCP23017BitSet(i2c_fd, V_PTT_BIT);*/
-                    pwrConfig.sec_state = V_SWITCH;
+                    state_config.sec_state = V_SWITCH;
                     break;
                 case V_TRANS_OFF:
                     MCP23017BitClearMask(i2c_fd, V_PTT);
                     /*MCP23017BitClear(i2c_fd, V_PTT_BIT);*/
-                    pwrConfig.sec_state = V_SWITCH;
+                    state_config.sec_state = V_SWITCH;
                     break;
                 case V_LHCP:
                     temporary = MCP23017BitRead(i2c_fd, V_PTT_BIT);
@@ -546,7 +550,7 @@ int changeState(void){
                         MCP23017BitSet(i2c_fd, V_PTT_BIT);
                     else
                         MCP23017BitClear(i2c_fd, V_PTT_BIT);
-                    pwrConfig.sec_state = V_SWITCH;
+                    state_config.sec_state = V_SWITCH;
                     break;
 
                 case V_RHCP:
@@ -559,7 +563,7 @@ int changeState(void){
                         MCP23017BitSet(i2c_fd, V_PTT_BIT);
                     else
                         MCP23017BitClear(i2c_fd, V_PTT_BIT);
-                    pwrConfig.sec_state = V_SWITCH;
+                    state_config.sec_state = V_SWITCH;
                     break;
                 default:
                     stateError();
@@ -568,14 +572,14 @@ int changeState(void){
             break;
 
         case U_TRAN:
-            pwrConfig.state = U_TRAN;
-            switch(pwrConfig.next_sec_state){
+            state_config.state = U_TRAN;
+            switch(state_config.next_sec_state){
                 case UHF_TRANSMIT:
                     MCP23017BitSetMask(i2c_fd, V_LNA|U_PA|U_KEY);
                     /*MCP23017BitSet(i2c_fd, V_LNA_BIT);*/
                     /*MCP23017BitSet(i2c_fd, U_PA_BIT);*/
                     /*MCP23017BitSet(i2c_fd, U_KEY_BIT);*/
-                    pwrConfig.sec_state = U_SWITCH;
+                    state_config.sec_state = U_SWITCH;
                     break;
                 case U_SWITCH:
                     break;
@@ -585,9 +589,9 @@ int changeState(void){
                     /*MCP23017BitClear(i2c_fd, V_POL_BIT);*/
                     /*MCP23017BitClear(i2c_fd, U_POL_BIT);*/
                     /*MCP23017BitClear(i2c_fd, U_PTT_BIT);*/
-                    pwrConfig.sec_state = U_SHUTDOWN;
+                    state_config.sec_state = U_SHUTDOWN;
 
-                    pwrConfig.sec_state = U_PA_COOL;
+                    state_config.sec_state = U_PA_COOL;
                     alarm(120);
                     break;
                 case U_PA_COOL:
@@ -596,22 +600,22 @@ int changeState(void){
                 case U_VHF_LHCP:
                     MCP23017BitSetMask(i2c_fd, V_POL);
                     /*MCP23017BitSet(i2c_fd, V_POL_BIT);*/
-                    pwrConfig.sec_state = U_SWITCH;
+                    state_config.sec_state = U_SWITCH;
                     break;
                 case U_VHF_RHCP:
                     MCP23017BitClearMask(i2c_fd, V_POL);
                     /*MCP23017BitClear(i2c_fd, V_POL_BIT);*/
-                    pwrConfig.sec_state = U_SWITCH;
+                    state_config.sec_state = U_SWITCH;
                     break;
                 case U_TRANS_ON:
                     MCP23017BitSetMask(i2c_fd, U_PTT);
                     /*MCP23017BitSet(i2c_fd, U_PTT_BIT);*/
-                    pwrConfig.sec_state = U_SWITCH;
+                    state_config.sec_state = U_SWITCH;
                     break;
                 case U_TRANS_OFF:
                     MCP23017BitClearMask(i2c_fd, U_PTT);
                     /*MCP23017BitClear(i2c_fd, U_PTT_BIT);*/
-                    pwrConfig.sec_state = U_SWITCH;
+                    state_config.sec_state = U_SWITCH;
                     break;
                 case U_LHCP:
                     temporary = MCP23017BitRead(i2c_fd, U_PTT_BIT);
@@ -623,7 +627,7 @@ int changeState(void){
                         MCP23017BitSet(i2c_fd, U_PTT_BIT);
                     else
                         MCP23017BitClear(i2c_fd, U_PTT_BIT);
-                    pwrConfig.sec_state = U_SWITCH;
+                    state_config.sec_state = U_SWITCH;
                     break;
 
                 case U_RHCP:
@@ -636,7 +640,7 @@ int changeState(void){
                         MCP23017BitSet(i2c_fd, U_PTT_BIT);
                     else
                         MCP23017BitClear(i2c_fd, U_PTT_BIT);
-                    pwrConfig.sec_state = U_SWITCH;
+                    state_config.sec_state = U_SWITCH;
                     break;
                 default:
                     stateError();
@@ -645,14 +649,14 @@ int changeState(void){
             break;
 
         case L_TRAN:
-            pwrConfig.state = L_TRAN;
-            switch(pwrConfig.next_sec_state){
+            state_config.state = L_TRAN;
+            switch(state_config.next_sec_state){
                 case L_TRANSMIT:
                     MCP23017BitSetMask(i2c_fd, U_LNA|V_LNA|L_PA);
                     /*MCP23017BitSet(i2c_fd, U_LNA_BIT);*/
                     /*MCP23017BitSet(i2c_fd, V_LNA_BIT);*/
                     /*MCP23017BitSet(i2c_fd, L_PA_BIT);*/
-                    pwrConfig.sec_state = L_SWITCH;
+                    state_config.sec_state = L_SWITCH;
                     break;
                 case L_SWITCH:
                     break;
@@ -663,9 +667,9 @@ int changeState(void){
                     /*MCP23017BitClear(i2c_fd, V_POL_BIT);*/
                     /*MCP23017BitClear(i2c_fd, V_LNA_BIT);*/
                     /*MCP23017BitClear(i2c_fd, U_LNA_BIT);*/
-                    pwrConfig.sec_state = L_SHUTDOWN;
+                    state_config.sec_state = L_SHUTDOWN;
 
-                    pwrConfig.sec_state = L_PA_COOL;
+                    state_config.sec_state = L_PA_COOL;
                     alarm(120);
                     break;
                 case L_PA_COOL:
@@ -674,32 +678,32 @@ int changeState(void){
                 case L_UHF_LHCP:
                     MCP23017BitSetMask(i2c_fd, U_POL);
                     /*MCP23017BitSet(i2c_fd, U_POL_BIT);*/
-                    pwrConfig.sec_state = L_SWITCH;
+                    state_config.sec_state = L_SWITCH;
                     break;
                 case L_UHF_RHCP:
                     MCP23017BitClearMask(i2c_fd, U_POL);
                     /*MCP23017BitClear(i2c_fd, U_POL_BIT);*/
-                    pwrConfig.sec_state = L_SWITCH;
+                    state_config.sec_state = L_SWITCH;
                     break;
                 case L_TRANS_ON:
                     MCP23017BitSetMask(i2c_fd, L_PTT);
                     /*MCP23017BitSet(i2c_fd, L_PTT_BIT);*/
-                    pwrConfig.sec_state = L_SWITCH;
+                    state_config.sec_state = L_SWITCH;
                     break;
                 case L_TRANS_OFF:
                     MCP23017BitClearMask(i2c_fd, L_PTT);
                     /*MCP23017BitClear(i2c_fd, L_PTT_BIT);*/
-                    pwrConfig.sec_state = L_SWITCH;
+                    state_config.sec_state = L_SWITCH;
                     break;
                 case L_VHF_LHCP:
                     MCP23017BitSetMask(i2c_fd, V_POL);
                     /*MCP23017BitSet(i2c_fd, V_POL_BIT);*/
-                    pwrConfig.sec_state = L_SWITCH;
+                    state_config.sec_state = L_SWITCH;
                     break;
                 case L_VHF_RHCP:
                     MCP23017BitClearMask(i2c_fd, V_POL);
                     /*MCP23017BitClear(i2c_fd, V_POL_BIT);*/
-                    pwrConfig.sec_state = L_SWITCH;
+                    state_config.sec_state = L_SWITCH;
                     break;
                 default:
                     stateError();

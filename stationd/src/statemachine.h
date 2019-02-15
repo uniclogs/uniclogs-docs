@@ -71,7 +71,7 @@ typedef enum{
     EXIT,
     STATUS,
     MAX_TOKENS
-} input_tokens;
+} token_t;
 
 typedef enum{
     INIT,
@@ -83,7 +83,7 @@ typedef enum{
     V_TRAN,
     U_TRAN,
     L_TRAN
-} pwr_state;
+} state_t;
 
 typedef enum{
     NONE,
@@ -122,17 +122,17 @@ typedef enum{
     L_TRANS_OFF,
     L_UHF_LHCP,
     L_UHF_RHCP
-} secondary_states;
+} sec_state_t;
 
 
-struct pwr_Config {
-    pwr_state state;
-    secondary_states sec_state;
-    pwr_state next_state;
-    secondary_states next_sec_state;
-    input_tokens token;
+struct _state_config {
+    state_t state;
+    state_t next_state;
+    sec_state_t sec_state;
+    sec_state_t next_sec_state;
+    token_t token;
     int errorCode;
-} pwrConfig;
+} state_config;
 
 
 void *statemachine(void *argp);
@@ -140,6 +140,7 @@ void handle_alarm_signal(int sig);
 int init_statemachine(void);
 void i2c_exit(void);
 int getInput(void);
+token_t parse_token(const char *token);
 int processToken(void);
 int processVHFTokens(void);
 int processUHFTokens(void);
