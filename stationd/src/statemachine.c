@@ -51,7 +51,8 @@ const char *states[] = {
 
     "V_TRAN",
     "U_TRAN",
-    "L_TRAN"
+    "L_TRAN",
+    "MAX_STATES"
 };
 
 const char *secstates[] = {
@@ -90,7 +91,8 @@ const char *secstates[] = {
     "L_TRANS_ON",
     "L_TRANS_OFF",
     "L_UHF_LHCP",
-    "L_UHF_RHCP"
+    "L_UHF_RHCP",
+    "MAX_SEC_STATES"
 };
 
 //I2C bus
