@@ -4,9 +4,18 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
+#include <math.h>
 #include "mcp9808.h"
 
-void MCP9808SetSlave(int i2c_fd);
+unsigned int bitmask(unsigned int bits, unsigned int offset, unsigned int value);
+
+void MCP9808SetSlave(int i2c_fd){
+    // Set MCP23017 as slave device
+    if (ioctl(i2c_fd, I2C_SLAVE, MCP9808_I2C_ADDR) < 0){
+        logmsg(LOG_ERR, "Error: Failed setting MCP23017 as slave: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+}
 
 float MCP9808GetTemp(int i2c_fd){
     int regval;
@@ -15,15 +24,11 @@ float MCP9808GetTemp(int i2c_fd){
 
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP9808_TEMP_REG)) < 0){
         logmsg(LOG_ERR, "Error: Failed reading current GPIO output state: %s\n", strerror(errno));
-        return regval;
+        return (float)regval;
     }
-    return (float)((regval & TEMP_MASK) << 19);
-}
 
-void MCP9808SetSlave(int i2c_fd){
-    // Set MCP23017 as slave device
-    if (ioctl(i2c_fd, I2C_SLAVE, MCP9808_I2C_ADDR) < 0){
-        logmsg(LOG_ERR, "Error: Failed setting MCP23017 as slave: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+    if (regval & TEMP_SIGN_MASK)
+        return (0x100 - ((((regval & 0xFF00) >> 8) * pow(2, 4)) + ((regval & 0xFF) * pow(2, -4))));
+    else
+        return ((((regval & 0xFF00) >> 8) * pow(2, 4)) + ((regval & 0xFF) * pow(2, -4)));
 }
