@@ -21,8 +21,6 @@ float MCP9808GetTemp(int i2c_fd){
 }
 
 void MCP9808SetSlave(int i2c_fd){
-    MCP9808SetSlave(i2c_fd);
-
     // Set MCP23017 as slave device
     if (ioctl(i2c_fd, I2C_SLAVE, MCP9808_I2C_ADDR) < 0){
         logmsg(LOG_ERR, "Error: Failed setting MCP23017 as slave: %s\n", strerror(errno));

@@ -124,8 +124,6 @@ void MCP23017BitReset(int i2c_fd){
 }
 
 void MCP23017SetSlave(int i2c_fd){
-    MCP23017SetSlave(i2c_fd);
-
     // Set MCP23017 as slave device
     if (ioctl(i2c_fd, I2C_SLAVE, MCP23017_I2C_ADDR) < 0){
         logmsg(LOG_ERR, "Error: Failed setting MCP23017 as slave: %s\n", strerror(errno));
