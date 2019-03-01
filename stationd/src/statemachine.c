@@ -13,7 +13,6 @@
 #include "mcp23017.h"
 
 const char *inputTokens[] = {
-    "NO_ACTION",
     "V_TX",
     "U_TX",
     "L_TX",
@@ -37,7 +36,6 @@ const char *inputTokens[] = {
     "L_TX_ON",
     "L_TX_OFF",
 
-    "EXIT",
     "STATUS",
     "MAX_TOKENS"
 };
@@ -114,17 +112,14 @@ void *statemachine(void *argp){
     signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
 
     while(1){
-        // Default token to NO_ACTION
-        state_config.token = NO_ACTION;
+        sem_wait(&msgpending);
+        state_config.token = parse_token(msg);
+        sem_post(&msgpending);
+        sleep(1);
 
-        getInput();
-
-        if(state_config.token == NO_ACTION){
+        if(state_config.token == MAX_TOKENS) {
+            logmsg (LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
             continue;
-        }
-
-        if(state_config.token == EXIT){
-            break;
         }
 
         if(state_config.token == STATUS){
@@ -136,9 +131,7 @@ void *statemachine(void *argp){
         }
 
         processToken();
-
-        if (state_config.token != NO_ACTION)
-            changeState();
+        changeState();
     }
 
     raise(SIGTERM);
@@ -196,24 +189,6 @@ void i2c_exit(void){
     if (close(i2c_fd) < 0){
         logmsg(LOG_ERR,"Error: Failed to close I2C device: %s\n", strerror(errno));
     }
-}
-
-
-//Get user token and validate with list of input tokens.
-int getInput(void){
-    token_t i;
-
-    sem_wait(&msgpending);
-    i = parse_token(msg);
-    sem_post(&msgpending);
-    sleep(1);
-
-    if(i == MAX_TOKENS) {
-        logmsg (LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
-    } else {
-        state_config.token = i;
-    }
-
 }
 
 token_t parse_token(const char *token){
@@ -428,7 +403,6 @@ int BandSwitchErrorRecovery(void){
 
 int tokenError(void){
     logmsg (LOG_WARNING,"Token not valid for the state. Please refer to state diagram. No action taken.");
-    state_config.token = NO_ACTION;
 }
 
 int VHFErrorRecovery(void){
@@ -461,7 +435,6 @@ void stateWarning(void){
 
 int CoolDown_Wait(void){
     logmsg(LOG_WARNING,"Waiting for cooldown.No action taken.If required, force exit via KILL or EXIT tokens. \n");
-    state_config.token = NO_ACTION;
 }
 
 

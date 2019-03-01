@@ -44,7 +44,6 @@ extern const char *states[];
 extern const char *secstates[];
 
 typedef enum{
-    NO_ACTION,
     V_TX,
     U_TX,
     L_TX,
@@ -68,7 +67,6 @@ typedef enum{
     L_TX_ON,
     L_TX_OFF,
 
-    EXIT,
     STATUS,
     MAX_TOKENS
 } token_t;
@@ -141,7 +139,6 @@ void *statemachine(void *argp);
 void handle_alarm_signal(int sig);
 int init_statemachine(void);
 void i2c_exit(void);
-int getInput(void);
 token_t parse_token(const char *token);
 int processToken(void);
 int processVHFTokens(void);
