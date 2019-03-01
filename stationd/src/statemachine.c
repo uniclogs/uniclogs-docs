@@ -11,6 +11,7 @@
 #include "common.h"
 #include "statemachine.h"
 #include "mcp23017.h"
+#include "mcp9808.h"
 
 const char *inputTokens[] = {
     "V_TX",
@@ -37,6 +38,7 @@ const char *inputTokens[] = {
     "L_TX_OFF",
 
     "STATUS",
+    "GETTEMP",
     "MAX_TOKENS"
 };
 
@@ -117,8 +119,13 @@ void *statemachine(void *argp){
         sem_post(&msgpending);
         sleep(1);
 
-        if(state_config.token == MAX_TOKENS) {
-            logmsg (LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
+        if (state_config.token == MAX_TOKENS){
+            logmsg(LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
+            continue;
+        }
+
+        if (state_config.token == GETTEMP){
+            logmsg(LOG_NOTICE, "Temperature: %fC\n", MCP9808GetTemp(i2c_fd));
             continue;
         }
 

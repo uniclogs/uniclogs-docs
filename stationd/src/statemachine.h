@@ -68,6 +68,7 @@ typedef enum{
     L_TX_OFF,
 
     STATUS,
+    GETTEMP,
     MAX_TOKENS
 } token_t;
 
