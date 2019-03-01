@@ -8,7 +8,8 @@
 #define MCP9808_TEMP_REG        0x05
 
 #define TEMP_SIGN_MASK          0x1000
-#define TEMP_VAL_MASK           0x0FFF
+#define TEMP_UVAL_MASK          0x0F00
+#define TEMP_LVAL_MASK          0x00FF
 
 void MCP9808SetSlave(int i2c_fd);
 

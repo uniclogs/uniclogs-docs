@@ -28,7 +28,7 @@ float MCP9808GetTemp(int i2c_fd){
     }
 
     if (regval & TEMP_SIGN_MASK)
-        return (0x100 - ((((regval & 0xFF00) >> 8) * pow(2, -4)) + ((regval & 0xFF) * pow(2, 4))));
+        return (0x100 - ((((regval & TEMP_UVAL_MASK) >> 8) * pow(2, 4)) + ((regval & TEMP_LVAL_MASK) * pow(2, -4))));
     else
-        return ((((regval & 0xFF00) >> 8) * pow(2, -4)) + ((regval & 0xFF) * pow(2, 4)));
+        return ((((regval & TEMP_UVAL_MASK) >> 8) * pow(2, 4)) + ((regval & TEMP_LVAL_MASK) * pow(2, -4)));
 }
