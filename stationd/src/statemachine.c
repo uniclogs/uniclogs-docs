@@ -116,7 +116,7 @@ void *statemachine(void *argp){
 
     while(1){
         pthread_mutex_lock(&msg_mutex);
-        pthread_cond_wait(&msg_mutex, &msg_cond);
+        pthread_cond_wait(&msg_cond, &msg_mutex);
         state_config.token = parse_token(msg);
         pthread_mutex_unlock(&msg_mutex);
 
