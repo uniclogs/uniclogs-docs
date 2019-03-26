@@ -131,7 +131,7 @@ int main(int argc, char *argv[]){
     pthread_join(servthread, NULL);
     pthread_join(statethread, NULL);
 
-    logmsg(LOG_DEBUG, "Threads terminated.\n");
+    logmsg(LOG_DEBUG, "Threads terminated\n");
 
     sig_exit(SIGTERM);
 }

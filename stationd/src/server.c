@@ -67,7 +67,7 @@ void *udp_serv(void *argp)
     }
     freeaddrinfo(servinfo);
     addrlen = sizeof(remaddr);
-    logmsg(LOG_DEBUG, "Started UDP server. Ready to receive messages.\n");
+    logmsg(LOG_DEBUG, "Started UDP server. Ready to receive messages\n");
 
     //Start input handling UDP server
     while (1) {

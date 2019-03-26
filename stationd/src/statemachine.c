@@ -194,12 +194,13 @@ void handle_alarm_signal(int sig){
 
 //Handles proper exit after a crash or user EXIT token
 void i2c_exit(void){
-    logmsg(LOG_DEBUG, "Shutting down I2C.\n");
+    logmsg(LOG_DEBUG, "Shutting down I2C...\n");
     MCP23017BitReset(i2c_fd);
 
     if (close(i2c_fd) < 0){
         logmsg(LOG_ERR,"Error: Failed to close I2C device: %s\n", strerror(errno));
     }
+    logmsg(LOG_DEBUG, "I2C shut down\n");
 }
 
 token_t parse_token(const char *token){
