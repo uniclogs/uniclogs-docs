@@ -37,6 +37,8 @@
 #define MCP23017_OLATA_REG          0x14
 #define MCP23017_OLATB_REG          0x15
 
+void MCP23017SetSlave(int i2c_fd);
+
 void MCP23017Init(int i2c_fd);
 
 int MCP23017BitSet(int i2c_fd, uint8_t bit);
