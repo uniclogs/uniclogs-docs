@@ -70,7 +70,7 @@ void *udp_serv(void *argp)
 
     //Start input handling UDP server
     while (1) {
-        sem_wait(&msgpending);
+        pthread_mutex_lock(&msg_mutex);
         if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
         {
             logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
@@ -83,8 +83,8 @@ void *udp_serv(void *argp)
             }
             logmsg(LOG_DEBUG, "Received %d byte message: \"%s\"\n", recvlen, msg);
         }
-        sem_post(&msgpending);
-        sleep(1);
+        pthread_cond_signal(&msg_cond);
+        pthread_mutex_unlock(&msg_mutex);
     }
 
     logmsg(LOG_INFO, "Shutting down UDP server...\n");

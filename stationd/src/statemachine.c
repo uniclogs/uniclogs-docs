@@ -12,6 +12,7 @@
 #include "statemachine.h"
 #include "mcp23017.h"
 #include "mcp9808.h"
+#include "ads1115.h"
 
 const char *inputTokens[] = {
     "V_TX",
@@ -114,10 +115,10 @@ void *statemachine(void *argp){
     signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
 
     while(1){
-        sem_wait(&msgpending);
+        pthread_mutex_lock(&msg_mutex);
+        pthread_cond_wait(&msg_mutex, &msg_cond);
         state_config.token = parse_token(msg);
-        sem_post(&msgpending);
-        sleep(1);
+        pthread_mutex_unlock(&msg_mutex);
 
         if (state_config.token == MAX_TOKENS){
             logmsg(LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);

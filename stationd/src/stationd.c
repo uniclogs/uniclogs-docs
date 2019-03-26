@@ -49,8 +49,9 @@ int main(int argc, char *argv[]){
     signal(SIGINT, sig_exit);
     signal(SIGTERM, sig_exit);
 
-    //Initialize message pending semaphore
-    sem_init(&msgpending, 0, 1);
+    //Initialize message pending condition variable and mutex
+    pthread_mutex_init(&msg_mutex, NULL);
+    pthread_cond_init(&msg_cond, NULL);
 
     //Command line argument processing
     while ((c = getopt(argc, argv, "dp:r:v")) != -1){
@@ -131,7 +132,8 @@ int main(int argc, char *argv[]){
 
     logmsg(LOG_INFO, "Shutting Down...\n");
     i2c_exit();
-    sem_destroy(&msgpending);
+    pthread_mutex_destroy(&msg_mutex);
+    pthread_cond_destroy(&msg_cond);
     closelog();
     return EXIT_SUCCESS;
 }
@@ -139,7 +141,8 @@ int main(int argc, char *argv[]){
 void sig_exit(int sig){
     logmsg(LOG_INFO,"Shutting Down...\n");
     i2c_exit();
-    sem_destroy(&msgpending);
+    pthread_mutex_destroy(&msg_mutex);
+    pthread_cond_destroy(&msg_cond);
     closelog();
     exit(EXIT_SUCCESS);
 }

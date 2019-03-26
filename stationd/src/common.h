@@ -3,8 +3,8 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include <syslog.h>
-#include <semaphore.h>
 
 #ifndef DEFAULT_PORT
 #define DEFAULT_PORT "8080"
@@ -28,7 +28,8 @@
 #define MAXMSG 50
 #endif
 
-sem_t msgpending;
+pthread_mutex_t msg_mutex;
+pthread_cond_t msg_cond;
 char msg[MAXMSG];
 
 extern bool daemon_flag;
