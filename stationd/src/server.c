@@ -15,10 +15,21 @@
  * =====================================================================================
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <ctype.h>
+
+#include "common.h"
 #include "server.h"
 
-#define MAXBUF 2048
-#define PORT "8080"
 
 void *udp_serv(void *argp)
 {
@@ -26,54 +37,58 @@ void *udp_serv(void *argp)
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage remaddr;
     socklen_t addrlen;
-    char buf[MAXBUF];
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
 
-    if ((status = getaddrinfo(NULL, PORT, &hints, &servinfo))) {
-        fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
+    logmsg(LOG_INFO, "Starting UDP server on port %s...\n", (char *)argp);
+    if ((status = getaddrinfo(NULL, (char *)argp, &hints, &servinfo))) {
+        logmsg(LOG_ERR, "getaddrinfo error: %s\n", gai_strerror(status));
         exit(EXIT_FAILURE);
     }
     for (p = servinfo; p != NULL; p = p->ai_next)
     {
         if ((sd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
-            perror("Error: Cannot create socket\n");
+            logmsg(LOG_ERR, "Error: Cannot create socket: %s", strerror(errno));
             continue;
         }
         if (bind(sd, p->ai_addr, p->ai_addrlen) < 0) {
             close(sd);
-            perror("Error: Bind failed\n");
+            logmsg(LOG_ERR, "Error: Bind failed: %s", strerror(errno));
             continue;
         }
         break;
     }
     if (p == NULL) {
-        fprintf(stderr, "Error: Failed to bind socket\n");
+        logmsg(LOG_ERR, "Error: Failed to bind socket\n");
         exit(EXIT_FAILURE);
     }
     freeaddrinfo(servinfo);
-
     addrlen = sizeof(remaddr);
+    logmsg(LOG_DEBUG, "Started UDP server. Ready to receive messages\n");
+
+    //Start input handling UDP server
     while (1) {
-        printf("Waiting on port %s...\n", PORT);
-        if ((recvlen = recvfrom(sd, buf, MAXBUF - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
+        logmsg(LOG_DEBUG, "UDP Server awaiting message...\n");
+        if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
         {
-            perror("Error: Receive failure\n");
+            logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
             exit(EXIT_FAILURE);
         }
-        printf("Received %d bytes\n", recvlen);
         if (recvlen > 0) {
-            buf[recvlen] = '\0';
-            printf("Received message: \"%s\"\n", buf);
-            if (!strncmp("q", buf, MAXBUF)) {
-                break;
+            msg[recvlen] = '\0';
+            for (int c = 0; msg[c]; c++) {
+                msg[c] = toupper(msg[c]);
             }
+            logmsg(LOG_DEBUG, "Received %d byte message: \"%s\"\n", recvlen, msg);
         }
+        logmsg(LOG_DEBUG, "Signaling new message...\n");
+        pthread_cond_signal(&msg_cond);
     }
 
+    logmsg(LOG_INFO, "Shutting down UDP server...\n");
     close(sd);
     pthread_exit(NULL);
 }
