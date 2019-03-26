@@ -117,7 +117,9 @@ void *statemachine(void *argp){
     while(1){
         pthread_mutex_lock(&msg_mutex);
         pthread_cond_wait(&msg_cond, &msg_mutex);
+        logmsg(LOG_DEBUG, "Signal received. Mutex acquired. Parsing token %s\n", msg);
         state_config.token = parse_token(msg);
+        logmsg(LOG_DEBUG, "Token parsed to %s. Releasing mutex...\n", inputTokens[state_config.token]);
         pthread_mutex_unlock(&msg_mutex);
 
         if (state_config.token == MAX_TOKENS){
@@ -192,6 +194,7 @@ void handle_alarm_signal(int sig){
 
 //Handles proper exit after a crash or user EXIT token
 void i2c_exit(void){
+    logmsg(LOG_DEBUG, "Shutting down I2C.\n");
     MCP23017BitReset(i2c_fd);
 
     if (close(i2c_fd) < 0){

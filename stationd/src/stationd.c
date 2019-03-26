@@ -86,6 +86,7 @@ int main(int argc, char *argv[]){
 
     //Run as daemon if needed
     if (daemon_flag){
+        logmsg(LOG_DEBUG, "Starting as daemon...\n");
         //Fork
         if ((pid = fork()) < 0){
             logmsg(LOG_ERR, "Error: Failed to fork!\n");
@@ -130,12 +131,9 @@ int main(int argc, char *argv[]){
     pthread_join(servthread, NULL);
     pthread_join(statethread, NULL);
 
-    logmsg(LOG_INFO, "Shutting Down...\n");
-    i2c_exit();
-    pthread_mutex_destroy(&msg_mutex);
-    pthread_cond_destroy(&msg_cond);
-    closelog();
-    return EXIT_SUCCESS;
+    logmsg(LOG_DEBUG, "Threads terminated.\n");
+
+    sig_exit(SIGTERM);
 }
 
 void sig_exit(int sig){
