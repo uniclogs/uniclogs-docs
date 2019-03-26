@@ -35,6 +35,8 @@
 bool daemon_flag = false;
 bool verbose_flag = false;
 
+pthread_t statethread, servthread;
+
 void sig_exit(int sig);
 
 int main(int argc, char *argv[]){
@@ -43,7 +45,6 @@ int main(int argc, char *argv[]){
     char *pid_file = DEFAULT_PID_FILE;
     FILE *run_fp = NULL;
     pid_t pid = 0, sid = 0;
-    pthread_t statethread, servthread;
 
     //Register signal handlers
     signal(SIGINT, sig_exit);
@@ -139,6 +140,8 @@ int main(int argc, char *argv[]){
 void sig_exit(int sig){
     logmsg(LOG_INFO,"Shutting Down...\n");
     i2c_exit();
+    pthread_cancel(&servthread);
+    pthread_cancel(&statethread);
     pthread_mutex_destroy(&msg_mutex);
     pthread_cond_destroy(&msg_cond);
     closelog();
