@@ -72,7 +72,7 @@ void *udp_serv(void *argp)
     //Start input handling UDP server
     while (1) {
         pthread_mutex_lock(&msg_mutex);
-        logmsg(LOG_DEBUG, "UDP Server acquiried mutex. Waiting or message...\n");
+        logmsg(LOG_DEBUG, "UDP Server acquiried mutex. Waiting on message...\n");
         if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
         {
             logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
@@ -88,6 +88,7 @@ void *udp_serv(void *argp)
         logmsg(LOG_DEBUG, "UDP Server signalling releasing mutex...\n");
         pthread_cond_signal(&msg_cond);
         pthread_mutex_unlock(&msg_mutex);
+        sleep(1);
     }
 
     logmsg(LOG_INFO, "Shutting down UDP server...\n");
