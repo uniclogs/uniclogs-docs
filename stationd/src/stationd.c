@@ -140,8 +140,8 @@ int main(int argc, char *argv[]){
 void sig_exit(int sig){
     logmsg(LOG_INFO,"Shutting Down...\n");
     i2c_exit();
-    pthread_cancel(&servthread);
-    pthread_cancel(&statethread);
+    pthread_cancel(servthread);
+    pthread_cancel(statethread);
     pthread_mutex_destroy(&msg_mutex);
     pthread_cond_destroy(&msg_cond);
     closelog();
