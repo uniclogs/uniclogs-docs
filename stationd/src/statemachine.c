@@ -96,10 +96,6 @@ const char *secstates[] = {
     "MAX_SEC_STATES"
 };
 
-//I2C bus
-static char *i2c_dev = DEFAULT_I2C_DEV;
-static int i2c_fd;
-
 
 /*
    Overview

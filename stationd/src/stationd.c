@@ -28,7 +28,7 @@
 #include <pthread.h>
 
 #include "common.h"
-#include "statemachine.h" //stationd State machine
+/*#include "statemachine.h" //stationd State machine*/
 #include "server.h"       //stationd Token processing server
 
 
@@ -128,9 +128,9 @@ int main(int argc, char *argv[]){
     //Create threads
     logmsg(LOG_INFO, "Starting threads...\n");
     pthread_create(&servthread, NULL, udp_serv, port);
-    pthread_create(&statethread, NULL, statemachine, NULL);
+    /*pthread_create(&statethread, NULL, statemachine, NULL);*/
     pthread_join(servthread, NULL);
-    pthread_join(statethread, NULL);
+    /*pthread_join(statethread, NULL);*/
 
     logmsg(LOG_DEBUG, "Threads terminated\n");
 
@@ -141,7 +141,7 @@ void sig_exit(int sig){
     logmsg(LOG_INFO,"Shutting Down...\n");
     i2c_exit();
     pthread_cancel(servthread);
-    pthread_cancel(statethread);
+    /*pthread_cancel(statethread);*/
     pthread_mutex_destroy(&msg_mutex);
     pthread_cond_destroy(&msg_cond);
     closelog();

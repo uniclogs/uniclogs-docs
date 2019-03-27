@@ -22,6 +22,8 @@
 #include <errno.h>
 #include <string.h>
 #include <pthread.h>
+#include <signal.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -30,6 +32,11 @@
 
 #include "common.h"
 #include "server.h"
+#include "statemachine.h"
+
+// I2C device and file descriptor
+char *i2c_dev = DEFAULT_I2C_DEV;
+int i2c_fd;
 
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -55,6 +62,12 @@ void *udp_serv(void *argp)
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
+
+    // Initialize the I2C subsystem
+    logmsg (LOG_INFO,"Initializing State Machine...\n");
+    init_statemachine();
+    // Register alarm signal handler
+    signal(SIGALRM, handle_alarm_signal);
 
     // Start the UDP server
     logmsg(LOG_INFO, "Starting UDP server on port %s...\n", (char *)argp);
@@ -105,9 +118,29 @@ void *udp_serv(void *argp)
                 msg[c] = toupper(msg[c]);
             }
             logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", recvlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), msg);
+            state_config.token = parse_token(msg);
+            logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
+            if (state_config.token == MAX_TOKENS){
+                logmsg(LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
+                continue;
+            }
+
+            if (state_config.token == GETTEMP){
+                logmsg(LOG_NOTICE, "Temperature: %fC\n", MCP9808GetTemp(i2c_fd));
+                continue;
+            }
+
+            if(state_config.token == STATUS){
+                logmsg(LOG_NOTICE, "State: %d\n", state_config.state);
+                logmsg(LOG_NOTICE, "Secondary state: %d\n", state_config.sec_state);
+                logmsg(LOG_NOTICE, "Next State: %d\n", state_config.next_state);
+                logmsg(LOG_NOTICE, "Next Secondary state: %d\n", state_config.next_sec_state);
+                continue;
+            }
+
+            processToken();
+            changeState();
         }
-        logmsg(LOG_DEBUG, "Signaling new message...\n");
-        pthread_cond_signal(&msg_cond);
     }
 
     logmsg(LOG_INFO, "Shutting down UDP server...\n");

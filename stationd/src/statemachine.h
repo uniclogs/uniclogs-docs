@@ -42,6 +42,8 @@
 extern const char *inputTokens[];
 extern const char *states[];
 extern const char *secstates[];
+extern char *i2c_dev;
+extern int i2c_fd;
 
 typedef enum{
     V_TX,
