@@ -161,6 +161,8 @@ int init_statemachine(void){
 
 void handle_alarm_signal(int sig){
     if (state_config.state == SYS_PWR_ON){
+        state_config.next_state = STANDBY;
+        state_config.next_sec_state = NONE;
         state_config.state = STANDBY;
         state_config.sec_state = NONE;
     }

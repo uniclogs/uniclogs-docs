@@ -131,10 +131,10 @@ void *udp_serv(void *argp)
             }
 
             if(state_config.token == STATUS){
-                logmsg(LOG_NOTICE, "State: %d\n", state_config.state);
-                logmsg(LOG_NOTICE, "Secondary state: %d\n", state_config.sec_state);
-                logmsg(LOG_NOTICE, "Next State: %d\n", state_config.next_state);
-                logmsg(LOG_NOTICE, "Next Secondary state: %d\n", state_config.next_sec_state);
+                logmsg(LOG_NOTICE, "State: %s\n", states[state_config.state]);
+                logmsg(LOG_NOTICE, "Secondary state: %s\n", secstates[state_config.sec_state]);
+                logmsg(LOG_NOTICE, "Next State: %s\n", states[state_config.next_state]);
+                logmsg(LOG_NOTICE, "Next Secondary state: %s\n", secstates[state_config.next_sec_state]);
                 continue;
             }
 
