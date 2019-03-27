@@ -113,6 +113,8 @@ void *udp_serv(void *argp)
         if (recvlen > 0) {
             // NULL terminate the message to make it a valid C string
             msg[recvlen] = '\0';
+            // Strip any trailing newlines
+            msg[strcspn(msg, "\n")] = '\0';
             // Convert the string to upper case
             for (int c = 0; msg[c]; c++) {
                 msg[c] = toupper(msg[c]);
