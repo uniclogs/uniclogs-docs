@@ -46,6 +46,7 @@ int MCP23017BitClear(int i2c_fd, uint8_t bit);
 int MCP23017BitRead(int i2c_fd, uint8_t bit);
 int MCP23017BitSetMask(int i2c_fd, uint16_t mask);
 int MCP23017BitClearMask(int i2c_fd, uint16_t mask);
+uint16_t MCP23017GetState(int i2c_fd);
 
 void MCP23017BitReset(int i2c_fd);
 

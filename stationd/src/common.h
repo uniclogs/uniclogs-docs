@@ -25,12 +25,8 @@
 #define ADS1115_I2C_ADDR 0x48
 #endif
 #ifndef MAXMSG
-#define MAXMSG 50
+#define MAXMSG 100
 #endif
-
-pthread_mutex_t msg_mutex;
-pthread_cond_t msg_cond;
-char msg[MAXMSG];
 
 extern bool daemon_flag;
 extern bool verbose_flag;

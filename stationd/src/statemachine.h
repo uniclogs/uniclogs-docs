@@ -141,7 +141,6 @@ struct _state_config {
 } state_config;
 
 
-void *statemachine(void *argp);
 void handle_alarm_signal(int sig);
 int init_statemachine(void);
 void i2c_exit(void);

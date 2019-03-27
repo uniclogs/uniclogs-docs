@@ -87,7 +87,7 @@ int MCP23017BitClear(int i2c_fd, uint8_t bit){
 int MCP23017BitRead(int i2c_fd, uint8_t bit){
     uint16_t regval;
 
-    logmsg(LOG_DEBUG, "Reading bit %u on MCP23017...\n");
+    logmsg(LOG_DEBUG, "Reading bit %u on MCP23017...\n", bit);
     MCP23017SetSlave(i2c_fd);
 
     logmsg(LOG_DEBUG, "Reading register...\n");
@@ -124,6 +124,7 @@ int MCP23017BitSetMask(int i2c_fd, uint16_t mask){
     logmsg(LOG_DEBUG, "BitSetMask Done!\n");
     return regval;
 }
+
 int MCP23017BitClearMask(int i2c_fd, uint16_t mask){
     uint16_t regval;
 
@@ -146,6 +147,22 @@ int MCP23017BitClearMask(int i2c_fd, uint16_t mask){
     }
 
     logmsg(LOG_DEBUG, "BitClearMask Done!\n");
+    return regval;
+}
+
+uint16_t MCP23017GetState(int i2c_fd){
+    uint16_t regval;
+
+    logmsg(LOG_DEBUG, "Reading state of MCP23017...\n");
+    MCP23017SetSlave(i2c_fd);
+
+    logmsg(LOG_DEBUG, "Reading register...\n");
+    if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
+        logmsg(LOG_ERR, "Error: Failed to read state: %s\n", strerror(errno));
+        return regval;
+    }
+
+    logmsg(LOG_DEBUG, "Read 0x%X\n", regval);
     return regval;
 }
 

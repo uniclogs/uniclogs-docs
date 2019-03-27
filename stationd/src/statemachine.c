@@ -96,54 +96,6 @@ const char *secstates[] = {
     "MAX_SEC_STATES"
 };
 
-
-/*
-   Overview
-   ---------
-   The code is checks for input token in a loop using getInput().The token is validated in processToken().
-   If the token is good, approriate nextstate is stored in pwr_Config and changeState() is called.
-*/
-
-void *statemachine(void *argp){
-    logmsg (LOG_INFO,"Starting State Machine...\n");
-    init_statemachine();
-    //define signals that will be handled.
-    signal(SIGALRM, handle_alarm_signal);  //The 2 minute cooldown counter creates this signal.
-
-    while(1){
-        pthread_mutex_lock(&msg_mutex);
-        pthread_cond_wait(&msg_cond, &msg_mutex);
-        logmsg(LOG_DEBUG, "Signal received. Mutex acquired. Parsing token %s\n", msg);
-        state_config.token = parse_token(msg);
-        logmsg(LOG_DEBUG, "Token parsed to %s. Releasing mutex...\n", inputTokens[state_config.token]);
-        pthread_mutex_unlock(&msg_mutex);
-
-        if (state_config.token == MAX_TOKENS){
-            logmsg(LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
-            continue;
-        }
-
-        if (state_config.token == GETTEMP){
-            logmsg(LOG_NOTICE, "Temperature: %fC\n", MCP9808GetTemp(i2c_fd));
-            continue;
-        }
-
-        if(state_config.token == STATUS){
-            logmsg(LOG_NOTICE, "State: %d\n", state_config.state);
-            logmsg(LOG_NOTICE, "Secondary state: %d\n", state_config.sec_state);
-            logmsg(LOG_NOTICE, "Next State: %d\n", state_config.next_state);
-            logmsg(LOG_NOTICE, "Next Secondary state: %d\n", state_config.next_sec_state);
-            continue;
-        }
-
-        processToken();
-        changeState();
-    }
-
-    raise(SIGTERM);
-    return 0;
-}
-
 int init_statemachine(void){
     // Set initial state machine states
     state_config.state = INIT;

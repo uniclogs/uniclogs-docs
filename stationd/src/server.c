@@ -38,6 +38,10 @@
 char *i2c_dev = DEFAULT_I2C_DEV;
 int i2c_fd;
 
+// UDP messages buffers
+char recvstr[MAXMSG];
+char sendstr[MAXMSG];
+
 void *get_in_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
@@ -104,47 +108,51 @@ void *udp_serv(void *argp)
     while (1) {
         // Wait for a new message to be received
         logmsg(LOG_DEBUG, "UDP Server awaiting message...\n");
-        if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0){
+        if ((recvlen = recvfrom(sd, recvstr, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0){
             logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
             exit(EXIT_FAILURE);
         }
         // Verify an actual message was received, and if so process it
         if (recvlen > 0) {
+            // Properly format the incoming message
             // NULL terminate the message to make it a valid C string
-            msg[recvlen] = '\0';
+            recvstr[recvlen] = '\0';
             // Strip any trailing newlines
-            msg[strcspn(msg, "\n")] = '\0';
+            recvstr[strcspn(recvstr, "\n")] = '\0';
             // Convert the string to upper case
-            for (int c = 0; msg[c]; c++) {
-                msg[c] = toupper(msg[c]);
+            for (int c = 0; recvstr[c]; c++) {
+                recvstr[c] = toupper(recvstr[c]);
             }
-            logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", recvlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), msg);
-            state_config.token = parse_token(msg);
+            logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", recvlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), recvstr);
+
+            // Match to a token if possible
+            state_config.token = parse_token(recvstr);
             logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
 
             // Process special tokens
             // If it was an invalid token, the token value will be MAX_TOKENS
             if (state_config.token == MAX_TOKENS){
-                logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", msg);
+                logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", recvstr);
                 continue;
             }
 
             // Temperature requests
             if (state_config.token == GETTEMP){
-                if ((sendlen = sendto(sd, "test\n", strlen("test\n"), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
+                sprintf(sendstr, "TEMP: %fC\n", MCP9808GetTemp(i2c_fd));
+                if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
                     logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
-                    exit(EXIT_FAILURE);
                 }
-                logmsg(LOG_NOTICE, "Temperature: %fC\n", MCP9808GetTemp(i2c_fd));
+                logmsg(LOG_NOTICE, "%s", sendstr);
                 continue;
             }
 
             // Status requests
             if(state_config.token == STATUS){
-                logmsg(LOG_NOTICE, "State: %s\n", states[state_config.state]);
-                logmsg(LOG_NOTICE, "Secondary state: %s\n", secstates[state_config.sec_state]);
-                logmsg(LOG_NOTICE, "Next State: %s\n", states[state_config.next_state]);
-                logmsg(LOG_NOTICE, "Next Secondary state: %s\n", secstates[state_config.next_sec_state]);
+                sprintf(sendstr, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%X\n", states[state_config.state], secstates[state_config.sec_state], states[state_config.next_state], secstates[state_config.next_sec_state], MCP23017GetState(i2c_fd));
+                if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
+                    logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
+                }
+                logmsg(LOG_NOTICE, "%s", sendstr);
                 continue;
             }
 
