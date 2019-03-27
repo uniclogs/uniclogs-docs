@@ -148,7 +148,7 @@ void *udp_serv(void *argp)
 
             // Status requests
             if(state_config.token == STATUS){
-                sprintf(sendstr, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%X\n", states[state_config.state], secstates[state_config.sec_state], states[state_config.next_state], secstates[state_config.next_sec_state], MCP23017GetState(i2c_fd));
+                sprintf(sendstr, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%4X\n", states[state_config.state], secstates[state_config.sec_state], states[state_config.next_state], secstates[state_config.next_sec_state], MCP23017GetState(i2c_fd));
                 if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
                     logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
                 }

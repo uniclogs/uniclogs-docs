@@ -24,11 +24,11 @@ float MCP9808GetTemp(int i2c_fd){
 
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP9808_TEMP_REG)) < 0){
         logmsg(LOG_ERR, "Error: Failed reading current GPIO output state: %s\n", strerror(errno));
-        return (float)regval;
+        return NAN;
     }
 
     if (regval & TEMP_SIGN_MASK)
-        return (0x100 - (((regval & TEMP_UVAL_MASK) * pow(2, 4)) + (((regval & TEMP_LVAL_MASK) >> 8) * pow(2, -4))));
+        return (256 - (((regval & TEMP_UVAL_MASK) * 16.0) + (((regval & TEMP_LVAL_MASK) >> 8) / 16.0)));
     else
-        return (((regval & TEMP_UVAL_MASK) * pow(2, 4)) + (((regval & TEMP_LVAL_MASK) >> 8) * pow(2, -4)));
+        return (((regval & TEMP_UVAL_MASK) * 16.0) + (((regval & TEMP_LVAL_MASK) >> 8) / 16.0));
 }
