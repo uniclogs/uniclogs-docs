@@ -2,6 +2,9 @@
 #define _STATEMACHINE_H_
 
 #include <stdint.h>
+#include "mcp23017.h"
+#include "mcp9808.h"
+#include "ads1115.h"
 
 #define BIT_MASK(n)     (0x1 << n)
 

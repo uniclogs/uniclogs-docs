@@ -28,7 +28,7 @@
 #include <pthread.h>
 
 #include "common.h"
-/*#include "statemachine.h" //stationd State machine*/
+#include "statemachine.h" //stationd State machine
 #include "server.h"       //stationd Token processing server
 
 
