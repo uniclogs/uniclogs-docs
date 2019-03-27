@@ -50,7 +50,7 @@ void *get_in_addr(struct sockaddr *sa)
 // UDP Server Thread
 void *udp_serv(void *argp)
 {
-    int sd = -1, status, recvlen;
+    int sd = -1, status, recvlen, sendlen;
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage remaddr;
     socklen_t addrlen;
@@ -104,8 +104,7 @@ void *udp_serv(void *argp)
     while (1) {
         // Wait for a new message to be received
         logmsg(LOG_DEBUG, "UDP Server awaiting message...\n");
-        if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0)
-        {
+        if ((recvlen = recvfrom(sd, msg, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0){
             logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
             exit(EXIT_FAILURE);
         }
@@ -122,16 +121,25 @@ void *udp_serv(void *argp)
             logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", recvlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), msg);
             state_config.token = parse_token(msg);
             logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
+
+            // Process special tokens
+            // If it was an invalid token, the token value will be MAX_TOKENS
             if (state_config.token == MAX_TOKENS){
-                logmsg(LOG_WARNING,"Ignoring unknown token \"%s\"\n", msg);
+                logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", msg);
                 continue;
             }
 
+            // Temperature requests
             if (state_config.token == GETTEMP){
+                if ((sendlen = sendto(sd, "test\n", strlen("test\n"), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
+                    logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
+                    exit(EXIT_FAILURE);
+                }
                 logmsg(LOG_NOTICE, "Temperature: %fC\n", MCP9808GetTemp(i2c_fd));
                 continue;
             }
 
+            // Status requests
             if(state_config.token == STATUS){
                 logmsg(LOG_NOTICE, "State: %s\n", states[state_config.state]);
                 logmsg(LOG_NOTICE, "Secondary state: %s\n", secstates[state_config.sec_state]);
