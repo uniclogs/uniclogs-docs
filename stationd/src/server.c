@@ -132,6 +132,10 @@ void *udp_serv(void *argp)
             // Process special tokens
             // If it was an invalid token, the token value will be MAX_TOKENS
             if (state_config.token == MAX_TOKENS){
+                sprintf(sendstr, "INVALID\n");
+                if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
+                    logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
+                }
                 logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", recvstr);
                 continue;
             }
