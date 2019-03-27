@@ -47,7 +47,7 @@ void *udp_serv(void *argp)
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_storage remaddr;
     socklen_t addrlen;
-    char s[INET6_ADDRSTRLEN];
+    char srcaddrstr[INET6_ADDRSTRLEN];
 
     // Initialize hints addrinfo struct
     // This is an IPv4/IPv6 DGRAM (UDP) socket
@@ -104,7 +104,7 @@ void *udp_serv(void *argp)
             for (int c = 0; msg[c]; c++) {
                 msg[c] = toupper(msg[c]);
             }
-            logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", recvlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), s, sizeof(s)), msg);
+            logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", recvlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), msg);
         }
         logmsg(LOG_DEBUG, "Signaling new message...\n");
         pthread_cond_signal(&msg_cond);
