@@ -162,9 +162,7 @@ int init_statemachine(void){
 void handle_alarm_signal(int sig){
     if (state_config.state == SYS_PWR_ON){
         state_config.next_state = STANDBY;
-        state_config.next_sec_state = NONE;
-        state_config.state = STANDBY;
-        state_config.sec_state = NONE;
+        changeState();
     }
     else if (state_config.state == V_TRAN && state_config.sec_state == V_PA_COOL){
         state_config.sec_state = V_PA_DOWN;
@@ -450,6 +448,8 @@ int CoolDown_Wait(void){
 
 int changeState(void){
     uint8_t temporary;
+
+    logmsg(LOG_DEBUG, "Entering %s:%s State\n", states[state_config.next_state], secstates[state_config.next_sec_state]);
 
     switch(state_config.next_state){
         case INIT:
