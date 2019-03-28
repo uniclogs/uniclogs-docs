@@ -96,13 +96,13 @@ const char *secstates[] = {
     "MAX_SEC_STATES"
 };
 
-int init_statemachine(void){
+void init_statemachine(void) {
     // Set initial state machine states
     state_config.state = INIT;
     state_config.sec_state = NONE;
 
     // Open the I2C device for read/write
-    if ((i2c_fd = open(i2c_dev, O_RDWR)) < 0){
+    if ((i2c_fd = open(i2c_dev, O_RDWR)) < 0) {
         logmsg(LOG_ERR,"Error: Failed to open i2c device \'%s\': %s\n", i2c_dev, strerror(errno));
         exit(EXIT_FAILURE);
     }
@@ -111,50 +111,47 @@ int init_statemachine(void){
     MCP23017Init(i2c_fd);
 }
 
-void handle_alarm_signal(int sig){
-    if (state_config.state == SYS_PWR_ON){
+void handle_alarm_signal(int sig) {
+    if (state_config.state == SYS_PWR_ON) {
         state_config.next_state = STANDBY;
         changeState();
-    }
-    else if (state_config.state == V_TRAN && state_config.sec_state == V_PA_COOL){
+    } else if (state_config.state == V_TRAN && state_config.sec_state == V_PA_COOL) {
         state_config.sec_state = V_PA_DOWN;
         MCP23017BitClear(i2c_fd, V_PA_BIT);
         MCP23017BitClear(i2c_fd, V_KEY_BIT);
         state_config.state = STANDBY;
         state_config.sec_state = NONE;
-    }
-    else if (state_config.state == U_TRAN && state_config.sec_state == U_PA_COOL){
+    } else if (state_config.state == U_TRAN && state_config.sec_state == U_PA_COOL) {
         state_config.sec_state = U_PA_DOWN;
         MCP23017BitClear(i2c_fd, U_PA_BIT);
         MCP23017BitClear(i2c_fd, U_KEY_BIT);
         state_config.state = STANDBY;
         state_config.sec_state = NONE;
-    }
-    else if (state_config.state == L_TRAN && state_config.sec_state == L_PA_COOL){
+    } else if (state_config.state == L_TRAN && state_config.sec_state == L_PA_COOL) {
         state_config.sec_state = L_PA_DOWN;
         MCP23017BitClear(i2c_fd, L_PA_BIT);
         state_config.state = STANDBY;
         state_config.sec_state = NONE;
-    }
-    else
+    } else {
         stateWarning();
+    }
 }
 
-//Handles proper exit after a crash or user EXIT token
-void i2c_exit(void){
+//Handles proper exit after a crash
+void i2c_exit(void) {
     logmsg(LOG_NOTICE, "Shutting down I2C...\n");
     MCP23017BitReset(i2c_fd);
 
-    if (close(i2c_fd) < 0){
+    if (close(i2c_fd) < 0) {
         logmsg(LOG_ERR,"Error: Failed to close I2C device: %s\n", strerror(errno));
     }
     logmsg(LOG_DEBUG, "I2C shut down\n");
 }
 
-token_t parse_token(const char *token){
+token_t parse_token(const char *token) {
     token_t i;
-    for (i = 0; i < MAX_TOKENS; i++){
-        if (!strcmp(token, inputTokens[i])){
+    for (i = 0; i < MAX_TOKENS; i++) {
+        if (!strcmp(token, inputTokens[i])) {
             logmsg(LOG_DEBUG, "Token entered: %s\n", inputTokens[i]);
             break;
         }
@@ -162,76 +159,73 @@ token_t parse_token(const char *token){
     return i;
 }
 
-int processToken(void){
-
-    if(state_config.token == KILL){
+void processToken(void) {
+    if (state_config.token == KILL) {
         state_config.next_state = INIT;
         state_config.next_sec_state =  NONE;
-        return 0;
-    }
+    } else {
+        switch(state_config.state) {
+            case INIT:
+                if(state_config.token == PWR_ON)
+                    state_config.next_state = SYS_PWR_ON;
+                else
+                    tokenError();
+                break;
+            case SYS_PWR_ON:
+                if(state_config.token == OPERATE)
+                    state_config.next_state = STANDBY;
+                else
+                    tokenError();
+                break;
+            case STANDBY:
+                if(state_config.token == S_ON)
+                    state_config.next_state = S_SYS_ON;
+                else if(state_config.token == S_OFF)
+                    state_config.next_state = S_SYS_OFF;
+                else if(state_config.token == V_TX) {
+                    state_config.next_state = V_TRAN;
+                    state_config.next_sec_state = VHF_TRANSMIT;
+                }
+                else if(state_config.token == U_TX) {
+                    state_config.next_state = U_TRAN;
+                    state_config.next_sec_state = UHF_TRANSMIT;
+                }
+                else if(state_config.token == L_TX) {
+                    state_config.next_state = L_TRAN;
+                    state_config.next_sec_state = L_TRANSMIT;
+                }
+                else
+                    tokenError();
+                break;
+            case S_SYS_ON:
+                BandSwitchErrorRecovery();
+                break;
 
-    switch(state_config.state){
-        case INIT:
-            if(state_config.token == PWR_ON)
-                state_config.next_state = SYS_PWR_ON;
-            else
+            case S_SYS_OFF:
+                BandSwitchErrorRecovery();
+                break;
+
+            case V_TRAN:
+                processVHFTokens();
+                break;
+
+            case U_TRAN:
+                processUHFTokens();
+                break;
+
+            case L_TRAN:
+                processLBandTokens();
+                break;
+
+            default:
                 tokenError();
-            break;
-        case SYS_PWR_ON:
-            if(state_config.token == OPERATE)
-                state_config.next_state = STANDBY;
-            else
-                tokenError();
-            break;
-        case STANDBY:
-            if(state_config.token == S_ON)
-                state_config.next_state = S_SYS_ON;
-            else if(state_config.token == S_OFF)
-                state_config.next_state = S_SYS_OFF;
-            else if(state_config.token == V_TX){
-                state_config.next_state = V_TRAN;
-                state_config.next_sec_state = VHF_TRANSMIT;
-            }
-            else if(state_config.token == U_TX){
-                state_config.next_state = U_TRAN;
-                state_config.next_sec_state = UHF_TRANSMIT;
-            }
-            else if(state_config.token == L_TX){
-                state_config.next_state = L_TRAN;
-                state_config.next_sec_state = L_TRANSMIT;
-            }
-            else
-                tokenError();
-            break;
-        case S_SYS_ON:
-            BandSwitchErrorRecovery();
-            break;
-
-        case S_SYS_OFF:
-            BandSwitchErrorRecovery();
-            break;
-
-        case V_TRAN:
-            processVHFTokens();
-            break;
-
-        case U_TRAN:
-            processUHFTokens();
-            break;
-
-        case L_TRAN:
-            processLBandTokens();
-            break;
-
-        default:
-            tokenError();
-            break;
+                break;
+        }
     }
 }
 
-
-int processVHFTokens(void){
-    switch(state_config.sec_state){
+void processVHFTokens(void) {
+    switch(state_config.sec_state) {
         case VHF_TRANSMIT:
         case V_SWITCH:
             if(state_config.token == V_LEFT)
@@ -271,8 +265,8 @@ int processVHFTokens(void){
 }
 
 
-int processUHFTokens(void){
-    switch(state_config.sec_state){
+void processUHFTokens(void) {
+    switch(state_config.sec_state) {
         case UHF_TRANSMIT:
         case U_SWITCH:
             if(state_config.token == U_LEFT)
@@ -312,8 +306,8 @@ int processUHFTokens(void){
 }
 
 
-int processLBandTokens(void){
-    switch(state_config.sec_state){
+void processLBandTokens(void) {
+    switch(state_config.sec_state) {
         case L_TRANSMIT:
         case L_SWITCH:
             if(state_config.token == U_LEFT)
@@ -354,56 +348,55 @@ int processLBandTokens(void){
 
 
 
-int BandSwitchErrorRecovery(void){
-    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken.");
-    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action.");
+void BandSwitchErrorRecovery(void) {
+    logmsg(LOG_WARNING, "The system should not have been in this state. Corrective action taken.\n");
+    logmsg(LOG_WARNING, "Please reenter your token and manually validate the action.\n");
     state_config.next_state = STANDBY;
 }
 
 
-int tokenError(void){
-    logmsg (LOG_WARNING,"Token not valid for the state. Please refer to state diagram. No action taken.");
+void tokenError(void) {
+    logmsg (LOG_WARNING, "Token not valid for the state. Please refer to state diagram. No action taken.\n");
 }
 
-int VHFErrorRecovery(void){
-    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
-    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
+void VHFErrorRecovery(void) {
+    logmsg(LOG_WARNING, "The system should not have been in this state. Corrective action taken.\n");
+    logmsg(LOG_WARNING, "Please reenter your token and manually validate the action.\n");
     state_config.next_state = V_SWITCH;
 }
 
-int UHFErrorRecovery(void){
-    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
-    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
+void UHFErrorRecovery(void) {
+    logmsg(LOG_WARNING, "The system should not have been in this state. Corrective action taken.\n");
+    logmsg(LOG_WARNING, "Please reenter your token and manually validate the action.\n");
     state_config.next_state = U_SWITCH;
 }
 
-int LErrorRecovery(void){
-    logmsg(LOG_WARNING,"The system should not have been in this state. Corrective action taken \n");
-    logmsg(LOG_WARNING,"Please reenter your token and manually validate the action. \n");
+void LErrorRecovery(void) {
+    logmsg(LOG_WARNING, "The system should not have been in this state. Corrective action taken.\n");
+    logmsg(LOG_WARNING, "Please reenter your token and manually validate the action.\n");
     state_config.next_state = L_SWITCH;
 }
 
-void stateError(void){
-    logmsg(LOG_ERR,"ERROR: There is a program error. Contact coder. \n");
-    logmsg(LOG_ERR,"Results unpredictable. Please Kill and start over. \n");
+void stateError(void) {
+    logmsg(LOG_ERR, "ERROR: There is a program error. Contact coder.\n");
+    logmsg(LOG_ERR, "Results unpredictable. Please Kill and start over.\n");
 }
 
-void stateWarning(void){
-    logmsg(LOG_WARNING,"The system should not have been in this state. KILL token likely entered before.");
-}
-
-
-int CoolDown_Wait(void){
-    logmsg(LOG_WARNING,"Waiting for cooldown.No action taken.If required, force exit via KILL or EXIT tokens. \n");
+void stateWarning(void) {
+    logmsg(LOG_WARNING, "The system should not have been in this state. KILL token likely entered before.\n");
 }
 
 
-int changeState(void){
+void CoolDown_Wait(void) {
+    logmsg(LOG_WARNING, "Waiting for cooldown.No action taken.If required, force exit via KILL or EXIT tokens. \n");
+}
+
+
+void changeState(void) {
     uint8_t temporary;
 
     logmsg(LOG_DEBUG, "Entering %s:%s State\n", states[state_config.next_state], secstates[state_config.next_sec_state]);
-
-    switch(state_config.next_state){
+    switch(state_config.next_state) {
         case INIT:
             MCP23017BitReset(i2c_fd);
             state_config.state = INIT;
@@ -433,7 +426,7 @@ int changeState(void){
 
         case V_TRAN:
             state_config.state = V_TRAN;
-            switch(state_config.next_sec_state){
+            switch(state_config.next_sec_state) {
                 case VHF_TRANSMIT:
                     MCP23017BitSetMask(i2c_fd, U_LNA|V_PA|V_KEY);
                     /*MCP23017BitSet(i2c_fd, U_LNA_BIT);*/
@@ -510,7 +503,7 @@ int changeState(void){
 
         case U_TRAN:
             state_config.state = U_TRAN;
-            switch(state_config.next_sec_state){
+            switch(state_config.next_sec_state) {
                 case UHF_TRANSMIT:
                     MCP23017BitSetMask(i2c_fd, V_LNA|U_PA|U_KEY);
                     /*MCP23017BitSet(i2c_fd, V_LNA_BIT);*/
@@ -587,7 +580,7 @@ int changeState(void){
 
         case L_TRAN:
             state_config.state = L_TRAN;
-            switch(state_config.next_sec_state){
+            switch(state_config.next_sec_state) {
                 case L_TRANSMIT:
                     MCP23017BitSetMask(i2c_fd, U_LNA|V_LNA|L_PA);
                     /*MCP23017BitSet(i2c_fd, U_LNA_BIT);*/

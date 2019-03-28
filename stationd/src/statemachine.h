@@ -142,21 +142,21 @@ struct _state_config {
 
 
 void handle_alarm_signal(int sig);
-int init_statemachine(void);
+void init_statemachine(void);
 void i2c_exit(void);
 token_t parse_token(const char *token);
-int processToken(void);
-int processVHFTokens(void);
-int processUHFTokens(void);
-int processLBandTokens(void);
-int BandSwitchErrorRecovery(void);
-int VHFErrorRecovery(void);
-int UHFErrorRecovery(void);
-int LErrorRecovery(void);
-int CoolDown_Wait(void);
-int tokenError(void);
+void processToken(void);
+void processVHFTokens(void);
+void processUHFTokens(void);
+void processLBandTokens(void);
+void BandSwitchErrorRecovery(void);
+void VHFErrorRecovery(void);
+void UHFErrorRecovery(void);
+void LErrorRecovery(void);
+void CoolDown_Wait(void);
+void tokenError(void);
 void stateError(void);
 void stateWarning(void);
-int changeState(void);
+void changeState(void);
 
 #endif
