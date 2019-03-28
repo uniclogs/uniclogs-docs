@@ -146,7 +146,7 @@ void *udp_serv(void *argp)
                 if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
                     logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
                 }
-                logmsg(LOG_NOTICE, "%s", sendstr);
+                logmsg(LOG_INFO, "%s", sendstr);
                 continue;
             }
 
@@ -156,7 +156,7 @@ void *udp_serv(void *argp)
                 if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0){
                     logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
                 }
-                logmsg(LOG_NOTICE, "%s", sendstr);
+                logmsg(LOG_INFO, "%s", sendstr);
                 continue;
             }
 

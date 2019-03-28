@@ -142,7 +142,7 @@ void handle_alarm_signal(int sig){
 
 //Handles proper exit after a crash or user EXIT token
 void i2c_exit(void){
-    logmsg(LOG_DEBUG, "Shutting down I2C...\n");
+    logmsg(LOG_NOTICE, "Shutting down I2C...\n");
     MCP23017BitReset(i2c_fd);
 
     if (close(i2c_fd) < 0){
