@@ -65,7 +65,7 @@ void *udp_serv(void *argp) {
     sd = start_udp_serv((char *)argp);
     logmsg(LOG_DEBUG, "Started UDP server. Ready to receive messages\n");
 
-    //Start input handling UDP server
+    // Begin message processing loop
     while (1) {
         // Wait for a new message to be received
         logmsg(LOG_DEBUG, "UDP Server awaiting message...\n");
@@ -76,10 +76,10 @@ void *udp_serv(void *argp) {
 
         // Verify an actual message was received, and if so process it
         if (recvlen > 0) {
-            // Properly format the incoming message
-            // NULL terminate the message to make it a valid C string
+            // Format the received message
+            // First NULL terminate the message to make it a valid C string
             recvstr[recvlen] = '\0';
-            // Strip any trailing newlines
+            // Then strip any trailing newlines
             recvstr[strcspn(recvstr, "\n")] = '\0';
             // Convert the string to upper case
             for (int c = 0; recvstr[c]; c++) {
@@ -91,8 +91,8 @@ void *udp_serv(void *argp) {
             state_config.token = parse_token(recvstr);
             logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
 
-            // Process special tokens
             // If it was an invalid token, the token value will be MAX_TOKENS
+            // Disregard and wait for a new token
             if (state_config.token == MAX_TOKENS) {
                 sprintf(sendstr, "INVALID\n");
                 if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
