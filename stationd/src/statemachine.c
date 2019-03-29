@@ -15,20 +15,18 @@
 #include "ads1115.h"
 
 const char *inputTokens[] = {
+    "PWR_ON",
+    "OPERATE",
     "V_TX",
     "U_TX",
     "L_TX",
-    "PWR_ON",
-    "OPERATE",
     "S_ON",
     "S_OFF",
-    "KILL",
 
     "V_LEFT",
     "V_RIGHT",
     "V_TX_ON",
     "V_TX_OFF",
-    "SHUTDOWN",
 
     "U_LEFT",
     "U_RIGHT",
@@ -37,6 +35,9 @@ const char *inputTokens[] = {
 
     "L_TX_ON",
     "L_TX_OFF",
+
+    "SHUTDOWN",
+    "KILL",
 
     "STATUS",
     "GETTEMP",

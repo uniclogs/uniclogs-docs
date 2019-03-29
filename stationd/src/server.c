@@ -39,7 +39,7 @@ char *i2c_dev = DEFAULT_I2C_DEV;
 int i2c_fd;
 
 // UDP messages buffers
-char recvstr[MAXMSG];
+char cmd[MAXMSG];
 char sendstr[MAXMSG];
 
 // Support function prototypes
@@ -48,7 +48,7 @@ int start_udp_serv(const char *port);
 
 // UDP Server Thread
 void *udp_serv(void *argp) {
-    int sd, recvlen, sendlen;
+    int sd, cmdlen, sendlen;
     struct sockaddr_storage remaddr;
     socklen_t addrlen = sizeof(remaddr);
     char srcaddrstr[INET6_ADDRSTRLEN];
@@ -69,26 +69,26 @@ void *udp_serv(void *argp) {
     while (1) {
         // Wait for a new message to be received
         logmsg(LOG_DEBUG, "UDP Server awaiting message...\n");
-        if ((recvlen = recvfrom(sd, recvstr, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0) {
+        if ((cmdlen = recvfrom(sd, cmd, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0) {
             logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
             exit(EXIT_FAILURE);
         }
 
         // Verify an actual message was received, and if so process it
-        if (recvlen > 0) {
+        if (cmdlen > 0) {
             // Format the received message
             // First NULL terminate the message to make it a valid C string
-            recvstr[recvlen] = '\0';
+            cmd[cmdlen] = '\0';
             // Then strip any trailing newlines
-            recvstr[strcspn(recvstr, "\n")] = '\0';
+            cmd[strcspn(cmd, "\n")] = '\0';
             // Convert the string to upper case
-            for (int c = 0; recvstr[c]; c++) {
-                recvstr[c] = toupper(recvstr[c]);
+            for (int c = 0; cmd[c]; c++) {
+                cmd[c] = toupper(cmd[c]);
             }
-            logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", recvlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), recvstr);
+            logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", cmdlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), cmd);
 
             // Match to a token if possible
-            state_config.token = parse_token(recvstr);
+            state_config.token = parse_token(cmd);
             logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
 
             // If it was an invalid token, the token value will be MAX_TOKENS
@@ -98,7 +98,7 @@ void *udp_serv(void *argp) {
                 if ((sendlen = sendto(sd, sendstr, strlen(sendstr), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
                     logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
                 }
-                logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", recvstr);
+                logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", cmd);
                 continue;
             }
 
