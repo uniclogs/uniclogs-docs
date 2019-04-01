@@ -7,6 +7,8 @@
 #include "common.h"
 #include "mcp23017.h"
 
+static int retries;
+
 void MCP23017SetSlave(int i2c_fd){
     logmsg(LOG_DEBUG, "Setting MCP23017 as Slave...\n");
     // Set MCP23017 as slave device
@@ -48,7 +50,8 @@ int MCP23017BitSet(int i2c_fd, uint8_t bit){
     regval |= (0x1 << bit);
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0){
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
     }
@@ -74,7 +77,8 @@ int MCP23017BitClear(int i2c_fd, uint8_t bit){
     regval &= ~(0x1 << bit);
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0){
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
     }
@@ -103,7 +107,7 @@ int MCP23017BitRead(int i2c_fd, uint8_t bit){
 int MCP23017BitSetMask(int i2c_fd, uint16_t mask){
     uint16_t regval;
 
-    logmsg(LOG_DEBUG, "Setting bit mask %X on MCP23017...\n", mask);
+    logmsg(LOG_DEBUG, "Setting bit mask 0x%04X on MCP23017...\n", mask);
     MCP23017SetSlave(i2c_fd);
 
     logmsg(LOG_DEBUG, "Reading current value...\n");
@@ -116,7 +120,8 @@ int MCP23017BitSetMask(int i2c_fd, uint16_t mask){
     regval |= mask;
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0){
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
     }
@@ -128,7 +133,7 @@ int MCP23017BitSetMask(int i2c_fd, uint16_t mask){
 int MCP23017BitClearMask(int i2c_fd, uint16_t mask){
     uint16_t regval;
 
-    logmsg(LOG_DEBUG, "Clearing bit mask %X on MCP23017...\n", mask);
+    logmsg(LOG_DEBUG, "Clearing bit mask 0x%04X on MCP23017...\n", mask);
     MCP23017SetSlave(i2c_fd);
 
     logmsg(LOG_DEBUG, "Reading current value...\n");
@@ -141,7 +146,8 @@ int MCP23017BitClearMask(int i2c_fd, uint16_t mask){
     regval &= ~mask;
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0){
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
     }
@@ -156,7 +162,7 @@ uint16_t MCP23017GetState(int i2c_fd){
     logmsg(LOG_DEBUG, "Reading state of MCP23017...\n");
     MCP23017SetSlave(i2c_fd);
 
-    logmsg(LOG_DEBUG, "Reading register...\n");
+    logmsg(LOG_DEBUG, "Reading register state...\n");
     if ((regval = i2c_smbus_read_word_data(i2c_fd, MCP23017_GPIO_WORD_REG)) < 0){
         logmsg(LOG_ERR, "Error: Failed to read state: %s\n", strerror(errno));
         return regval;
@@ -172,7 +178,8 @@ void MCP23017BitReset(int i2c_fd){
 
     logmsg(LOG_DEBUG, "Writing 0x0000...\n");
     // Reset GPIOA/GPIOB outputs
-    if (i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, 0x0000) < 0){
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, 0x0000) < 0; retries--);
+    if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed resetting GPIO output: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }

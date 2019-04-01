@@ -49,20 +49,19 @@ extern char *i2c_dev;
 extern int i2c_fd;
 
 typedef enum{
+    PWR_ON,
+    OPERATE,
+    RX,
     V_TX,
     U_TX,
     L_TX,
-    PWR_ON,
-    OPERATE,
     S_ON,
     S_OFF,
-    KILL,
 
     V_LEFT,
     V_RIGHT,
     V_TX_ON,
     V_TX_OFF,
-    SHUTDOWN,
 
     U_LEFT,
     U_RIGHT,
@@ -71,6 +70,9 @@ typedef enum{
 
     L_TX_ON,
     L_TX_OFF,
+
+    SHUTDOWN,
+    KILL,
 
     STATUS,
     GETTEMP,
@@ -84,6 +86,7 @@ typedef enum{
     S_SYS_ON,
     S_SYS_OFF,
 
+    RX_ONLY,
     V_TRAN,
     U_TRAN,
     L_TRAN,
@@ -92,6 +95,15 @@ typedef enum{
 
 typedef enum{
     NONE,
+
+    RECEIVE,
+    RX_SWITCH,
+    RX_SHUTDOWN,
+    RX_VHF_LHCP,
+    RX_VHF_RHCP,
+    RX_UHF_LHCP,
+    RX_UHF_RHCP,
+
     VHF_TRANSMIT,
     V_SWITCH,
     V_SHUTDOWN,
@@ -146,13 +158,11 @@ void init_statemachine(void);
 void i2c_exit(void);
 token_t parse_token(const char *token);
 void processToken(void);
+void processRXTokens(void);
 void processVHFTokens(void);
 void processUHFTokens(void);
 void processLBandTokens(void);
-void BandSwitchErrorRecovery(void);
-void VHFErrorRecovery(void);
-void UHFErrorRecovery(void);
-void LErrorRecovery(void);
+void ErrorRecovery(state_t recovery_state);
 void CoolDown_Wait(void);
 void tokenError(void);
 void stateError(void);
