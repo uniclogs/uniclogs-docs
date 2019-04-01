@@ -17,6 +17,7 @@
 const char *inputTokens[] = {
     "PWR_ON",
     "OPERATE",
+    "RX",
     "V_TX",
     "U_TX",
     "L_TX",
@@ -51,6 +52,7 @@ const char *states[] = {
     "S_SYS_ON",
     "S_SYS_OFF",
 
+    "RX_ONLY",
     "V_TRAN",
     "U_TRAN",
     "L_TRAN",
@@ -59,6 +61,15 @@ const char *states[] = {
 
 const char *secstates[] = {
     "NONE",
+
+    "RECEIVE",
+    "RX_SWITCH",
+    "RX_SHUTDOWN",
+    "RX_VHF_LHCP",
+    "RX_VHF_RHCP",
+    "RX_UHF_LHCP",
+    "RX_UHF_RHCP",
+
     "VHF_TRANSMIT",
     "V_SWITCH",
     "V_SHUTDOWN",
@@ -138,7 +149,6 @@ void handle_alarm_signal(int sig) {
     }
 }
 
-//Handles proper exit after a crash
 void i2c_exit(void) {
     logmsg(LOG_NOTICE, "Shutting down I2C...\n");
     MCP23017BitReset(i2c_fd);
@@ -183,6 +193,10 @@ void processToken(void) {
                     state_config.next_state = S_SYS_ON;
                 else if(state_config.token == S_OFF)
                     state_config.next_state = S_SYS_OFF;
+                else if(state_config.token == RX) {
+                    state_config.next_state = RX_ONLY;
+                    state_config.next_sec_state = RECEIVE;
+                }
                 else if(state_config.token == V_TX) {
                     state_config.next_state = V_TRAN;
                     state_config.next_sec_state = VHF_TRANSMIT;
@@ -199,11 +213,15 @@ void processToken(void) {
                     tokenError();
                 break;
             case S_SYS_ON:
-                BandSwitchErrorRecovery();
+                ErrorRecovery(STANDBY);
                 break;
 
             case S_SYS_OFF:
-                BandSwitchErrorRecovery();
+                ErrorRecovery(STANDBY);
+                break;
+
+            case RX_ONLY:
+                processRXTokens();
                 break;
 
             case V_TRAN:
@@ -224,6 +242,39 @@ void processToken(void) {
         }
     }
 }
+
+
+void processRXTokens(void) {
+    switch(state_config.sec_state) {
+        case RECEIVE:
+        case RX_SWITCH:
+            if(state_config.token == V_LEFT)
+                state_config.next_sec_state =  RX_VHF_LHCP;
+            else if(state_config.token == V_RIGHT)
+                state_config.next_sec_state =  RX_VHF_RHCP;
+            else if(state_config.token == U_LEFT)
+                state_config.next_sec_state =  RX_UHF_LHCP;
+            else if(state_config.token == U_RIGHT)
+                state_config.next_sec_state =  RX_UHF_RHCP;
+            else if(state_config.token == SHUTDOWN)
+                state_config.next_sec_state =  RX_SHUTDOWN;
+            else
+                tokenError();
+            break;
+        case RX_VHF_LHCP:
+        case RX_VHF_RHCP:
+        case RX_UHF_LHCP:
+        case RX_UHF_RHCP:
+            ErrorRecovery(RX_SWITCH);
+            break;
+        case RX_SHUTDOWN:
+            break;
+        default:
+            tokenError();
+            break;
+    }
+}
+
 
 void processVHFTokens(void) {
     switch(state_config.sec_state) {
@@ -401,6 +452,42 @@ void changeState(void) {
             state_config.state = STANDBY;
             break;
 
+        case RX_ONLY:
+            state_config.state = RX_ONLY;
+            switch(state_config.next_sec_state) {
+                case RECEIVE:
+                    MCP23017BitSetMask(i2c_fd, U_LNA|V_LNA);
+                    state_config.sec_state = RX_SWITCH;
+                    break;
+                case RX_SWITCH:
+                    break;
+                case RX_SHUTDOWN:
+                    MCP23017BitClearMask(i2c_fd, U_POL|V_POL|V_LNA|U_LNA);
+                    state_config.state = STANDBY;
+                    state_config.sec_state = NONE;
+                    break;
+                case RX_VHF_LHCP:
+                    MCP23017BitSetMask(i2c_fd, V_POL);
+                    state_config.sec_state = RX_SWITCH;
+                    break;
+                case RX_VHF_RHCP:
+                    MCP23017BitClearMask(i2c_fd, V_POL);
+                    state_config.sec_state = RX_SWITCH;
+                    break;
+                case RX_UHF_LHCP:
+                    MCP23017BitSetMask(i2c_fd, U_POL);
+                    state_config.sec_state = RX_SWITCH;
+                    break;
+                case RX_UHF_RHCP:
+                    MCP23017BitClearMask(i2c_fd, U_POL);
+                    state_config.sec_state = RX_SWITCH;
+                    break;
+                default:
+                    stateError();
+                    break;
+            }
+            break;
+
         case V_TRAN:
             state_config.state = V_TRAN;
             switch(state_config.next_sec_state) {
@@ -412,8 +499,6 @@ void changeState(void) {
                     break;
                 case V_SHUTDOWN:
                     MCP23017BitClearMask(i2c_fd, U_LNA|U_POL|V_POL|V_PTT);
-                    state_config.sec_state = V_SHUTDOWN;
-
                     state_config.sec_state = V_PA_COOL;
                     alarm(120);
                     break;
@@ -478,8 +563,6 @@ void changeState(void) {
                     break;
                 case U_SHUTDOWN:
                     MCP23017BitClearMask(i2c_fd, V_LNA|V_POL|U_POL|U_PTT);
-                    state_config.sec_state = U_SHUTDOWN;
-
                     state_config.sec_state = U_PA_COOL;
                     alarm(120);
                     break;
@@ -544,8 +627,6 @@ void changeState(void) {
                     break;
                 case L_SHUTDOWN:
                     MCP23017BitClearMask(i2c_fd, L_PTT|U_POL|V_POL|V_LNA|U_LNA);
-                    state_config.sec_state = L_SHUTDOWN;
-
                     state_config.sec_state = L_PA_COOL;
                     alarm(120);
                     break;
