@@ -6,9 +6,9 @@
 #include "common.h"
 
 void logmsg(int priority, const char *fmt, ...){
-    va_list args;
-    va_start(args, fmt);
-    vsyslog(priority, fmt, args);
-    vfprintf((priority>4?stdout:stderr), fmt, args);
-    va_end(args);
+	va_list args;
+	va_start(args, fmt);
+	vsyslog(priority, fmt, args);
+	vfprintf((priority>4?stdout:stderr), fmt, args);
+	va_end(args);
 }
