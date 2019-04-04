@@ -50,7 +50,8 @@ int MCP23017BitSet(int i2c_fd, uint8_t bit){
     regval |= (0x1 << bit);
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--)
+        usleep(100);
     if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
@@ -77,7 +78,8 @@ int MCP23017BitClear(int i2c_fd, uint8_t bit){
     regval &= ~(0x1 << bit);
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--)
+        usleep(100);
     if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
@@ -120,7 +122,8 @@ int MCP23017BitSetMask(int i2c_fd, uint16_t mask){
     regval |= mask;
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--)
+        usleep(100);
     if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
@@ -146,7 +149,8 @@ int MCP23017BitClearMask(int i2c_fd, uint16_t mask){
     regval &= ~mask;
 
     logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
-    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--);
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, regval) < 0; retries--)
+        usleep(100);
     if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed setting GPIO output state: %s\n", strerror(errno));
         return -1;
@@ -178,7 +182,8 @@ void MCP23017BitReset(int i2c_fd){
 
     logmsg(LOG_DEBUG, "Writing 0x0000...\n");
     // Reset GPIOA/GPIOB outputs
-    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, 0x0000) < 0; retries--);
+    for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, MCP23017_GPIO_WORD_REG, 0x0000) < 0; retries--)
+        usleep(100);
     if (retries == 0){
         logmsg(LOG_ERR, "Error: Failed resetting GPIO output: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
