@@ -6,7 +6,6 @@
 
 /* Register values for ADS1115 (IOCON.BANK = 0) */
 
-
 void ADS1115SetSlave(int i2c_fd);
 
 #endif

@@ -48,7 +48,7 @@ extern const char *secstates[];
 extern char *i2c_dev;
 extern int i2c_fd;
 
-typedef enum{
+typedef enum {
 	PWR_ON,
 	OPERATE,
 	RX,
@@ -79,7 +79,7 @@ typedef enum{
 	MAX_TOKENS
 } token_t;
 
-typedef enum{
+typedef enum {
 	INIT,
 	SYS_PWR_ON,
 	STANDBY,
@@ -93,7 +93,7 @@ typedef enum{
 	MAX_STATES
 } state_t;
 
-typedef enum{
+typedef enum {
 	NONE,
 
 	RECEIVE,

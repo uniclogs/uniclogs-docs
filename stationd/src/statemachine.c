@@ -108,7 +108,8 @@ const char *secstates[] = {
 	"MAX_SEC_STATES"
 };
 
-void init_statemachine(void) {
+void init_statemachine(void)
+{
 	/* Set initial state machine states */
 	state_config.state = INIT;
 	state_config.sec_state = NONE;
@@ -123,7 +124,8 @@ void init_statemachine(void) {
 	MCP23017Init(i2c_fd);
 }
 
-void handle_alarm_signal(int sig) {
+void handle_alarm_signal(int sig)
+{
 	if (state_config.state == SYS_PWR_ON) {
 		state_config.next_state = STANDBY;
 		changeState();
@@ -149,7 +151,8 @@ void handle_alarm_signal(int sig) {
 	}
 }
 
-void i2c_exit(void) {
+void i2c_exit(void)
+{
 	logmsg(LOG_NOTICE, "Shutting down I2C...\n");
 	MCP23017BitReset(i2c_fd);
 
@@ -159,7 +162,8 @@ void i2c_exit(void) {
 	logmsg(LOG_DEBUG, "I2C shut down\n");
 }
 
-token_t parse_token(const char *token) {
+token_t parse_token(const char *token)
+{
 	token_t i;
 	for (i = 0; i < MAX_TOKENS; i++) {
 		if (!strcmp(token, inputTokens[i])) {
@@ -170,7 +174,8 @@ token_t parse_token(const char *token) {
 	return i;
 }
 
-void processToken(void) {
+void processToken(void)
+{
 	if (state_config.token == KILL) {
 		state_config.next_state = INIT;
 		state_config.next_sec_state =  NONE;
@@ -244,7 +249,8 @@ void processToken(void) {
 }
 
 
-void processRXTokens(void) {
+void processRXTokens(void)
+{
 	switch(state_config.sec_state) {
 	case RECEIVE:
 	case RX_SWITCH:
@@ -276,7 +282,8 @@ void processRXTokens(void) {
 }
 
 
-void processVHFTokens(void) {
+void processVHFTokens(void)
+{
 	switch(state_config.sec_state) {
 	case VHF_TRANSMIT:
 	case V_SWITCH:
@@ -317,7 +324,8 @@ void processVHFTokens(void) {
 }
 
 
-void processUHFTokens(void) {
+void processUHFTokens(void)
+{
 	switch(state_config.sec_state) {
 	case UHF_TRANSMIT:
 	case U_SWITCH:
@@ -358,7 +366,8 @@ void processUHFTokens(void) {
 }
 
 
-void processLBandTokens(void) {
+void processLBandTokens(void)
+{
 	switch(state_config.sec_state) {
 	case L_TRANSMIT:
 	case L_SWITCH:
@@ -400,32 +409,38 @@ void processLBandTokens(void) {
 
 
 
-void ErrorRecovery(state_t recovery_state) {
+void ErrorRecovery(state_t recovery_state)
+{
 	logmsg(LOG_WARNING, "The system should not have been in this state. Corrective action taken.\n");
 	logmsg(LOG_WARNING, "Please reenter your token and manually validate the action.\n");
 	state_config.next_state = recovery_state;
 }
 
-void tokenError(void) {
+void tokenError(void)
+{
 	logmsg (LOG_WARNING, "Token not valid for the state. Please refer to state diagram. No action taken.\n");
 }
 
-void stateError(void) {
+void stateError(void)
+{
 	logmsg(LOG_ERR, "ERROR: There is a program error. Contact coder.\n");
 	logmsg(LOG_ERR, "Results unpredictable. Please Kill and start over.\n");
 }
 
-void stateWarning(void) {
+void stateWarning(void)
+{
 	logmsg(LOG_WARNING, "The system should not have been in this state. KILL token likely entered before.\n");
 }
 
 
-void CoolDown_Wait(void) {
+void CoolDown_Wait(void)
+{
 	logmsg(LOG_WARNING, "Waiting for cooldown. No action taken. If required, force exit via KILL or EXIT tokens.\n");
 }
 
 
-void changeState(void) {
+void changeState(void)
+{
 	uint8_t ptt_state;
 
 	logmsg(LOG_DEBUG, "Entering %s:%s State\n", states[state_config.next_state], secstates[state_config.next_sec_state]);

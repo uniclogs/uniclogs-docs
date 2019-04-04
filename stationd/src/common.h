@@ -34,8 +34,8 @@ extern bool daemon_flag;
 extern bool verbose_flag;
 
 /* Prototypes for i2c functions in case system header files are lacking */
-extern __s32 i2c_smbus_read_word_data(int, __u8);
-extern __s32 i2c_smbus_write_word_data(int, __u8, __u16);
+__s32 i2c_smbus_read_word_data(int, __u8);
+__s32 i2c_smbus_write_word_data(int, __u8, __u16);
 
 /* Common support function prototypes */
 void logmsg(int priority, const char *fmt, ...);

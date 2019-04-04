@@ -47,7 +47,8 @@ void *get_in_addr(struct sockaddr *sa);
 int start_udp_serv(const char *port);
 
 /* UDP Server Thread */
-void *udp_serv(void *argp) {
+void *udp_serv(void *argp)
+{
 	int sd, cmdlen, sendlen;
 	struct sockaddr_storage remaddr;
 	socklen_t addrlen = sizeof(remaddr);
@@ -132,7 +133,8 @@ void *udp_serv(void *argp) {
 	pthread_exit(NULL);
 }
 
-void *get_in_addr(struct sockaddr *sa) {
+void *get_in_addr(struct sockaddr *sa)
+{
 	if (sa->sa_family == AF_INET) {
 		return &(((struct sockaddr_in*)sa)->sin_addr);
 	}
@@ -140,7 +142,8 @@ void *get_in_addr(struct sockaddr *sa) {
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int start_udp_serv(const char *port) {
+int start_udp_serv(const char *port)
+{
 	int sd = -1, ret;
 	struct addrinfo hints, *servinfo, *p;
 

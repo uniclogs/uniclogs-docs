@@ -5,7 +5,8 @@
 
 #include "common.h"
 
-void logmsg(int priority, const char *fmt, ...){
+void logmsg(int priority, const char *fmt, ...)
+{
 	va_list args;
 	va_start(args, fmt);
 	vsyslog(priority, fmt, args);
