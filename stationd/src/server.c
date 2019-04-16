@@ -39,21 +39,23 @@ char *i2c_dev = DEFAULT_I2C_DEV;
 int i2c_fd;
 
 /* UDP messages buffers */
-char cmd[MAXMSG];
-char sendbuf[MAXMSG];
+static char cmd[MAXMSG];
+static char sendbuf[MAXMSG];
+
+static int sd, cmdlen, sendlen;
+static struct sockaddr_storage remaddr;
+static socklen_t addrlen = sizeof(remaddr);
+static char srcaddrstr[INET6_ADDRSTRLEN];
 
 /* Support function prototypes */
 void *get_in_addr(struct sockaddr *sa);
 int start_udp_serv(const char *port);
 
+void process_ascii_cmd(void);
+
 /* UDP Server Thread */
 void *udp_serv(void *argp)
 {
-	int sd, cmdlen, sendlen;
-	struct sockaddr_storage remaddr;
-	socklen_t addrlen = sizeof(remaddr);
-	char srcaddrstr[INET6_ADDRSTRLEN];
-
 	/* Register alarm signal handler */
 	signal(SIGALRM, handle_alarm_signal);
 
@@ -73,59 +75,54 @@ void *udp_serv(void *argp)
 		if ((cmdlen = recvfrom(sd, cmd, MAXMSG - 1, 0, (struct sockaddr *)&remaddr, &addrlen)) < 0) {
 			logmsg(LOG_ERR, "Error: Receive failure: %s", strerror(errno));
 			exit(EXIT_FAILURE);
+		} else if (cmdlen == 0) {
+			continue;
 		}
 
-		/* Verify a message was received and process it */
-		if (cmdlen > 0) {
-			/* Format the received message */
-			/* First NULL terminate the message to make it a valid C string */
-			cmd[cmdlen] = '\0';
-			/* Then strip any trailing newlines */
-			cmd[strcspn(cmd, "\n")] = '\0';
-			/* Convert the string to upper case */
-			for (int c = 0; cmd[c]; c++) {
-				cmd[c] = toupper(cmd[c]);
-			}
-			logmsg(LOG_DEBUG, "Received %d byte message from %s: \"%s\"\n", cmdlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), cmd);
-
-			/* Match to a token if possible */
-			state_config.token = parse_token(cmd);
-			logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
-
-			/* If it was an invalid token, the token value will be MAX_TOKENS */
-			/* Disregard and wait for a new token */
-			if (state_config.token == MAX_TOKENS) {
-				sprintf(sendbuf, "INVALID\n");
-				if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
-					logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
-				}
-				logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", cmd);
-				continue;
-			}
-
-			/* Temperature requests */
-			if (state_config.token == GETTEMP) {
-				sprintf(sendbuf, "TEMP: %fC\n", MCP9808GetTemp(i2c_fd));
-				if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
-					logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
-				}
-				logmsg(LOG_INFO, "%s", sendbuf);
-				continue;
-			}
-
-			/* Status requests */
-			if(state_config.token == STATUS) {
-				sprintf(sendbuf, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%04X\n", states[state_config.state], secstates[state_config.sec_state], states[state_config.next_state], secstates[state_config.next_sec_state], MCP23017GetState(i2c_fd));
-				if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
-					logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
-				}
-				logmsg(LOG_INFO, "%s", sendbuf);
-				continue;
-			}
-
-			processToken();
-			changeState();
+		switch (cmd[0]) {
+		case 1 ... MAX_TOKENS:
+			state_config.token = cmd[0] - 1;
+			break;
+		case '!':
+			process_ascii_cmd();
+			break;
+		default:
+			state_config.token = MAX_TOKENS;
+			break;
 		}
+		/* If it was an invalid token, the token value will be MAX_TOKENS */
+		/* Disregard and wait for a new token */
+		if (state_config.token == MAX_TOKENS) {
+			sprintf(sendbuf, "INVALID\n");
+			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
+				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
+			}
+			logmsg(LOG_WARNING, "Ignoring unknown token \"%s\"\n", cmd);
+			continue;
+		}
+
+		/* Temperature requests */
+		if (state_config.token == GETTEMP) {
+			sprintf(sendbuf, "TEMP: %fC\n", MCP9808GetTemp(i2c_fd));
+			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
+				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
+			}
+			logmsg(LOG_INFO, "%s", sendbuf);
+			continue;
+		}
+
+		/* Status requests */
+		if(state_config.token == STATUS) {
+			sprintf(sendbuf, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%04X\n", states[state_config.state], secstates[state_config.sec_state], states[state_config.next_state], secstates[state_config.next_sec_state], MCP23017GetState(i2c_fd));
+			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
+				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
+			}
+			logmsg(LOG_INFO, "%s", sendbuf);
+			continue;
+		}
+
+		processToken();
+		changeState();
 	}
 
 	logmsg(LOG_INFO, "Shutting down UDP server...\n");
@@ -182,4 +179,24 @@ int start_udp_serv(const char *port)
 	/* Release memory used for binding */
 	freeaddrinfo(servinfo);
 	return sd;
+}
+
+void process_ascii_cmd(void)
+{
+	/* Format the received message */
+	/* First NULL terminate the message to make it a valid C string */
+	cmd[cmdlen] = '\0';
+	/* Then strip any trailing newlines */
+	cmd[strcspn(cmd, "\n")] = '\0';
+	/* Convert the string to upper case */
+	for (int c = 0; cmd[c]; c++) {
+		cmd[c] = toupper(cmd[c]);
+	}
+	logmsg(LOG_DEBUG, "Received %d byte ASCII message from %s: \"%s\"\n", cmdlen, inet_ntop(remaddr.ss_family, get_in_addr((struct sockaddr *)&remaddr), srcaddrstr, sizeof(srcaddrstr)), cmd);
+
+	/* Match to a token if possible */
+	state_config.token = parse_token(&cmd[1]);
+	logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
+
+	return;
 }
