@@ -1,16 +1,13 @@
-title: The UNICLOGS OOT Module
-brief: Short description of gr-uniclogs
+title: UniClOGS OOT Module
+brief: This module contains various gnuradio blocks used by the University Class Open Ground Station project.
 tags: # Tags are arbitrary, but look at CGRAN what other authors are using
   - sdr
 author:
-  - Author Name <authors@email.address>
+  - Miles Simpson <miles.a.simpson@gmail.com>
 copyright_owner:
-  - Copyright Owner 1
-license:
-#repo: # Put the URL of the repository here, or leave blank for default
-#website: <module_website> # If you have a separate project website, put it here
+  - Portland State Aerospace Society
+license: GPL
+repo: https://github.com/oresat/uniclogs-software
+#website: # Project Website
 #icon: <icon_url> # Put a URL to a square image here that will be used as an icon on CGRAN
 ---
-A longer, multi-line description of gr-uniclogs.
-You may use some *basic* Markdown here.
-If left empty, it will try to find a README file instead.
