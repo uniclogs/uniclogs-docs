@@ -32,8 +32,10 @@
 #include "server.h"       //stationd Token processing server
 
 
-static bool daemon_flag = false;
-static int verbose_flag = false;
+bool daemon_flag = false;
+bool verbose_flag = false;
+
+pthread_t statethread, servthread;
 
 void sig_exit(int sig);
 
@@ -43,14 +45,10 @@ int main(int argc, char *argv[]){
     char *pid_file = DEFAULT_PID_FILE;
     FILE *run_fp = NULL;
     pid_t pid = 0, sid = 0;
-    pthread_t statethread, servthread;
 
     //Register signal handlers
     signal(SIGINT, sig_exit);
     signal(SIGTERM, sig_exit);
-
-    //Initialize message pending semaphore
-    sem_init(&msgpending, 0, 1);
 
     //Command line argument processing
     while ((c = getopt(argc, argv, "dp:r:v")) != -1){
@@ -75,11 +73,20 @@ int main(int argc, char *argv[]){
         }
     }
 
+    //Open syslog for all logging purposes
+    if (verbose_flag){
+        setlogmask(LOG_UPTO(LOG_DEBUG));
+    } else {
+        setlogmask(LOG_UPTO(LOG_NOTICE));
+    }
+    openlog(argv[0], LOG_PID|LOG_CONS, LOG_DAEMON);
+
     //Run as daemon if needed
     if (daemon_flag){
+        logmsg(LOG_DEBUG, "Starting as daemon...\n");
         //Fork
         if ((pid = fork()) < 0){
-            fprintf(stderr, "Error: Failed to fork! Terminating...\n");
+            logmsg(LOG_ERR, "Error: Failed to fork!\n");
             exit(EXIT_FAILURE);
         }
 
@@ -91,7 +98,7 @@ int main(int argc, char *argv[]){
         //Child process continues on
         //Log PID
         if ((run_fp = fopen(pid_file, "w+")) == NULL){
-            fprintf(stderr, "Error: Unable to open file %s\nTerminating...\n", pid_file);
+            logmsg(LOG_ERR, "Error: Unable to open file %s\n", pid_file);
             exit(EXIT_FAILURE);
         }
         fprintf(run_fp, "%d\n", getpid());
@@ -100,7 +107,7 @@ int main(int argc, char *argv[]){
 
         //Create new session for process group leader
         if ((sid = setsid()) < 0){
-            fprintf(stderr, "Error: Failed to create new session! Terminating...\n");
+            logmsg(LOG_ERR, "Error: Failed to create new session!\n");
             exit(EXIT_FAILURE);
         }
 
@@ -114,31 +121,23 @@ int main(int argc, char *argv[]){
         freopen("/dev/null", "w+", stderr);
     }
 
-    //Open syslog for all logging purposes
-    if (verbose_flag){
-        setlogmask(LOG_UPTO(LOG_DEBUG));
-    } else {
-        setlogmask(LOG_UPTO(LOG_NOTICE));
-    }
-    openlog(argv[0], LOG_PID|LOG_CONS, LOG_DAEMON);
-
-    //Register signal handlers
-
     //Create threads
+    logmsg(LOG_INFO, "Starting threads...\n");
     pthread_create(&servthread, NULL, udp_serv, port);
-    pthread_create(&statethread, NULL, statemachine, NULL);
+    /*pthread_create(&statethread, NULL, statemachine, NULL);*/
     pthread_join(servthread, NULL);
-    pthread_join(statethread, NULL);
+    /*pthread_join(statethread, NULL);*/
 
-    sem_destroy(&msgpending);
-    closelog();
-    return EXIT_SUCCESS;
+    logmsg(LOG_DEBUG, "Threads terminated\n");
+
+    sig_exit(SIGTERM);
 }
 
 void sig_exit(int sig){
+    logmsg(LOG_INFO,"Shutting Down...\n");
     i2c_exit();
-    syslog (LOG_INFO,"Shutting Down...");
-    sem_destroy(&msgpending);
+    pthread_cancel(servthread);
+    /*pthread_cancel(statethread);*/
     closelog();
     exit(EXIT_SUCCESS);
 }

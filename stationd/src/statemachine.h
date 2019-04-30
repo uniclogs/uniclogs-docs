@@ -2,44 +2,66 @@
 #define _STATEMACHINE_H_
 
 #include <stdint.h>
+#include "mcp23017.h"
+#include "mcp9808.h"
+#include "ads1115.h"
 
-#define ROT_PWR  0
-#define SDR_ROCK 1
-#define V_PA     2
-#define SDR_LIME 3
-#define L_PA     4
-#define U_PA     5
-#define U_PTT    6
-#define S_PWR    7
-#define L_PTT    8
-#define V_PTT    9
-#define V_POL    10
-#define U_POL    11
-#define U_KEY    12
-#define V_KEY    13
-#define V_LNA    14
-#define U_LNA    15
+#define BIT_MASK(n)     (0x1 << n)
 
+#define ROT_PWR_BIT     0
+#define SDR_ROCK_BIT    1
+#define V_PA_BIT        2
+#define SDR_LIME_BIT    3
+#define L_PA_BIT        4
+#define U_PA_BIT        5
+#define U_PTT_BIT       6
+#define S_PWR_BIT       7
+#define L_PTT_BIT       8
+#define V_PTT_BIT       9
+#define V_POL_BIT       10
+#define U_POL_BIT       11
+#define U_KEY_BIT       12
+#define V_KEY_BIT       13
+#define V_LNA_BIT       14
+#define U_LNA_BIT       15
+
+#define ROT_PWR         BIT_MASK(ROT_PWR_BIT)
+#define SDR_ROCK        BIT_MASK(SDR_ROCK_BIT)
+#define V_PA            BIT_MASK(V_PA_BIT)
+#define SDR_LIME        BIT_MASK(SDR_LIME_BIT)
+#define L_PA            BIT_MASK(L_PA_BIT)
+#define U_PA            BIT_MASK(U_PA_BIT)
+#define U_PTT           BIT_MASK(U_PTT_BIT)
+#define S_PWR           BIT_MASK(S_PWR_BIT)
+#define L_PTT           BIT_MASK(L_PTT_BIT)
+#define V_PTT           BIT_MASK(V_PTT_BIT)
+#define V_POL           BIT_MASK(V_POL_BIT)
+#define U_POL           BIT_MASK(U_POL_BIT)
+#define U_KEY           BIT_MASK(U_KEY_BIT)
+#define V_KEY           BIT_MASK(V_KEY_BIT)
+#define V_LNA           BIT_MASK(V_LNA_BIT)
+#define U_LNA           BIT_MASK(U_LNA_BIT)
 
 extern const char *inputTokens[];
+extern const char *states[];
+extern const char *secstates[];
+extern char *i2c_dev;
+extern int i2c_fd;
 
 typedef enum{
-    NO_ACTION,
-
+    PWR_ON,
+    OPERATE,
+    RX,
     V_TX,
     U_TX,
     L_TX,
-    PWR_ON,
-    OPERATE,
     S_ON,
     S_OFF,
-    KILL,
 
     V_LEFT,
     V_RIGHT,
     V_TX_ON,
     V_TX_OFF,
-    SHUTDOWN,
 
     U_LEFT,
     U_RIGHT,
@@ -49,27 +71,39 @@ typedef enum{
     L_TX_ON,
     L_TX_OFF,
 
-    EXIT,
+    SHUTDOWN,
+    KILL,
+
     STATUS,
+    GETTEMP,
     MAX_TOKENS
-} input_tokens;
+} token_t;
 
 typedef enum{
-    PWR_UP,     // low power
+    INIT,
     SYS_PWR_ON,
-    BAND_SWITCH,
+    STANDBY,
     S_SYS_ON,
     S_SYS_OFF,
 
+    RX_ONLY,
     V_TRAN,
     U_TRAN,
     L_TRAN,
-
-    SYS_KILL
-} pwr_state;
+    MAX_STATES
+} state_t;
 
 typedef enum{
     NONE,
+
+    RECEIVE,
+    RX_SWITCH,
+    RX_SHUTDOWN,
+    RX_VHF_LHCP,
+    RX_VHF_RHCP,
+    RX_UHF_LHCP,
+    RX_UHF_RHCP,
+
     VHF_TRANSMIT,
     V_SWITCH,
     V_SHUTDOWN,
@@ -105,42 +139,34 @@ typedef enum{
     L_TRANS_OFF,
     L_UHF_LHCP,
     L_UHF_RHCP,
-} secondary_states;
+    MAX_SEC_STATES
+} sec_state_t;
 
 
-struct pwr_Config {
-    pwr_state state;
-    secondary_states sec_state;
-    pwr_state next_state;
-    secondary_states next_sec_state;
-    input_tokens token;
+struct _state_config {
+    state_t state;
+    state_t next_state;
+    sec_state_t sec_state;
+    sec_state_t next_sec_state;
+    token_t token;
     int errorCode;
-} pwrConfig;
+} state_config;
 
 
-void *statemachine(void *argp);
-void handle_kill_signal(int sig);
-void handle_token_signal(int sig);
 void handle_alarm_signal(int sig);
-int initialize(void);
-int i2c_exit(void);
-int getInput(void);
-int processToken(void);
-int processVHFTokens(void);
-int processUHFTokens(void);
-int processLBandTokens(void);
-int BandSwitchErrorRecovery(void);
-int VHFErrorRecovery(void);
-int UHFErrorRecovery(void);
-int LErrorRecovery(void);
-int CoolDown_Wait(void);
-int tokenError(void);
+void init_statemachine(void);
+void i2c_exit(void);
+token_t parse_token(const char *token);
+void processToken(void);
+void processRXTokens(void);
+void processVHFTokens(void);
+void processUHFTokens(void);
+void processLBandTokens(void);
+void ErrorRecovery(state_t recovery_state);
+void CoolDown_Wait(void);
+void tokenError(void);
 void stateError(void);
 void stateWarning(void);
-int changeState(void);
-int MPC23017BitSet(int bit);
-int MPC23017BitClear(int bit);
-int MPC23017BitReset(void);
-int MPC23017BitRead(int bit);
+void changeState(void);
 
 #endif
