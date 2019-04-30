@@ -14,7 +14,7 @@
 #include "mcp9808.h"
 #include "ads1115.h"
 
-const char *inputTokens[] = {
+const char *token_str[] = {
 	"PWR_ON",
 	"OPERATE",
 	"RX",
@@ -45,7 +45,7 @@ const char *inputTokens[] = {
 	"MAX_TOKENS"
 };
 
-const char *states[] = {
+const char *state_str[] = {
 	"INIT",
 	"SYS_PWR_ON",
 	"STANDBY",
@@ -59,7 +59,7 @@ const char *states[] = {
 	"MAX_STATES"
 };
 
-const char *secstates[] = {
+const char *secstate_str[] = {
 	"NONE",
 
 	"RECEIVE",
@@ -166,8 +166,8 @@ token_t parse_token(const char *token)
 {
 	token_t i;
 	for (i = 0; i < MAX_TOKENS; i++) {
-		if (!strcmp(token, inputTokens[i])) {
-			logmsg(LOG_DEBUG, "Token entered: %s\n", inputTokens[i]);
+		if (!strcmp(token, token_str[i])) {
+			logmsg(LOG_DEBUG, "Token entered: %s\n", token_str[i]);
 			break;
 		}
 	}
@@ -443,7 +443,7 @@ void changeState(void)
 {
 	uint8_t ptt_state;
 
-	logmsg(LOG_DEBUG, "Entering %s:%s State\n", states[state_config.next_state], secstates[state_config.next_sec_state]);
+	logmsg(LOG_DEBUG, "Entering %s:%s State\n", state_str[state_config.next_state], secstate_str[state_config.next_sec_state]);
 	switch(state_config.next_state) {
 	case INIT:
 		MCP23017BitReset(i2c_fd);

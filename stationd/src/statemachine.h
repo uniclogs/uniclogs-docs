@@ -42,9 +42,9 @@
 #define V_LNA           BIT_MASK(V_LNA_BIT)
 #define U_LNA           BIT_MASK(U_LNA_BIT)
 
-extern const char *inputTokens[];
-extern const char *states[];
-extern const char *secstates[];
+extern const char *token_str[];
+extern const char *state_str[];
+extern const char *secstate_str[];
 extern char *i2c_dev;
 extern int i2c_fd;
 

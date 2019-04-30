@@ -113,7 +113,7 @@ void *udp_serv(void *argp)
 
 		/* Status requests */
 		if(state_config.token == STATUS) {
-			sprintf(sendbuf, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%04X\n", states[state_config.state], secstates[state_config.sec_state], states[state_config.next_state], secstates[state_config.next_sec_state], MCP23017GetState(i2c_fd));
+			sprintf(sendbuf, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%04X\n", state_str[state_config.state], secstate_str[state_config.sec_state], state_str[state_config.next_state], secstate_str[state_config.next_sec_state], MCP23017GetState(i2c_fd));
 			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
 				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
 			}
@@ -196,7 +196,7 @@ void process_ascii_cmd(void)
 
 	/* Match to a token if possible */
 	state_config.token = parse_token(&cmd[1]);
-	logmsg(LOG_DEBUG, "Token parsed to %s\n", inputTokens[state_config.token]);
+	logmsg(LOG_DEBUG, "Token parsed to %s\n", token_str[state_config.token]);
 
 	return;
 }
