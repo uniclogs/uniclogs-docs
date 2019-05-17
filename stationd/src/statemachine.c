@@ -64,7 +64,8 @@ const char *secstate_str[] = {
 	"RECEIVE",
 	"RX_SWITCH",
 	"RX_SHUTDOWN",
-	"RX_SWAP",
+	"RX_RX_SWAP_ON",
+	"RX_RX_SWAP_OFF",
 	"RX_VHF_LHCP",
 	"RX_VHF_RHCP",
 	"RX_UHF_LHCP",
@@ -75,7 +76,8 @@ const char *secstate_str[] = {
 	"V_SHUTDOWN",
 	"V_PA_COOL",
 	"V_PA_DOWN",
-	"V_RX_SWAP",
+	"V_RX_SWAP_ON",
+	"V_RX_SWAP_OFF",
 	"V_UHF_LHCP",
 	"V_UHF_RHCP",
 	"V_TRANS_ON",
@@ -88,7 +90,8 @@ const char *secstate_str[] = {
 	"U_SHUTDOWN",
 	"U_PA_COOL",
 	"U_PA_DOWN",
-	"U_RX_SWAP"
+	"U_RX_SWAP_ON",
+	"U_RX_SWAP_OFF",
 	"U_VHF_LHCP",
 	"U_VHF_RHCP",
 	"U_TRANS_ON",
@@ -101,7 +104,8 @@ const char *secstate_str[] = {
 	"L_SHUTDOWN",
 	"L_PA_COOL",
 	"L_PA_DOWN",
-	"L_RX_SWAP"
+	"L_RX_SWAP_ON",
+	"L_RX_SWAP_OFF",
 	"L_VHF_LHCP",
 	"L_VHF_RHCP",
 	"L_TRANS_ON",
@@ -247,7 +251,9 @@ void processRXTokens(void)
 	case RECEIVE:
 	case RX_SWITCH:
 		if (state_config.token == RX_SWAP_ON)
-			state_config.next_sec_state =  RX_SWAP;
+			state_config.next_sec_state =  RX_RX_SWAP_ON;
+		else if (state_config.token == RX_SWAP_OFF)
+			state_config.next_sec_state =  RX_RX_SWAP_OFF;
 		else if(state_config.token == V_LEFT)
 			state_config.next_sec_state =  RX_VHF_LHCP;
 		else if(state_config.token == V_RIGHT)
@@ -261,7 +267,8 @@ void processRXTokens(void)
 		else
 			tokenError();
 		break;
-	case RX_SWAP:
+	case RX_RX_SWAP_ON:
+	case RX_RX_SWAP_OFF:
 	case RX_VHF_LHCP:
 	case RX_VHF_RHCP:
 	case RX_UHF_LHCP:
@@ -283,7 +290,9 @@ void processVHFTokens(void)
 	case VHF_TRANSMIT:
 	case V_SWITCH:
 		if (state_config.token == RX_SWAP_ON)
-			state_config.next_sec_state =  V_RX_SWAP;
+			state_config.next_sec_state =  V_RX_SWAP_ON;
+		else if (state_config.token == RX_SWAP_OFF)
+			state_config.next_sec_state =  V_RX_SWAP_OFF;
 		else if(state_config.token == V_LEFT)
 			state_config.next_sec_state =  V_LHCP;
 		else if(state_config.token == V_RIGHT)
@@ -301,7 +310,8 @@ void processVHFTokens(void)
 		else
 			tokenError();
 		break;
-	case V_RX_SWAP:
+	case V_RX_SWAP_ON:
+	case V_RX_SWAP_OFF:
 	case V_LHCP:
 	case V_RHCP:
 	case V_UHF_RHCP:
@@ -328,7 +338,9 @@ void processUHFTokens(void)
 	case UHF_TRANSMIT:
 	case U_SWITCH:
 		if (state_config.token == RX_SWAP_ON)
-			state_config.next_sec_state =  U_RX_SWAP;
+			state_config.next_sec_state =  U_RX_SWAP_ON;
+		if (state_config.token == RX_SWAP_OFF)
+			state_config.next_sec_state =  U_RX_SWAP_OFF;
 		else if(state_config.token == U_LEFT)
 			state_config.next_sec_state =  U_LHCP;
 		else if(state_config.token == U_RIGHT)
@@ -346,7 +358,8 @@ void processUHFTokens(void)
 		else
 			tokenError();
 		break;
-	case U_RX_SWAP:
+	case U_RX_SWAP_ON:
+	case U_RX_SWAP_OFF:
 	case U_LHCP:
 	case U_RHCP:
 	case U_VHF_RHCP:
@@ -373,7 +386,9 @@ void processLBandTokens(void)
 	case L_TRANSMIT:
 	case L_SWITCH:
 		if (state_config.token == RX_SWAP_ON)
-			state_config.next_sec_state =  L_RX_SWAP;
+			state_config.next_sec_state =  L_RX_SWAP_ON;
+		if (state_config.token == RX_SWAP_OFF)
+			state_config.next_sec_state =  L_RX_SWAP_OFF;
 		else if(state_config.token == U_LEFT)
 			state_config.next_sec_state =  L_UHF_LHCP;
 		else if(state_config.token == U_RIGHT)
@@ -391,7 +406,8 @@ void processLBandTokens(void)
 		else
 			tokenError();
 		break;
-	case L_RX_SWAP:
+	case L_RX_SWAP_ON:
+	case L_RX_SWAP_OFF:
 	case L_VHF_LHCP:
 	case L_VHF_RHCP:
 	case L_UHF_RHCP:
@@ -477,8 +493,12 @@ void changeState(void)
 			state_config.state = STANDBY;
 			state_config.sec_state = NONE;
 			break;
-		case RX_SWAP:
-			MCP23017BitSetMask(i2c_fd, RX_SWP);
+		case RX_RX_SWAP_ON:
+			MCP23017BitSetMask(i2c_fd, RX_SWAP);
+			state_config.sec_state = RX_SWITCH;
+			break;
+		case RX_RX_SWAP_OFF:
+			MCP23017BitClearMask(i2c_fd, RX_SWAP);
 			state_config.sec_state = RX_SWITCH;
 			break;
 		case RX_VHF_LHCP:
@@ -520,8 +540,12 @@ void changeState(void)
 		case V_PA_COOL:
 		case V_PA_DOWN:
 			break;
-		case V_RX_SWAP:
-			MCP23017BitSetMask(i2c_fd, RX_SWP);
+		case V_RX_SWAP_ON:
+			MCP23017BitSetMask(i2c_fd, RX_SWAP);
+			state_config.sec_state = V_SWITCH;
+			break;
+		case V_RX_SWAP_OFF:
+			MCP23017BitClearMask(i2c_fd, RX_SWAP);
 			state_config.sec_state = V_SWITCH;
 			break;
 		case V_UHF_LHCP:
@@ -588,8 +612,12 @@ void changeState(void)
 		case U_PA_COOL:
 		case U_PA_DOWN:
 			break;
-		case U_RX_SWAP:
-			MCP23017BitSetMask(i2c_fd, RX_SWP);
+		case U_RX_SWAP_ON:
+			MCP23017BitSetMask(i2c_fd, RX_SWAP);
+			state_config.sec_state = U_SWITCH;
+			break;
+		case U_RX_SWAP_OFF:
+			MCP23017BitClearMask(i2c_fd, RX_SWAP);
 			state_config.sec_state = U_SWITCH;
 			break;
 		case U_VHF_LHCP:
@@ -656,8 +684,12 @@ void changeState(void)
 		case L_PA_COOL:
 		case L_PA_DOWN:
 			break;
-		case L_RX_SWAP:
-			MCP23017BitSetMask(i2c_fd, RX_SWP);
+		case L_RX_SWAP_ON:
+			MCP23017BitSetMask(i2c_fd, RX_SWAP);
+			state_config.sec_state = L_SWITCH;
+			break;
+		case L_RX_SWAP_OFF:
+			MCP23017BitClearMask(i2c_fd, RX_SWAP);
 			state_config.sec_state = L_SWITCH;
 			break;
 		case L_UHF_LHCP:
