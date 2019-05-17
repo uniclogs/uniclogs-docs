@@ -15,7 +15,7 @@
 #define L_PA_BIT        4
 #define U_PA_BIT        5
 #define U_PTT_BIT       6
-#define S_PWR_BIT       7
+#define RX_SWP_BIT      7
 #define L_PTT_BIT       8
 #define V_PTT_BIT       9
 #define V_POL_BIT       10
@@ -32,7 +32,7 @@
 #define L_PA            BIT_MASK(L_PA_BIT)
 #define U_PA            BIT_MASK(U_PA_BIT)
 #define U_PTT           BIT_MASK(U_PTT_BIT)
-#define S_PWR           BIT_MASK(S_PWR_BIT)
+#define RX_SWP          BIT_MASK(RX_SWP_BIT)
 #define L_PTT           BIT_MASK(L_PTT_BIT)
 #define V_PTT           BIT_MASK(V_PTT_BIT)
 #define V_POL           BIT_MASK(V_POL_BIT)
@@ -55,8 +55,9 @@ typedef enum {
 	V_TX,
 	U_TX,
 	L_TX,
-	S_ON,
-	S_OFF,
+
+	RX_SWAP_ON,
+	RX_SWAP_OFF,
 
 	V_LEFT,
 	V_RIGHT,
@@ -83,8 +84,6 @@ typedef enum {
 	INIT,
 	SYS_PWR_ON,
 	STANDBY,
-	S_SYS_ON,
-	S_SYS_OFF,
 
 	RX_ONLY,
 	V_TRAN,
@@ -99,6 +98,7 @@ typedef enum {
 	RECEIVE,
 	RX_SWITCH,
 	RX_SHUTDOWN,
+	RX_SWAP,
 	RX_VHF_LHCP,
 	RX_VHF_RHCP,
 	RX_UHF_LHCP,
@@ -109,6 +109,7 @@ typedef enum {
 	V_SHUTDOWN,
 	V_PA_COOL,
 	V_PA_DOWN,
+	V_RX_SWAP,
 	V_UHF_LHCP,
 	V_UHF_RHCP,
 	V_TRANS_ON,
@@ -121,6 +122,7 @@ typedef enum {
 	U_SHUTDOWN,
 	U_PA_COOL,
 	U_PA_DOWN,
+	U_RX_SWAP,
 	U_VHF_LHCP,
 	U_VHF_RHCP,
 	U_TRANS_ON,
@@ -133,6 +135,7 @@ typedef enum {
 	L_SHUTDOWN,
 	L_PA_COOL,
 	L_PA_DOWN,
+	L_RX_SWAP,
 	L_VHF_LHCP,
 	L_VHF_RHCP,
 	L_TRANS_ON,
