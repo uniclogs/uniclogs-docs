@@ -77,6 +77,9 @@ typedef enum {
 
 	STATUS,
 	GETTEMP,
+	V_POWER,
+	U_POWER,
+	L_POWER,
 	MAX_TOKENS
 } token_t;
 
