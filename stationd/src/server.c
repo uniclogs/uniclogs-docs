@@ -56,6 +56,8 @@ void process_ascii_cmd(void);
 /* UDP Server Thread */
 void *udp_serv(void *argp)
 {
+	int ascii_cmd = 0;
+	float temperature;
 	/* Register alarm signal handler */
 	signal(SIGALRM, handle_alarm_signal);
 
@@ -82,18 +84,24 @@ void *udp_serv(void *argp)
 		switch (cmd[0]) {
 		case 1 ... MAX_TOKENS:
 			state_config.token = cmd[0] - 1;
+			ascii_cmd = 0;
 			break;
 		case '!':
 			process_ascii_cmd();
+			ascii_cmd = 1;
 			break;
 		default:
 			state_config.token = MAX_TOKENS;
+			ascii_cmd = 0;
 			break;
 		}
 		/* If it was an invalid token, the token value will be MAX_TOKENS */
 		/* Disregard and wait for a new token */
 		if (state_config.token == MAX_TOKENS) {
-			sprintf(sendbuf, "INVALID\n");
+			if (ascii_cmd)
+				sprintf(sendbuf, "INVALID\n");
+			else
+				sendbuf[0] = 0;
 			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
 				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
 			}
@@ -103,7 +111,13 @@ void *udp_serv(void *argp)
 
 		/* Temperature requests */
 		if (state_config.token == GETTEMP) {
-			sprintf(sendbuf, "TEMP: %fC\n", MCP9808GetTemp(i2c_fd));
+			temperature = MCP9808GetTemp(i2c_fd);
+			if (ascii_cmd) {
+				sprintf(sendbuf, "TEMP: %fC\n", temperature);
+			} else {
+				sendbuf[0] = htonl(temperature);
+				sendbuf[4] = 0;
+			}
 			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
 				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
 			}
@@ -113,7 +127,16 @@ void *udp_serv(void *argp)
 
 		/* Status requests */
 		if(state_config.token == STATUS) {
-			sprintf(sendbuf, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%04X\n", state_str[state_config.state], secstate_str[state_config.sec_state], state_str[state_config.next_state], secstate_str[state_config.next_sec_state], MCP23017GetState(i2c_fd));
+			if (ascii_cmd) {
+				sprintf(sendbuf, "STATE: %s\nSEC_STATE: %s\nNEXT_STATE: %s\nNEXT_SEC_STATE: %s\nGPIO_STATE: 0x%04X\n", state_str[state_config.state], secstate_str[state_config.sec_state], state_str[state_config.next_state], secstate_str[state_config.next_sec_state], MCP23017GetState(i2c_fd));
+			} else {
+				sendbuf[0] = (uint8_t)state_config.state;
+				sendbuf[1] = (uint8_t)state_config.sec_state;
+				sendbuf[2] = (uint8_t)state_config.next_state;
+				sendbuf[3] = (uint8_t)state_config.next_sec_state;
+				sendbuf[4] = htons(MCP23017GetState(i2c_fd));
+				sendbuf[6] = 0;
+			}
 			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
 				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));
 			}

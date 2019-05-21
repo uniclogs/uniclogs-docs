@@ -124,9 +124,7 @@ int main(int argc, char *argv[]){
 	/* Create threads */
 	logmsg(LOG_INFO, "Starting threads...\n");
 	pthread_create(&servthread, NULL, udp_serv, port);
-	/*pthread_create(&statethread, NULL, statemachine, NULL);*/
 	pthread_join(servthread, NULL);
-	/*pthread_join(statethread, NULL);*/
 
 	logmsg(LOG_DEBUG, "Threads terminated\n");
 
