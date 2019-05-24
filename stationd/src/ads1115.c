@@ -41,7 +41,7 @@ void ADS1115SetSlave(int i2c_fd)
 
 float ADS1115ReadPwr(int i2c_fd, uint8_t sensor)
 {
-	int16_t regval = 0;
+	int32_t regval = 0;
 
 	logmsg(LOG_DEBUG, "Reading value of sensor number: %u\n", sensor);
 	if (sensor > 3) {
@@ -73,6 +73,7 @@ float ADS1115ReadPwr(int i2c_fd, uint8_t sensor)
 		logmsg(LOG_ERR, "Error: Failed reading conversion value: %s\n", strerror(errno));
 		return 0;
 	}
+	regval = ((regval << 8) & 0xFF00) | ((regval >> 8) & 0x00FF);
 	logmsg(LOG_DEBUG, "Read 0x%04X...\n", regval);
 
 	return (*sensor_func[sensor])(gran[sensor] * regval);
