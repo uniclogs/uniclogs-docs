@@ -9,9 +9,9 @@
 #include "common.h"
 #include "ads1115.h"
 
-float vhf_conversion(float voltage);
-float uhf_conversion(float voltage);
-float l_conversion(float voltage);
+float vhf_conversion(float volt);
+float uhf_conversion(float volt);
+float l_conversion(float volt);
 
 static int retries;
 static uint8_t pga[] = {
@@ -20,9 +20,9 @@ static uint8_t pga[] = {
 	0x1
 };
 static float gran[] = {
-	15.625,
-	62.5,
-	125
+	15.625E-6,
+	62.5E-6,
+	125E-6
 };
 static float (*sensor_func[])(float) = {
 	vhf_conversion,
@@ -79,17 +79,17 @@ float ADS1115ReadPwr(int i2c_fd, uint8_t sensor)
 	return (*sensor_func[sensor])(gran[sensor] * regval);
 }
 
-float vhf_conversion(float voltage)
+float vhf_conversion(float volt)
 {
-	return 74*voltage + 1.05;
+	return 74*volt + 1.05;
 }
 
-float uhf_conversion(float voltage)
+float uhf_conversion(float volt)
 {
-	return 5.21 * pow(voltage, 2) + 5.34 * voltage + 0.217;
+	return 5.21 * pow(volt, 2) + 5.34 * volt + 0.217;
 }
 
-float l_conversion(float voltage)
+float l_conversion(float volt)
 {
-	return 2.16 * pow(voltage, 2) + 0.149 * voltage + 0.105;
+	return 2.16 * pow(volt, 2) + 0.149 * volt + 0.105;
 }
