@@ -57,8 +57,7 @@ void process_ascii_cmd(void);
 void *udp_serv(void *argp)
 {
 	int ascii_cmd = 0;
-	float temperature;
-	int16_t power;
+	float temperature, power;
 	/* Register alarm signal handler */
 	signal(SIGALRM, handle_alarm_signal);
 
@@ -128,12 +127,12 @@ void *udp_serv(void *argp)
 
 		/* Power requests */
 		if (state_config.token >= V_POWER && state_config.token <= L_POWER) {
-			power = ADS1115ReadVal(i2c_fd, state_config.token - V_POWER);
+			power = ADS1115ReadPwr(i2c_fd, state_config.token - V_POWER);
 			if (ascii_cmd) {
-				sprintf(sendbuf, "%s: %d\n", token_str[state_config.token], power);
+				sprintf(sendbuf, "%s: %f\n", token_str[state_config.token], power);
 			} else {
-				sendbuf[0] = htons(power);
-				sendbuf[2] = 0;
+				sendbuf[0] = htonl(power);
+				sendbuf[4] = 0;
 			}
 			if ((sendlen = sendto(sd, sendbuf, strlen(sendbuf), 0, (struct sockaddr *)&remaddr, addrlen)) < 0) {
 				logmsg(LOG_ERR, "Error: Send failure: %s", strerror(errno));

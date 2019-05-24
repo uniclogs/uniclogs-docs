@@ -5,10 +5,30 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
+#include <math.h>
 #include "common.h"
 #include "ads1115.h"
 
+float vhf_conversion(float voltage);
+float uhf_conversion(float voltage);
+float l_conversion(float voltage);
+
 static int retries;
+static uint8_t pga[] = {
+	0x4,
+	0x2,
+	0x1
+};
+static float gran[] = {
+	15.625,
+	62.5,
+	125
+};
+static float (*sensor_func[])(float) = {
+	vhf_conversion,
+	uhf_conversion,
+	l_conversion
+};
 
 void ADS1115SetSlave(int i2c_fd)
 {
@@ -19,9 +39,10 @@ void ADS1115SetSlave(int i2c_fd)
 	}
 }
 
-int16_t ADS1115ReadVal(int i2c_fd, uint8_t sensor)
+float ADS1115ReadPwr(int i2c_fd, uint8_t sensor)
 {
 	int16_t regval = 0;
+
 	logmsg(LOG_DEBUG, "Reading value of sensor number: %u\n", sensor);
 	if (sensor > 3) {
 		logmsg(LOG_WARNING, "Invalid sensor number!\n");
@@ -36,8 +57,8 @@ int16_t ADS1115ReadVal(int i2c_fd, uint8_t sensor)
 	}
 	logmsg(LOG_DEBUG, "Read 0x%04X...\n", regval);
 
-	regval &= ~(0xF << 12);
-	regval |= ADS1115_START_CONV(sensor);
+	regval &= ~(0xFE);
+	regval |= ADS1115_STARTCONV(sensor) | pga[sensor];
 
 	logmsg(LOG_DEBUG, "Writing 0x%04X...\n", regval);
 	for (retries = 2; retries > 0 && i2c_smbus_write_word_data(i2c_fd, ADS1115_CONFIG_REG, regval) < 0; retries--)
@@ -54,5 +75,20 @@ int16_t ADS1115ReadVal(int i2c_fd, uint8_t sensor)
 	}
 	logmsg(LOG_DEBUG, "Read 0x%04X...\n", regval);
 
-	return regval;
+	return (*sensor_func[sensor])(gran[sensor] * regval);
+}
+
+float vhf_conversion(float voltage)
+{
+	return 74*voltage + 1.05;
+}
+
+float uhf_conversion(float voltage)
+{
+	return 5.21 * pow(voltage, 2) + 5.34 * voltage + 0.217;
+}
+
+float l_conversion(float voltage)
+{
+	return 2.16 * pow(voltage, 2) + 0.149 * voltage + 0.105;
 }

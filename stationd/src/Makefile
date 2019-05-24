@@ -11,7 +11,7 @@ HEADERS = $(wildcard *.h)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall -o $@ -li2c -lpthread
+	$(CC) $(OBJECTS) -Wall -o $@ -li2c -lpthread -lm
 
 all: $(TARGET)
 

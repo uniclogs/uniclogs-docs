@@ -10,9 +10,9 @@
 #define ADS1115_LO_REG		0x02
 #define ADS1115_HIGH_REG	0x03
 
-#define ADS1115_START_CONV(n)	((0xC + n) << 12)
+#define ADS1115_STARTCONV(n)	((0xC + n) << 4)
 
 void ADS1115SetSlave(int i2c_fd);
-int16_t ADS1115ReadVal(int i2c_fd, uint8_t sensor);
+float ADS1115ReadPwr(int i2c_fd, uint8_t sensor);
 
 #endif
