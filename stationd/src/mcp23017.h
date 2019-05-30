@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "common.h"
 
-// Register values for MCP23017 (IOCON.BANK = 0)
+/* Register values for MCP23017 (IOCON.BANK = 0) */
 #define MCP23017_IODIR_WORD_REG     0x00
 #define MCP23017_IODIRA_REG         0x00
 #define MCP23017_IODIRB_REG         0x01
@@ -46,6 +46,7 @@ int MCP23017BitClear(int i2c_fd, uint8_t bit);
 int MCP23017BitRead(int i2c_fd, uint8_t bit);
 int MCP23017BitSetMask(int i2c_fd, uint16_t mask);
 int MCP23017BitClearMask(int i2c_fd, uint16_t mask);
+uint16_t MCP23017GetState(int i2c_fd);
 
 void MCP23017BitReset(int i2c_fd);
 

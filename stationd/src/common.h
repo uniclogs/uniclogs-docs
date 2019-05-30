@@ -3,6 +3,7 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
+#include <linux/types.h>
 #include <pthread.h>
 #include <syslog.h>
 
@@ -25,16 +26,18 @@
 #define ADS1115_I2C_ADDR 0x48
 #endif
 #ifndef MAXMSG
-#define MAXMSG 50
+#define MAXMSG 100
 #endif
 
-pthread_mutex_t msg_mutex;
-pthread_cond_t msg_cond;
-char msg[MAXMSG];
-
+/* Global flags set at runtime */
 extern bool daemon_flag;
 extern bool verbose_flag;
 
+/* Prototypes for i2c functions in case system header files are lacking */
+__s32 i2c_smbus_read_word_data(int, __u8);
+__s32 i2c_smbus_write_word_data(int, __u8, __u16);
+
+/* Common support function prototypes */
 void logmsg(int priority, const char *fmt, ...);
 
 #endif
