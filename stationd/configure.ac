@@ -11,10 +11,15 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 
 # Checks for libraries.
-AC_SEARCH_LIBS([pthread_create], [pthread])
+# FIXME: Replace `main' with a function in `-li2c':
+AC_CHECK_LIB([i2c], [i2c_smbus_read_word_data])
+# FIXME: Replace `main' with a function in `-lm':
+AC_CHECK_LIB([m], [pow])
+# FIXME: Replace `main' with a function in `-lpthread':
+AC_CHECK_LIB([pthread], [pthread_create])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h syslog.h unistd.h pthread.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h syslog.h unistd.h pthread.h i2c.h math.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
