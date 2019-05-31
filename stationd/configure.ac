@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([stationd],[0.1.0])
-AM_INIT_AUTOMAKE[-Wall]
+AM_INIT_AUTOMAKE([-Wall])
 AC_CONFIG_SRCDIR([src/server.h])
 AC_CONFIG_HEADERS([config.h])
 
