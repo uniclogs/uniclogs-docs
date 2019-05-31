@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "common.h"
 
-// Register values for MCP9808
+/* Register values for MCP9808 */
 #define MCP9808_TEMP_REG        0x05
 
 #define TEMP_SIGN_MASK          0x0010

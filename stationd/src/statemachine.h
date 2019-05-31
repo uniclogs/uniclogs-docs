@@ -15,7 +15,7 @@
 #define L_PA_BIT        4
 #define U_PA_BIT        5
 #define U_PTT_BIT       6
-#define S_PWR_BIT       7
+#define RX_SWAP_BIT      7
 #define L_PTT_BIT       8
 #define V_PTT_BIT       9
 #define V_POL_BIT       10
@@ -32,7 +32,7 @@
 #define L_PA            BIT_MASK(L_PA_BIT)
 #define U_PA            BIT_MASK(U_PA_BIT)
 #define U_PTT           BIT_MASK(U_PTT_BIT)
-#define S_PWR           BIT_MASK(S_PWR_BIT)
+#define RX_SWAP         BIT_MASK(RX_SWAP_BIT)
 #define L_PTT           BIT_MASK(L_PTT_BIT)
 #define V_PTT           BIT_MASK(V_PTT_BIT)
 #define V_POL           BIT_MASK(V_POL_BIT)
@@ -42,114 +42,124 @@
 #define V_LNA           BIT_MASK(V_LNA_BIT)
 #define U_LNA           BIT_MASK(U_LNA_BIT)
 
-extern const char *inputTokens[];
-extern const char *states[];
-extern const char *secstates[];
+extern const char *token_str[];
+extern const char *state_str[];
+extern const char *secstate_str[];
 extern char *i2c_dev;
 extern int i2c_fd;
 
-typedef enum{
-    PWR_ON,
-    OPERATE,
-    RX,
-    V_TX,
-    U_TX,
-    L_TX,
-    S_ON,
-    S_OFF,
+typedef enum {
+	PWR_ON,
+	OPERATE,
+	RX,
+	V_TX,
+	U_TX,
+	L_TX,
 
-    V_LEFT,
-    V_RIGHT,
-    V_TX_ON,
-    V_TX_OFF,
+	RX_SWAP_ON,
+	RX_SWAP_OFF,
 
-    U_LEFT,
-    U_RIGHT,
-    U_TX_ON,
-    U_TX_OFF,
+	V_LEFT,
+	V_RIGHT,
+	V_TX_ON,
+	V_TX_OFF,
 
-    L_TX_ON,
-    L_TX_OFF,
+	U_LEFT,
+	U_RIGHT,
+	U_TX_ON,
+	U_TX_OFF,
 
-    SHUTDOWN,
-    KILL,
+	L_TX_ON,
+	L_TX_OFF,
 
-    STATUS,
-    GETTEMP,
-    MAX_TOKENS
+	SHUTDOWN,
+	KILL,
+
+	STATUS,
+	GETTEMP,
+	V_POWER,
+	U_POWER,
+	L_POWER,
+	MAX_TOKENS
 } token_t;
 
-typedef enum{
-    INIT,
-    SYS_PWR_ON,
-    STANDBY,
-    S_SYS_ON,
-    S_SYS_OFF,
+typedef enum {
+	INIT,
+	SYS_PWR_ON,
+	STANDBY,
 
-    RX_ONLY,
-    V_TRAN,
-    U_TRAN,
-    L_TRAN,
-    MAX_STATES
+	RX_ONLY,
+	V_TRAN,
+	U_TRAN,
+	L_TRAN,
+	MAX_STATES
 } state_t;
 
-typedef enum{
-    NONE,
+typedef enum {
+	NONE,
 
-    RECEIVE,
-    RX_SWITCH,
-    RX_SHUTDOWN,
-    RX_VHF_LHCP,
-    RX_VHF_RHCP,
-    RX_UHF_LHCP,
-    RX_UHF_RHCP,
+	RECEIVE,
+	RX_SWITCH,
+	RX_SHUTDOWN,
+	RX_RX_SWAP_ON,
+	RX_RX_SWAP_OFF,
+	RX_VHF_LHCP,
+	RX_VHF_RHCP,
+	RX_UHF_LHCP,
+	RX_UHF_RHCP,
 
-    VHF_TRANSMIT,
-    V_SWITCH,
-    V_SHUTDOWN,
-    V_PA_COOL,
-    V_PA_DOWN,
-    V_UHF_LHCP,
-    V_UHF_RHCP,
-    V_TRANS_ON,
-    V_TRANS_OFF,
-    V_LHCP,
-    V_RHCP,
+	VHF_TRANSMIT,
+	V_SWITCH,
+	V_SHUTDOWN,
+	V_PA_COOL,
+	V_PA_DOWN,
+	V_RX_SWAP_ON,
+	V_RX_SWAP_OFF,
+	V_UHF_LHCP,
+	V_UHF_RHCP,
+	V_TRANS_ON,
+	V_TRANS_OFF,
+	V_LHCP,
+	V_RHCP,
 
-    UHF_TRANSMIT,
-    U_SWITCH,
-    U_SHUTDOWN,
-    U_PA_COOL,
-    U_PA_DOWN,
-    U_VHF_LHCP,
-    U_VHF_RHCP,
-    U_TRANS_ON,
-    U_TRANS_OFF,
-    U_LHCP,
-    U_RHCP,
+	UHF_TRANSMIT,
+	U_SWITCH,
+	U_SHUTDOWN,
+	U_PA_COOL,
+	U_PA_DOWN,
+	U_RX_SWAP_ON,
+	U_RX_SWAP_OFF,
+	U_VHF_LHCP,
+	U_VHF_RHCP,
+	U_TRANS_ON,
+	U_TRANS_OFF,
+	U_LHCP,
+	U_RHCP,
 
-    L_TRANSMIT,
-    L_SWITCH,
-    L_SHUTDOWN,
-    L_PA_COOL,
-    L_PA_DOWN,
-    L_VHF_LHCP,
-    L_VHF_RHCP,
-    L_TRANS_ON,
-    L_TRANS_OFF,
-    L_UHF_LHCP,
-    L_UHF_RHCP,
-    MAX_SEC_STATES
+	L_TRANSMIT,
+	L_SWITCH,
+	L_SHUTDOWN,
+	L_PA_COOL,
+	L_PA_DOWN,
+	L_RX_SWAP_ON,
+	L_RX_SWAP_OFF,
+	L_VHF_LHCP,
+	L_VHF_RHCP,
+	L_TRANS_ON,
+	L_TRANS_OFF,
+	L_UHF_LHCP,
+	L_UHF_RHCP,
+	MAX_SEC_STATES
 } sec_state_t;
 
 
 struct _state_config {
-    state_t state;
-    state_t next_state;
-    sec_state_t sec_state;
-    sec_state_t next_sec_state;
-    token_t token;
-    int errorCode;
+	state_t state;
+	state_t next_state;
+	sec_state_t sec_state;
+	sec_state_t next_sec_state;
+	token_t token;
+	int errorCode;
 } state_config;
 
 
