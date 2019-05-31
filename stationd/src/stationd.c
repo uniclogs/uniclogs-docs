@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -39,7 +40,8 @@ pthread_t statethread, servthread;
 
 void sig_exit(int sig);
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
 	int c;
 	char *port = DEFAULT_PORT;
 	char *pid_file = DEFAULT_PID_FILE;
@@ -51,8 +53,8 @@ int main(int argc, char *argv[]){
 	signal(SIGTERM, sig_exit);
 
 	/* Command line argument processing */
-	while ((c = getopt(argc, argv, "dp:r:v")) != -1){
-		switch (c){
+	while ((c = getopt(argc, argv, "dp:r:v")) != -1) {
+		switch (c) {
 			case 'd':
 				daemon_flag = true;
 				break;
@@ -74,7 +76,7 @@ int main(int argc, char *argv[]){
 	}
 
 	/* Open syslog for all logging purposes */
-	if (verbose_flag){
+	if (verbose_flag) {
 		setlogmask(LOG_UPTO(LOG_DEBUG));
 	} else {
 		setlogmask(LOG_UPTO(LOG_NOTICE));
@@ -82,22 +84,22 @@ int main(int argc, char *argv[]){
 	openlog(argv[0], LOG_PID|LOG_CONS, LOG_DAEMON);
 
 	/* Run as daemon if needed */
-	if (daemon_flag){
+	if (daemon_flag) {
 		logmsg(LOG_DEBUG, "Starting as daemon...\n");
 		/* Fork */
-		if ((pid = fork()) < 0){
+		if ((pid = fork()) < 0) {
 			logmsg(LOG_ERR, "Error: Failed to fork!\n");
 			exit(EXIT_FAILURE);
 		}
 
 		/* Parent process exits */
-		if (pid){
+		if (pid) {
 			exit(EXIT_SUCCESS);
 		}
 
 		/* Child process continues on */
 		/* Log PID */
-		if ((run_fp = fopen(pid_file, "w+")) == NULL){
+		if ((run_fp = fopen(pid_file, "w+")) == NULL) {
 			logmsg(LOG_ERR, "Error: Unable to open file %s\n", pid_file);
 			exit(EXIT_FAILURE);
 		}
@@ -106,19 +108,31 @@ int main(int argc, char *argv[]){
 		fclose(run_fp);
 
 		/* Create new session for process group leader */
-		if ((sid = setsid()) < 0){
+		if ((sid = setsid()) < 0) {
 			logmsg(LOG_ERR, "Error: Failed to create new session!\n");
 			exit(EXIT_FAILURE);
 		}
 
 		/* Set default umask and cd to root to avoid blocking filesystems */
 		umask(0);
-		chdir("/");
+		if (chdir("/") < 0) {
+			logmsg(LOG_ERR, "Error: Failed to chdir to root: %s\n", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 
 		/* Redirect std streams to /dev/null */
-		freopen("/dev/null", "r", stdin);
-		freopen("/dev/null", "w+", stdout);
-		freopen("/dev/null", "w+", stderr);
+		if (freopen("/dev/null", "r", stdin) == NULL) {
+			logmsg(LOG_ERR, "Error: Failed to redirect streams to /dev/null!\n");
+			exit(EXIT_FAILURE);
+		}
+		if (freopen("/dev/null", "w+", stdout) == NULL) {
+			logmsg(LOG_ERR, "Error: Failed to redirect streams to /dev/null!\n");
+			exit(EXIT_FAILURE);
+		}
+		if (freopen("/dev/null", "w+", stderr) == NULL) {
+			logmsg(LOG_ERR, "Error: Failed to redirect streams to /dev/null!\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	/* Create threads */
@@ -131,7 +145,8 @@ int main(int argc, char *argv[]){
 	sig_exit(SIGTERM);
 }
 
-void sig_exit(int sig){
+void sig_exit(int sig)
+{
 	logmsg(LOG_INFO,"Shutting Down...\n");
 	i2c_exit();
 	pthread_cancel(servthread);
