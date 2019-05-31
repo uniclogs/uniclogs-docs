@@ -11,12 +11,9 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 
 # Checks for libraries.
-# FIXME: Replace `main' with a function in `-li2c':
-AC_CHECK_LIB([i2c], [i2c_smbus_read_word_data])
-# FIXME: Replace `main' with a function in `-lm':
-AC_CHECK_LIB([m], [pow])
-# FIXME: Replace `main' with a function in `-lpthread':
-AC_CHECK_LIB([pthread], [pthread_create])
+AC_SEARCH_LIB([i2c], [i2c_smbus_read_word_data], [], [AC_MSG_ERROR([I2C library not found])])
+AC_SEARCH_LIB([m], [pow], [], [AC_MSG_ERROR([Math library not found])])
+AC_SEARCH_LIB([pthread], [pthread_create], [], [AC_MSG_ERROR([pthread library not found])])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netdb.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h syslog.h unistd.h pthread.h i2c.h math.h])
