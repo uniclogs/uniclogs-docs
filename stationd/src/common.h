@@ -26,7 +26,7 @@
 #define ADS1115_I2C_ADDR 0x48
 #endif
 #ifndef MAXMSG
-#define MAXMSG 100
+#define MAXMSG 500
 #endif
 
 /* Global flags set at runtime */
