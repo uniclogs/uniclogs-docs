@@ -464,7 +464,7 @@ void CoolDown_Wait(void)
 
 void changeState(void)
 {
-	uint8_t ptt_state;
+	uint8_t state_save;
 
 	logmsg(LOG_DEBUG, "Entering %s:%s State\n", state_str[state_config.next_state], secstate_str[state_config.next_sec_state]);
 	switch(state_config.next_state) {
@@ -492,7 +492,7 @@ void changeState(void)
 		case RX_SWITCH:
 			break;
 		case RX_SHUTDOWN:
-			MCP23017BitClearMask(i2c_fd, U_POL|V_POL|V_LNA|U_LNA);
+			MCP23017BitClearMask(i2c_fd, U_POL|V_POL|V_LNA|U_LNA|RX_SWAP);
 			state_config.state = STANDBY;
 			state_config.sec_state = NONE;
 			break;
@@ -536,7 +536,7 @@ void changeState(void)
 		case V_SWITCH:
 			break;
 		case V_SHUTDOWN:
-			MCP23017BitClearMask(i2c_fd, U_LNA|U_POL|V_POL|V_PTT);
+			MCP23017BitClearMask(i2c_fd, U_LNA|U_POL|V_POL|V_PTT|RX_SWAP);
 			state_config.sec_state = V_PA_COOL;
 			alarm(120);
 			break;
@@ -568,12 +568,12 @@ void changeState(void)
 			state_config.sec_state = V_SWITCH;
 			break;
 		case V_LHCP:
-			ptt_state = MCP23017BitRead(i2c_fd, V_PTT_BIT);
+			state_save = MCP23017BitRead(i2c_fd, V_PTT_BIT);
 			MCP23017BitClear(i2c_fd, V_PTT_BIT);
 			usleep(100);
 			MCP23017BitSet(i2c_fd, V_POL_BIT);
 			usleep(100);
-			if(ptt_state)
+			if(state_save)
 				MCP23017BitSet(i2c_fd, V_PTT_BIT);
 			else
 				MCP23017BitClear(i2c_fd, V_PTT_BIT);
@@ -581,12 +581,12 @@ void changeState(void)
 			break;
 
 		case V_RHCP:
-			ptt_state = MCP23017BitRead(i2c_fd, V_PTT_BIT);
+			state_save = MCP23017BitRead(i2c_fd, V_PTT_BIT);
 			MCP23017BitClear(i2c_fd, V_PTT_BIT);
 			usleep(100);
 			MCP23017BitClear(i2c_fd, V_POL_BIT);
 			usleep(100);
-			if(ptt_state)
+			if(state_save)
 				MCP23017BitSet(i2c_fd, V_PTT_BIT);
 			else
 				MCP23017BitClear(i2c_fd, V_PTT_BIT);
@@ -608,7 +608,7 @@ void changeState(void)
 		case U_SWITCH:
 			break;
 		case U_SHUTDOWN:
-			MCP23017BitClearMask(i2c_fd, V_LNA|V_POL|U_POL|U_PTT);
+			MCP23017BitClearMask(i2c_fd, V_LNA|V_POL|U_POL|U_PTT|RX_SWAP);
 			state_config.sec_state = U_PA_COOL;
 			alarm(120);
 			break;
@@ -640,12 +640,12 @@ void changeState(void)
 			state_config.sec_state = U_SWITCH;
 			break;
 		case U_LHCP:
-			ptt_state = MCP23017BitRead(i2c_fd, U_PTT_BIT);
+			state_save = MCP23017BitRead(i2c_fd, U_PTT_BIT);
 			MCP23017BitClear(i2c_fd, U_PTT_BIT);
 			usleep(100);
 			MCP23017BitSet(i2c_fd, U_POL_BIT);
 			usleep(100);
-			if(ptt_state)
+			if(state_save)
 				MCP23017BitSet(i2c_fd, U_PTT_BIT);
 			else
 				MCP23017BitClear(i2c_fd, U_PTT_BIT);
@@ -653,12 +653,12 @@ void changeState(void)
 			break;
 
 		case U_RHCP:
-			ptt_state = MCP23017BitRead(i2c_fd, U_PTT_BIT);
+			state_save = MCP23017BitRead(i2c_fd, U_PTT_BIT);
 			MCP23017BitClear(i2c_fd, U_PTT_BIT);
 			usleep(100);
 			MCP23017BitClear(i2c_fd, U_POL_BIT);
 			usleep(100);
-			if(ptt_state)
+			if(state_save)
 				MCP23017BitSet(i2c_fd, U_PTT_BIT);
 			else
 				MCP23017BitClear(i2c_fd, U_PTT_BIT);
@@ -680,7 +680,7 @@ void changeState(void)
 		case L_SWITCH:
 			break;
 		case L_SHUTDOWN:
-			MCP23017BitClearMask(i2c_fd, L_PTT|U_POL|V_POL|V_LNA|U_LNA);
+			MCP23017BitClearMask(i2c_fd, L_PTT|U_POL|V_POL|V_LNA|U_LNA|RX_SWAP);
 			state_config.sec_state = L_PA_COOL;
 			alarm(120);
 			break;
