@@ -1,5 +1,13 @@
-Playing with a simple Cosmos configuration 
+# COSMOS
 
-`ruby Launcher` to run cosmos like usual
+A set of tools for communicating with satellites
 
-Use python scripts in `mock_oresat/` to send/receive commands and telemetry.
+## Components
+
+* `/config`: COSMOS configurations
+* `/lib`: COSMOS shared libraries
+* `/mock_oresat`: A mock of OreSat, retrieving test telemetry for development work
+* `/procedures`: COSMOS procedures
+* `/satnogs`: Python interface for regularly grabbing Satnogs telemetry data
+* `/spacetrack`: Python interface for regularly grabbing Space-Track orbital data
+* `/tools`: COSMOS runnables/binaries/scripts
