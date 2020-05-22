@@ -1,0 +1,26 @@
+TELEMETRY UNICLOGS STATUS BIG_ENDIAN "UniClOGS Status"
+  # Keyword      Name  BitSize Type   ID Description
+  APPEND_ID_ITEM ID    16      INT    1  "Identifier"
+  APPEND_ITEM    VALUE 32      FLOAT     "Value"
+  APPEND_ITEM    BOOL  8       UINT      "Boolean"
+    STATE FALSE 0
+    STATE TRUE 1
+  APPEND_ITEM    LABEL 0       STRING    "The label to apply"
+
+TELEMETRY UNICLOGS TEMP BIG_ENDIAN "UniClOGS Temperature"
+  # Keyword      Name  BitSize Type   ID Description
+  APPEND_ID_ITEM ID    16      INT    2  "Identifier"
+  APPEND_ITEM    VALUE 32      FLOAT     "Value"
+  APPEND_ITEM    BOOL  8       UINT      "Boolean"
+    STATE FALSE 0
+    STATE TRUE 1
+  APPEND_ITEM    LABEL 0       STRING    "The label to apply"
+
+TELEMETRY UNICLOGS PA_POWER BIG_ENDIAN "UniClOGS PA Power"
+  # Keyword      Name  BitSize Type   ID Description
+  APPEND_ID_ITEM ID    16      INT    3  "Identifier"
+  APPEND_ITEM    VALUE 32      FLOAT     "Value"
+  APPEND_ITEM    BOOL  8       UINT      "Boolean"
+    STATE FALSE 0
+    STATE TRUE 1
+  APPEND_ITEM    LABEL 0       STRING    "The label to apply"
