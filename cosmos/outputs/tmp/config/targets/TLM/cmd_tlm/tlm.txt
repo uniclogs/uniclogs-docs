@@ -1,0 +1,28 @@
+TELEMETRY TLM TEMPS BIG_ENDIAN "Temperature Readings"
+  APPEND_ID_ITEM CCSDS_STREAMID 16 UINT 0x0801 "CCSDS Packet Identification"
+    APPEND_ITEM    CCSDS_SEQUENCE 16 UINT        "CCSDS Packet Sequence Control"
+  APPEND_ITEM    CCSDS_LENGTH   16 UINT        "CCSDS Packet Data Length"
+  APPEND_ITEM    CCSDS_YEAR     16 UINT        "CCSDS Year"
+  APPEND_ITEM    CCSDS_MONTH     8 UINT        "CCSDS Month"
+  APPEND_ITEM    CCSDS_DOM       8 UINT        "CCSDS Days"
+  APPEND_ITEM    CCSDS_h         8 UINT        "CCSDS hours"
+  APPEND_ITEM    CCSDS_m         8 UINT        "CCSDS minutes"
+  APPEND_ITEM    CCSDS_s         8 UINT        "CCSDS seconds"
+  APPEND_ITEM    SPACER          8 UINT        "PADDING"
+
+  APPEND_ITEM    TEMP1          16 UINT        "Temperature Sensor 1"
+  APPEND_ITEM    TEMP2          16 UINT        "Temperature Sensor 2"
+
+TELEMETRY TLM LOG BIG_ENDIAN "Generic Log"
+  APPEND_ID_ITEM CCSDS_STREAMID 16 UINT 0x0803 "CCSDS Packet Identification"
+    APPEND_ITEM    CCSDS_SEQUENCE 16 UINT        "CCSDS Packet Sequence Control"
+  APPEND_ITEM    CCSDS_LENGTH   16 UINT        "CCSDS Packet Data Length"
+  APPEND_ITEM    CCSDS_YEAR     16 UINT        "CCSDS Year"
+  APPEND_ITEM    CCSDS_MONTH     8 UINT        "CCSDS Month"
+  APPEND_ITEM    CCSDS_DOM       8 UINT        "CCSDS Days"
+  APPEND_ITEM    CCSDS_h         8 UINT        "CCSDS hours"
+  APPEND_ITEM    CCSDS_m         8 UINT        "CCSDS minutes"
+  APPEND_ITEM    CCSDS_s         8 UINT        "CCSDS seconds"
+  APPEND_ITEM    SPACER          8 UINT        "PADDING"
+
+  APPEND_ITEM    LOG           640 STRING      "Log"  # 80 bytes of string message
