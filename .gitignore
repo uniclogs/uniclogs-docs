@@ -4,10 +4,6 @@ outputs/
 .mypy_cache/
 *.swp
 
-.idea/
-**/.idea
-
-
 # Prerequisites
 *.d
 
