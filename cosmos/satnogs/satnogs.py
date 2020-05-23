@@ -4,10 +4,15 @@ import requests
 import utilities as utils
 import kaitaistruct
 from socket import gaierror
-from common import BASE_URL, API_TOKEN, TEMPLATE_SATELITE, TEMPLATE_TELEMETRY, TEMPLATE_STRUCTURE
+from common import BASE_URL, \
+                   API_TOKEN, \
+                   TEMPLATE_SATELITE, \
+                   TEMPLATE_TELEMETRY, \
+                   TEMPLATE_STRUCTURE
 from pytz import utc
 from datetime import datetime, timedelta
 from dateutil.parser import parse
+from structs.csim import Csim
 
 STALE_FRAME_TIME = timedelta(days=1)
 
@@ -74,16 +79,16 @@ def load_telemetry(norad_id):
     return telemetry
 
 
-def parse_telemetry_frame(telemetry):
-    raw_frame = telemetry.get('frame')
-    frame = bytearray.fromhex(raw_frame)
-    struct = kaitaistruct.KaitaiStruct(satelite_struct_path(telemetry.get('norad_cat_id')))
-
-    return struct.from_bytes(frame) \
-                 .ax25_frame \
-                 .payload \
-                 .ax25_info \
-                 .filtered_speed_rpm3
+def parse_telemetry_frame(telemetry, f_type=Csim):
+    frame = bytearray.fromhex(telemetry.get('frame'))
+    info = Csim.from_bytes(frame) \
+                                    .ax25_frame \
+                                    .payload \
+                                    .ax25_info
+    if(type(f_type) is Csim and type(info) is Csim.BeaconLong):
+        return info.filtered_speed_rpm3
+    else:
+        return None
 
 
 def main(args):
@@ -111,8 +116,14 @@ def main(args):
             print("Telemetry is recent!")
 
         # Parse the telemetry frame data
-        # frame = parse_telemetry_frame(telemetry)
-        # print("Decoded frame: " + str(frame))
+        try:
+            frame = parse_telemetry_frame(telemetry)
+            if(frame is not None):
+                print("Decoded frame: " + str(frame))
+            else:
+                print('Frame has unknown encoding!')
+        except UnicodeDecodeError as e:
+            utils.error(e)
 
 
 if __name__ == "__main__":
