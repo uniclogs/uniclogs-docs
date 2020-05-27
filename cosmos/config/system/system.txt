@@ -62,3 +62,13 @@ ALLOW_ACCESS ALL
 # META_INIT config/data/meta_init.txt
 
 # ADD_MD5_FILE lib/user_version.rb
+
+DECLARE_TARGET DART
+LISTEN_HOST DART_STREAM 0.0.0.0 # 127.0.0.1 is more secure if you don't need external connections
+LISTEN_HOST DART_DECOM 0.0.0.0 # 127.0.0.1 is more secure if you don't need external connections
+CONNECT_HOST DART_STREAM 127.0.0.1
+CONNECT_HOST DART_DECOM 127.0.0.1
+PORT DART_STREAM 8777
+PORT DART_DECOM 8779
+PATH DART_DATA ./outputs/dart/data
+PATH DART_LOGS ./outputs/dart/logs
