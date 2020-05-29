@@ -1,63 +1,40 @@
-import numpy as np
-from beyond.io.tle import Tle
-from beyond.frames import create_station
-from beyond.dates import Date, timedelta
-
-
-tle = Tle("""ISS (ZARYA)
-1 25544U 98067A   20147.68235988  .00000878  00000-0  23780-4 0  9990
-2 25544  51.6443  94.9049 0001567 359.6611  61.5558 15.49392416228680
-""")
-
+from skyfield.api import Topos, load, EarthSatellite
 
 class Event(object):
     def __init__(self):
-        self.AOS_time = Date.now()
-        self.Max_time = Date.now()
-        self.LOS_time = Date.now()
-        self.total_event_time = timedelta(0)
+        self.AOS_time = None
+        self.LOS_time = None
+        self.total_time = None
 
-    def __str__(self):
-        return "Event at: {date:%Y-%m-%d %H:%M:%S}, for {duration:4.1f} minutes".format(date=self.AOS_time, duration=self.total_event_time.seconds/60)
+def get_events(satellite=None, gs_loc=None, t0=None, t1=None, deg=0.0):
+    events_list = []
 
+    t, events = satellite.find_events(gs_loc, t0, t1, deg)
 
-def find_events(TLE, station, start_time, stop_time, mimium_event_time):
-    events = []
-    events_size = 0
-    current_event = 0
-    event_happening = False
+    for ti, event in zip(t, events):
+        name = ("above", "culminate", "below")[event]
+        if event == 0: # above degrees
+            new_event = Event()  # make event
+            new_event.AOS_time = ti.utc_datetime()
+        elif event == 2: # below degrees
+            new_event.LOS_time = ti.utc_datetime()
+            new_event.total_time = new_event.LOS_time - new_event.AOS_time
+            events_list.append(new_event) # add event
 
-    for orb in station.visibility(tle.orbit(), start=start_time, stop=stop_time, step=timedelta(minutes=1), events=True):
-
-        if not orb.event:
-            continue
-
-        if orb.event.info == "AOS":
-            event_happening = True
-            new_event = Event()
-            new_event.AOS_time = orb.date
-
-        elif orb.event.info == "MAX":
-            new_event.Max_time = orb.date
-
-        elif orb.event.info == "LOS":
-            event_happening = False
-            new_event.LOS_time = orb.date
-            new_event.total_event_time = new_event.LOS_time - new_event.AOS_time
-
-            # append event to list if meet minium time
-            if new_event.total_event_time > mimium_event_time:
-                events.append(new_event)
-
-    return events
-
+    return events_list
 
 if __name__ == "__main__":
-    # Create a station for PSU
-    station = create_station('PSU', (45.512778, -122.685278, 47.0)) # lat long elev(m)
+    ts = load.timescale()
+    line1 = "1 25544U 98067A   20147.68235988  .00000878  00000-0  23780-4 0  9990"
+    line2 = "2 25544  51.6443  94.9049 0001567 359.6611  61.5558 15.49392416228680"
+    satellite = EarthSatellite(line1, line2, "ISS (ZARYA)", ts)
 
-    # find events for station
-    events = find_events(tle, station, Date.now(), timedelta(days=5), timedelta(seconds=30))
+    gs_loc = Topos(latitude_degrees=45.512778, longitude_degrees=122.685278, elevation_m=47.0)
+    t0 = ts.utc(2020, 5, 26)
+    t1 = ts.utc(2020, 5, 29)
 
-    for i in events:
-        print(i)
+    events = get_events(satellite, gs_loc, t0, t1, 0.0)
+
+    for e in events:
+        print("Pass at: {date:%Y-%m-%d %H:%M:%S} for {duration:4.1f} minutes".format(date=e.AOS_time, duration=e.total_time.total_seconds()/60))
+
