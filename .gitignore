@@ -1,5 +1,8 @@
 # Custom
 build/
+outputs/
+.mypy_cache/
+*.swp
 
 # Prerequisites
 *.d
