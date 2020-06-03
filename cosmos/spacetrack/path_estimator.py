@@ -41,13 +41,13 @@ def get_all_passes(satellite=None, location=None, t0=None, t1=None, deg=0.0):
     t, events = satellite.find_events(location, t0, t1, deg)
 
     for ti, event in zip(t, events):
-        name = ("acquisition", "max", "loss")[event]
+        event_name = ("acquisition", "max", "loss")[event]
 
-        if event == 0:
+        if event_name == "acquisition":
             new_pass = Pass()
 
             new_pass.AOS_datetime = ti.utc_datetime()
-        elif event == 2:
+        elif event_name == "loss":
             new_pass.LOS_datetime = ti.utc_datetime()
 
             pass_list.append(new_pass) # add pass to list
