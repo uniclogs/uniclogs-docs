@@ -1,10 +1,26 @@
 from skyfield.api import Topos, load, EarthSatellite
 
+
 class Event(object):
+    """
+    POD class for holding all info realated to a OreSat pass.
+    """
     def __init__(self):
-        self.AOS_time = None
-        self.LOS_time = None
+        # Datetime at Acquisition of Signal in UTC
+        self.AOS_datetime = None
+        # Datetime at Loss of Signal in UTC
+        self.LOS_datetime = None
+        # Total time of pass
         self.total_time = None
+        # Azimuth at Acquistion of Signal
+        self.AOS_azimuth = None
+        # Azimuth at Loss of Signal
+        self.LOS_azimuth = None
+        # Altitude at Acquistion of Signal
+        self.AOS_altitude = None
+        # Altitude at Loss of Signal
+        self.LOS_altitude = None
+
 
 def get_events(satellite=None, gs_loc=None, t0=None, t1=None, deg=0.0):
     events_list = []
@@ -15,13 +31,14 @@ def get_events(satellite=None, gs_loc=None, t0=None, t1=None, deg=0.0):
         name = ("above", "culminate", "below")[event]
         if event == 0: # above degrees
             new_event = Event()  # make event
-            new_event.AOS_time = ti.utc_datetime()
+            new_event.AOS_datetime = ti.utc_datetime()
         elif event == 2: # below degrees
-            new_event.LOS_time = ti.utc_datetime()
-            new_event.total_time = new_event.LOS_time - new_event.AOS_time
+            new_event.LOS_datetime = ti.utc_datetime()
+            new_event.total_time = new_event.LOS_datetime - new_event.AOS_datetime
             events_list.append(new_event) # add event
 
     return events_list
+
 
 if __name__ == "__main__":
     ts = load.timescale()
@@ -36,5 +53,5 @@ if __name__ == "__main__":
     events = get_events(satellite, gs_loc, t0, t1, 0.0)
 
     for e in events:
-        print("Pass at: {date:%Y-%m-%d %H:%M:%S} for {duration:4.1f} minutes".format(date=e.AOS_time, duration=e.total_time.total_seconds()/60))
+        print("Pass at: {datetime:%Y-%m-%d %H:%M:%S} for {duration:4.1f} minutes".format(datetime=e.AOS_datetime, duration=e.total_time.total_seconds()/60))
 
