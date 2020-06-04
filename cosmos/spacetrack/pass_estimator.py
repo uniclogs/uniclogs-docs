@@ -10,7 +10,7 @@ class Pass(object):
         self.AOS_datetime = None
         # UTC datetime at Loss of Signal
         self.LOS_datetime = None
-        # Azimuth
+        # Azimuth at Acuistion of Signal
         self.AOS_azimuth = None
         # Azimuth at Loss of Signal
         self.LOS_azimuth = None
@@ -18,6 +18,25 @@ class Pass(object):
         self.AOS_altitude = None
         # Altitude at Loss of Signal
         self.LOS_altitude = None
+
+
+def calc_gs_topocentric(sat=None, gs_loc=None, dt=None):
+    """
+    Calculate altitude and azimuth for a ground station. Ment to be used by
+    get_all_passes to get altitude and azimuth at AOS and LOS.
+
+    @param sat_loc Skyfield EarthSatellite object for satellite location.
+    @param gs_loc Skyfield Top object for a ground station location.
+    @param dt datetime to get postion of satellite.
+
+    @return altitude, azimuth
+    """
+
+    diff = sat - gs_loc
+    topocentric = diff.at(dt)
+    altitude, azimuth, distance = topocentric.altaz()
+
+    return altitude, azimuth
 
 
 def get_all_passes(satellite=None, location=None, t0=None, t1=None, deg=0.0):
@@ -28,7 +47,7 @@ def get_all_passes(satellite=None, location=None, t0=None, t1=None, deg=0.0):
     @param location Skyfield Topos object
     @param t0 Skyfield event start datetime
     @param t1 Skyfield event end datetime
-    @param deg Horizon degrees
+    @param deg Minium horizon degrees (optional)
 
     @return list of pass objects
     """
@@ -47,8 +66,10 @@ def get_all_passes(satellite=None, location=None, t0=None, t1=None, deg=0.0):
             new_pass = Pass()
 
             new_pass.AOS_datetime = ti.utc_datetime()
+            new_pass.AOS_altitude, new_pass.AOS_azimuth = calc_gs_topocentric(satellite, location, ti)
         elif event_name == "loss":
             new_pass.LOS_datetime = ti.utc_datetime()
+            new_pass.LOS_altitude, new_pass.LOS_azimuth = calc_gs_topocentric(satellite, location, ti)
 
             pass_list.append(new_pass) # add pass to list
 
@@ -57,15 +78,15 @@ def get_all_passes(satellite=None, location=None, t0=None, t1=None, deg=0.0):
 
 def get_all_available_passes(approved_passes=None, satellite=None, location=None, t0=None, t1=None, deg=0.0):
     """
-    Is a wrapper ontop of get_all_passes() that will remove all passes that
-    overlap with existing approved_passes
+    Is a wrapper ontop of get_all_passes() that will remove all possible
+    passes that overlap with existing approved_passes.
 
-    @param approved_passes List of pass objects
+    @param approved_passes List of pass objects that have been approved
     @param satellite Skyfield EarthSatellite object
     @param location Skyfield Topos object
     @param t0 Skyfield event start datetime
     @param t1 Skyfield event end datetime
-    @param deg Horizon degrees
+    @param deg Minium horizon degrees (optional)
 
     @return list of available pass objects
     """
