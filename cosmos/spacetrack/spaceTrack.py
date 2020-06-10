@@ -26,7 +26,7 @@ def getTLE(siteCred, norad_id):
     requestLogin           = "/ajaxauth/login"
     requestTLE             = "/basicspacedata/query/class/tle/NORAD_CAT_ID/"
     sat_id                 = norad_id
-    requestDetails         ="/predicates/TLE_LINE1,TLE_LINE2/limit/1/format/json"
+    requestDetails         ="/predicates/TLE_LINE0,TLE_LINE1,TLE_LINE2/limit/1/format/json"
 
     with requests.Session() as session:
         resp = session.post(uriBase + requestLogin, data = siteCred)
