@@ -50,5 +50,5 @@ def getTLE(siteCred, norad_id):
 
 if __name__ == "__main__":
     siteCred = credentials(usr, pwd)
-    norad_id = get_Norad_id(25544)
+    norad_id = get_Norad_id(satellite_id)
     tleOutput = getTLE(siteCred, norad_id)
