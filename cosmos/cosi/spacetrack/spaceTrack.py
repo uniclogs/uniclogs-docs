@@ -4,51 +4,47 @@
 
 import requests
 import json
-import os, sys
-
+import sys
+from common import  URl_BASE, \
+                    REQUEST_LOGIN, \
+                    REQUEST_DETAILS
+from utilities import dump_json
 
 def credentials(usr, pwd):
     siteCred = {'identity': usr, 'password': pwd}
     return siteCred
 
-def get_Norad_id(norad_id):
-    return norad_id
-
 class MyError(Exception):
     def __init___(self,args):
-        Exception.__init__(self,"Exception raised with arguments {0}".format(args))
+        super().__init__(self,"Exception raised with arguments {0}".format(args))
         self.args = args
 
 # norad_id = 25544 for ISS (ZARYA)
 def getTLE(siteCred, norad_id):
-
-    uriBase                = "https://www.space-track.org"
-    requestLogin           = "/ajaxauth/login"
-    requestTLE             = "/basicspacedata/query/class/tle/NORAD_CAT_ID/"
-    sat_id                 = norad_id
-    requestDetails         ="/predicates/TLE_LINE0,TLE_LINE1,TLE_LINE2/limit/1/format/json"
-
+    data = []
+    sat_id = norad_id
+  
     with requests.Session() as session:
-        resp = session.post(uriBase + requestLogin, data = siteCred)
+        resp = session.post(URL_BASE + REQUEST_LOGIN, data = siteCred)
         if resp.status_code != 200:
             raise MyError(resp, "Credentials fail on login")
 
-        resp = session.get(uriBase + requestTLE + str(norad_id) + requestDetails)
+        resp = session.get(URL_BASE + TLE_REQUESTER + str(sat_id) + REQUEST_DETAILS)
         if resp.status_code != 200:
             print(resp)
             raise MyError(resp, "TLE request fails, check credentials")
 
 
         # output to file in json format
-        retData = json.loads(resp.text)
-        with open('jsonOutput.json', 'w') as outFile:
-            json.dump(retData, outFile)
+        data = json.loads(resp.text)
+        outfile = open('jsonOutput.json', 'w')
+        dump_json(outfile, data)
+
         # or just return data from function
         print("process complete")
-    return retData
+    return data
 
 
 if __name__ == "__main__":
     siteCred = credentials(usr, pwd)
-    norad_id = get_Norad_id(satellite_id)
     tleOutput = getTLE(siteCred, norad_id)
