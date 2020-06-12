@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import requests
-import utilities as utils
-import kaitaistruct
+# import kaitaistruct
 from socket import gaierror
 from common import BASE_URL, \
                    API_TOKEN, \
@@ -13,6 +12,10 @@ from pytz import utc
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from structs.csim import Csim
+
+sys.path.append('..')
+
+import utilities as utils
 
 STALE_FRAME_TIME = timedelta(days=1)
 

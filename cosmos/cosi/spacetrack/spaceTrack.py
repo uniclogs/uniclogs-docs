@@ -43,7 +43,7 @@ def getTLE(siteCred, norad_id):
         retData = json.loads(resp.text)
         with open('jsonOutput.json', 'w') as outFile:
             json.dump(retData, outFile)
-        # or just return data from function    
+        # or just return data from function
         print("process complete")
     return retData
 
