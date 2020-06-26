@@ -3,15 +3,15 @@ import sys
 import requests
 # import kaitaistruct
 from socket import gaierror
-from common import BASE_URL, \
+from pytz import utc
+from datetime import datetime, timedelta
+from dateutil.parser import parse
+from .structs.csim import Csim
+from .common import BASE_URL, \
                    API_TOKEN, \
                    TEMPLATE_SATELITE, \
                    TEMPLATE_TELEMETRY, \
                    TEMPLATE_STRUCTURE
-from pytz import utc
-from datetime import datetime, timedelta
-from dateutil.parser import parse
-from structs.csim import Csim
 
 sys.path.append('..')
 
@@ -84,50 +84,10 @@ def load_telemetry(norad_id):
 
 def parse_telemetry_frame(telemetry, f_type=Csim):
     frame = bytearray.fromhex(telemetry.get('frame'))
-    info = Csim.from_bytes(frame) \
-                                    .ax25_frame \
-                                    .payload \
-                                    .ax25_info
+    info = Csim.from_bytes(frame) .ax25_frame \
+                                  .payload \
+                                  .ax25_info
     if(type(f_type) is Csim and type(info) is Csim.BeaconLong):
         return info.filtered_speed_rpm3
     else:
         return None
-
-
-def main(args):
-    # Guarentee the cache dir exists
-    utils.prime_cache()
-
-    # # Get the satellite id(s)
-    if(len(args) == 0):  # Get all satellite + telemetry
-        pass
-    else:  # Get specified satellite + telemetry
-        norad_id = args[0]
-
-        satelite = load_satelite(norad_id)
-        print('Satelite info: ' + str(satelite))
-
-        telemetry = load_telemetry(norad_id)
-        print('Telemetry info: ' + str(telemetry))
-
-        age = get_age(telemetry.get('timestamp'))
-        if(age > STALE_FRAME_TIME):
-            print('Telemetry is stale! Refetching...')
-            telemetry = get_telemetry(norad_id)[0]
-            utils.dump_json(telemetry_info_path(norad_id), telemetry)
-        else:
-            print("Telemetry is recent!")
-
-        # Parse the telemetry frame data
-        try:
-            frame = parse_telemetry_frame(telemetry)
-            if(frame is not None):
-                print("Decoded frame: " + str(frame))
-            else:
-                print('Frame has unknown encoding!')
-        except UnicodeDecodeError as e:
-            utils.error(e)
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])

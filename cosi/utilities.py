@@ -1,7 +1,7 @@
 import os.path
 import sys
 import json
-from common import CACHE_DIR
+from satnogs import CACHE_DIR
 
 
 def load_json(filename):

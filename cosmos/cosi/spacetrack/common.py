@@ -1,4 +1,3 @@
-import os
 
 URl_BASE         = "https://www.space-track.org"
 REQUEST_LOGIN    = "/ajaxauth/login"
