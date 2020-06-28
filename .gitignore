@@ -3,6 +3,8 @@ build/
 outputs/
 .mypy_cache/
 *.swp
+cache
+**/cache
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
