@@ -1,19 +1,5 @@
-#!/usr/bin/env python3
-import os
-import sys
 import psycopg2
-
-
-def get_env(key: str):
-    env = os.environ.get(key)
-    if(env is None):
-        raise Exception("Environment variable: " + key + " expected but not set!")
-    return env
-
-
-class Pass:
-    def __init__(self, latitude, longitude, start, end, altitude, azimuth):
-        pass
+from .pass_calculator import Pass
 
 
 class DartDB:
@@ -31,8 +17,8 @@ class DartDB:
                                              + ' does not contain table: '
                                              + table)
 
-    def add_request(self, user_id, orbital_pass):
-        raise NotImplemented()
+    def add_request(self, user_id: str, orbital_pass: Pass):
+        raise NotImplementedError()
         # self.cursor.execute('INSERT INTO '
         #                     + self.schema[0]
         #                     + ' (added, header, first, second) \
@@ -78,32 +64,3 @@ class DartDB:
 
     def __str__(self):
         return str(self.session)
-
-
-def main(args):
-    host = get_env('DART_HOST')
-    prod_path = get_env('DART_DB')
-    username = get_env('DART_USERNAME')
-    password = get_env('DART_PASSWORD')
-
-    try:
-        prod_db = DartDB(host, prod_path, username, password)
-
-        if(len(args) == 4):
-            prod_db.add_tle(args[0], args[1], args[2], args[3])
-
-        tles = prod_db.get_tles()
-        print('TLEs:')
-        for tle in tles:
-            print('\t' + str(tle))
-
-    except psycopg2.DatabaseError as e:
-        print(str(e))
-        prod_db = None
-    finally:
-        if(prod_db is not None):
-            prod_db.close()
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])

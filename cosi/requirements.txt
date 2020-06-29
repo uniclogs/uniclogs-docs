@@ -1,2 +1,6 @@
-skyfield>=1.20-1
-psycopg2
+kaitaistruct==0.8
+pkginfo==1.5.0.1
+skyfield==1.22
+psycopg2==2.8.5
+requests==2.24.0
+pytz==2020.1

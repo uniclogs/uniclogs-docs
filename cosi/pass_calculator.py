@@ -1,10 +1,13 @@
-from skyfield.api import Topos, load, EarthSatellite
+from skyfield.api import Topos, \
+                         load, \
+                         EarthSatellite
 
 
 class Pass(object):
     """
     POD class for holding all info realated to a OreSat pass.
     """
+
     def __init__(self):
         # UTC datetime at Acquisition of Signal
         self.AOS_datetime = None
@@ -109,8 +112,7 @@ def get_all_available_passes(approved_passes=None, satellite=None, location=None
             if (pp.AOS_datetime <= ap.AOS_datetime and pp.LOS_datetime > ap.AOS_datetime) \
                     or (pp.AOS_datetime < ap.LOS_datetime and pp.LOS_datetime <= ap.LOS_datetime):
                 available = False
-                break # no reason to check against any other approved_passes
-
+                break  # no reason to check against any other approved_passes
 
         if available:
             passes.append(pp)
@@ -118,27 +120,26 @@ def get_all_available_passes(approved_passes=None, satellite=None, location=None
     return passes
 
 
-if __name__ == "__main__":
-    # NOTE example path estimation for uniclogs, remove once no longer needed
-
-    # make satellite object from TLE
-    ts = load.timescale()
-    tle_header = "ISS (ZARYA)"
-    tle_line1 = "1 25544U 98067A   20147.68235988  .00000878  00000-0  23780-4 0  9990"
-    tle_line2 = "2 25544  51.6443  94.9049 0001567 359.6611  61.5558 15.49392416228680"
-    satellite = EarthSatellite(tle_line1, tle_line2, tle_header, ts)
-
-    # uniclogs at PSU location
-    uniclogs_location = Topos(latitude_degrees=45.512778, longitude_degrees=122.685278, elevation_m=47.0)
-
-    # start / end datetimes
-    dt0 = ts.utc(2020, 5, 26)
-    dt1 = ts.utc(2020, 5, 29)
-
-    horizon_deg = 0.0
-
-    passes = get_all_passes(satellite, uniclogs_location, dt0, dt1, horizon_deg)
-
-    for p in passes:
-        print("Pass at: {datetime:%Y-%m-%d %H:%M:%S} for {duration:4.1f} minutes".format(datetime=p.AOS_datetime, duration=(p.LOS_datetime - p.AOS_datetime).total_seconds()/60))
-
+# if __name__ == "__main__":
+#     # NOTE example path estimation for uniclogs, remove once no longer needed
+#
+#     # make satellite object from TLE
+#     ts = load.timescale()
+#     tle_header = "ISS (ZARYA)"
+#     tle_line1 = "1 25544U 98067A   20147.68235988  .00000878  00000-0  23780-4 0  9990"
+#     tle_line2 = "2 25544  51.6443  94.9049 0001567 359.6611  61.5558 15.49392416228680"
+#     satellite = EarthSatellite(tle_line1, tle_line2, tle_header, ts)
+#
+#     # uniclogs at PSU location
+#     uniclogs_location = Topos(latitude_degrees=45.512778, longitude_degrees=122.685278, elevation_m=47.0)
+#
+#     # start / end datetimes
+#     dt0 = ts.utc(2020, 5, 26)
+#     dt1 = ts.utc(2020, 5, 29)
+#
+#     horizon_deg = 0.0
+#
+#     passes = get_all_passes(satellite, uniclogs_location, dt0, dt1, horizon_deg)
+#
+#     for p in passes:
+#         print("Pass at: {datetime:%Y-%m-%d %H:%M:%S} for {duration:4.1f} minutes".format(datetime=p.AOS_datetime, duration=(p.LOS_datetime - p.AOS_datetime).total_seconds()/60))
