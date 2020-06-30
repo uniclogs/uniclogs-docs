@@ -6,13 +6,15 @@ from flask_restful import Api
 
 
 
-def main():
-    log_interface.init("api")
+class Ultra:
+    def __init__(self):
+        self.logger = log_interface.init(__name__)
+        self.app = Flask(__name__)
+        self.api = Api(self.app)
+        self.api.add_resource(HelloWorld, '/')
 
-    app = Flask(__name__)
-    api = Api(app)
-    api.add_resource(HelloWorld, '/')
-    app.run(debug=True)
+    def run(self):
+        self.app.run(debug=True)
 
 if __name__ == "__main__":
-    main()
+    Ultra().run()
