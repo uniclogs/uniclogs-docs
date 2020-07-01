@@ -1,5 +1,4 @@
 import psycopg2
-from .pass_calculator import Pass
 
 
 class DartDB:
@@ -9,15 +8,16 @@ class DartDB:
                                         password=password,
                                         host=host)
         self.cursor = self.session.cursor()
-        self.schema = ['requests', 'passes', 'tles']
+        self.schema = ['pass', 'requests', 'pass_requests', 'tles']
 
         for table in self.schema:
             if(not self.has_table(table)):
-                raise psycopg2.DatabaseError(database
-                                             + ' does not contain table: '
-                                             + table)
+                path = 'cosi/schemas/' + table + '.sql'
+                print(table + ' table not in ' + database + '!\n\tGenerating from file: ' + path)
+                self.cursor.execute(open(path, 'r').read())
+        self.session.commit()
 
-    def add_request(self, user_id: str, orbital_pass: Pass):
+    def add_request(self, user_id: str, orbital_pass: object):
         raise NotImplementedError()
         # self.cursor.execute('INSERT INTO '
         #                     + self.schema[0]
