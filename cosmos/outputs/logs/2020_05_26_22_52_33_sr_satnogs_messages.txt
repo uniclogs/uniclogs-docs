@@ -1,0 +1,83 @@
+2020/05/26 22:52:33.912 (SCRIPTRUNNER): Starting script: satnogs.py
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): 2020/05/26 22:52:34.182 <R> ERROR: SyntaxError : /home/ivo/cosmos/satnogs/satnogs.py:20: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...f satelite_info_path(norad_id):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:24: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ... telemetry_info_path(norad_id):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:28: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...satelite_struct_path(norad_id):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:32: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...rst, second=datetime.now(utc)):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:36: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...ef get_satelite(norad_id=None):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:47: void value expression
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):         return None
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):                ^~~~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:47: syntax error, unexpected tCONSTANT, expecting keyword_end
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):         return None
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):                ^~~~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:50: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...); def load_satelite(norad_id):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:59: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...f get_telemetry(norad_id=None):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:70: void value expression
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):         return None
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):                ^~~~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:70: syntax error, unexpected tCONSTANT, expecting keyword_end
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):         return None
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):                ^~~~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:73: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...; def load_telemetry(norad_id):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:82: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ..._frame(telemetry, f_type=Csim):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:88: syntax error, unexpected tIDENTIFIER, expecting ')'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...y', 88);     if(type(f_type) is Csim and type(info) is Csim....
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                             ^~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:88: syntax error, unexpected tIDENTIFIER, expecting ')'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...type) is Csim and type(info) is Csim.BeaconLong):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                             ^~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:88: syntax error, unexpected ':', expecting keyword_then or ';' or '\n'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...type(info) is Csim.BeaconLong):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:90: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...ogs/satnogs.py', 90);     else:
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:94: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...tnogs.py', 94); def main(args):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:99: syntax error, unexpected ':', expecting keyword_then or ';' or '\n'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...', 99);     if(len(args) == 0):  
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:101: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...gs/satnogs.py', 101);     else:  
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:111: syntax error, unexpected ':', expecting keyword_then or ';' or '\n'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...    if(age > STALE_FRAME_TIME):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:115: syntax error, unexpected keyword_else, expecting keyword_end
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...satnogs.py', 115);         else:
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                           ^~~~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:119: syntax error, unexpected ':', expecting keyword_end
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...eturn_val = begin;         try:
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:121: syntax error, unexpected tCONSTANT, expecting '('
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...           if(frame is not None):
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                           ^~~~
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:123: syntax error, unexpected ':'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...gs.py', 123);             else:
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:129: syntax error, unexpected ':', expecting keyword_then or ';' or '\n'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...29); if __name__ == "__main__":
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): ...                              ^
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440): /home/ivo/cosmos/satnogs/satnogs.py:130: syntax error, unexpected ':', expecting ']'
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):     main(sys.argv[1:])
+2020/05/26 22:52:34.191 (script_runner_frame.rb:1440):                    ^
+2020/05/26 22:52:34.207 (SCRIPTRUNNER): Exception in Control Statement - Script stopped: satnogs.py

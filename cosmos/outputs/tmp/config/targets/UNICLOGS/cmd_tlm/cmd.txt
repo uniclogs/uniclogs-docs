@@ -1,0 +1,58 @@
+COMMAND UNICLOGS PWR_ON BIG_ENDIAN "Power On"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "PWR_ON" "Power On String"
+
+COMMAND UNICLOGS RX BIG_ENDIAN "Receive Only Mode"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "RX"     "Receive String"
+
+COMMAND UNICLOGS VHF_TX BIG_ENDIAN "VHF Transmit Mode"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "V_TX"   "VHF Transmit String"
+
+COMMAND UNICLOGS UHF_TX BIG_ENDIAN "UHF Transmit Mode"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "U_TX"   "UHF Transmit String"
+
+COMMAND UNICLOGS L_TX BIG_ENDIAN "L-Band Transmit Mode"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "L_TX"   "L-Band Transmit String"
+
+COMMAND UNICLOGS VHF_POL BIG_ENDIAN "VHF Polarity Switch"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "V_RIGHT" "VHF Polarity String"
+    STATE RIGHT "V_RIGHT"
+    STATE LEFT  "V_LEFT"
+
+COMMAND UNICLOGS UHF_POL BIG_ENDIAN "UHF Polarity Switch"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "U_RIGHT" "UHF Polarity String"
+    STATE RIGHT "U_RIGHT"
+    STATE LEFT  "U_LEFT"
+
+COMMAND UNICLOGS VHF_PTT BIG_ENDIAN "VHF Push-To-Talk"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "V_TX_OFF" "VHF PTT String"
+    STATE PTT_OFF "V_TX_OFF"
+    STATE PTT_ON  "V_TX_ON"
+
+COMMAND UNICLOGS UHF_PTT BIG_ENDIAN "UHF Push-To-Talk"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "U_TX_OFF" "UHF PTT String"
+    STATE PTT_OFF "U_TX_OFF"
+    STATE PTT_ON  "U_TX_ON"
+
+COMMAND UNICLOGS L_PTT BIG_ENDIAN "L-Band Push-To-Talk"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "L_TX_OFF" "L-Band PTT String"
+    STATE PTT_OFF "L_TX_OFF"
+    STATE PTT_ON  "L_TX_ON"
+
+COMMAND UNICLOGS SHUTDOWN BIG_ENDIAN "Shutdown Transmission"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "SHUTDOWN" "Shutdown String"
+
+COMMAND UNICLOGS KILL BIG_ENDIAN "Emergency System Kill"
+  # Keyword           Name  BitSize Type   Min Max  Default  Description
+  APPEND_PARAMETER    CMD   0       STRING          "KILL"   "Kill String"
+
