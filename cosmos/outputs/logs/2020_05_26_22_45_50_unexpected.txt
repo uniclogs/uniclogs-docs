@@ -1,0 +1,7 @@
+Unexpected Output:
+
+Xlib:  extension "XInputExtension" missing on display "localhost:10.0".
+X Error: BadAccess (attempt to access private resource denied) 10
+  Major opcode: 2 (X_ChangeWindowAttributes)
+  Resource id:  0x1ed
+Xlib:  extension "SYNC" missing on display "localhost:10.0".
