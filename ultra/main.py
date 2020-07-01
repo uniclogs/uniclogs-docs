@@ -76,5 +76,6 @@ if __name__ == "__main__":
 
     Ultra().run()
 
-    # remove pid file
-    os.remove(pid_file)
+    if daemon_flag:
+        # remove pid file
+        os.remove(pid_file)
