@@ -36,3 +36,14 @@ jobs:
 
     - name: Run unit tests
       run: pytest cosi/spec/spacetrack.py
+      env:
+        SATNOGS_TOKEN: ${{ secrets.SATNOGS_TOKEN }}
+
+        SPACETRACK_USERNAME: ${{ secrets.SPACETRACK_USERNAME }}
+        SPACETRACK_PASSWORD: ${{ secrets.SPACETRACK_PASSWORD }}
+
+        DART_HOST: localhost
+        DART_DB: cosmos
+        DART_TEST_DB: cosmos-dev
+        DART_USERNAME: psas
+        DART_PASSWORD: ${{ secrets.DART_PASSWORD }}
