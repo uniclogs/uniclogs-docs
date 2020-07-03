@@ -1,0 +1,4 @@
+Unexpected Output:
+
+# Option “-e” is deprecated and might be removed in a later version of gnome-terminal.
+# Use “-- ” to terminate the options and put the command line to execute after it.
