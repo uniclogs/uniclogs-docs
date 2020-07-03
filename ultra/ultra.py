@@ -11,7 +11,7 @@ class Ultra:
         self.app = Flask(__name__)
         self.api = Api(self.app)
         self.api.add_resource(HelloWorld, '/')
-        self.api.add_resource(PassCalculator, '/pass-calculator')
+        self.api.add_resource(PassCalculator, '/passes')
 
     def run(self):
         self.app.run(debug=True)

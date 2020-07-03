@@ -8,7 +8,7 @@ class HelloWorld(Resource):
         return {"hello": "world"}
 
 
-class PassCalculator(Resource):
+class Passes(Resource):
     def put(self):
         # get args
         parser = reqparse.RequestParser()
