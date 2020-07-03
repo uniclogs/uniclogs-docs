@@ -54,11 +54,12 @@ def _pass_overlap(new_pass, approved_passes):
 
     for ap in approved_passes:
         """
-        Check to see if the end of the possible pass overlaps with start of the approved pass
-        and also check to if the start of the possible pass overlaps with end of the approved pass
+        Check to see if the end of the possible pass overlaps with start of
+        the approved pass and also check to if the start of the possible pass
+        overlaps with end of the approved pass
         """
-        if (pp.AOS_datetime <= ap.AOS_datetime and pp.LOS_datetime > ap.AOS_datetime) \
-                or (pp.AOS_datetime < ap.LOS_datetime and pp.LOS_datetime <= ap.LOS_datetime):
+        if (new_pass.AOS_datetime <= ap.AOS_datetime and new_pass.LOS_datetime > ap.AOS_datetime) \
+                or (new_pass.AOS_datetime < ap.LOS_datetime and new_pass.LOS_datetime <= ap.LOS_datetime):
             available = True # pass overlap with an approved pass
             break # no reason to check against any other approved passes
 
