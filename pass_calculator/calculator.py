@@ -7,7 +7,7 @@ from skyfield.api import Topos, \
 def _calc_topocentric(satellite, location, dt):
     """Calculates topocentric coordinates for a satellite at a datetime.
 
-    Parametes
+    Parameters
     ---------
     satellite : EarthSatellite
         Satellite object to use.
@@ -38,10 +38,10 @@ def _pass_overlap(new_pass, approved_passes):
 
     Parameters
     ----------
-    new_pass : Pass
+    new_pass : OrbitalPass
         A possbile pass.
-    approved_passes : list of Pass
-        List of existing approved Pass objects to check against.
+    approved_passes : list of OrbitalPass
+        List of existing approved OrbitalPass objects to check against.
 
     Returns
     -------
@@ -72,7 +72,7 @@ def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_de
     Parameters
     ----------
     tle : list of str
-        Can be [tle_line1, tle_line2] or [tle_line1, tle_line2, tle_header]
+        Can be [tle_line1, tle_line2] or [tle_header, tle_line1, tle_line2]
     lat_deg : float
         latitude of ground station in degrees
     long_deg : float
@@ -87,8 +87,8 @@ def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_de
         The end datetime wanted.
     min_duration_s : int
         Minimum duration wanted
-    approved_passes : list of Pass
-    A list of Pass objects for existing approved passes.
+    approved_passes : list of OrbitalPass
+    A list of OrbitalPass objects for existing approved passes.
 
     Raises
     ------
@@ -99,7 +99,7 @@ def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_de
 
     Returns
     -------
-    list of Pass
+    list of OrbitalPass
 
     """
 

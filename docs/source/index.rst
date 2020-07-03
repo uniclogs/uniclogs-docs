@@ -1,15 +1,33 @@
-.. mission-server documentation master file, created by
-   sphinx-quickstart on Thu Jul  2 18:18:43 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to mission-server's documentation!
+==========================================
+Welcome to Mission Server's documentation!
 ==========================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
 
+Glossary
+========
+
+.. toctree::
+    :maxdepth: 2
+
+    glossary
+
+
+Public API
+==========
+
+.. toctree::
+    :maxdepth: 2
+
+    public_api
+
+
+Internal
+========
+
+.. toctree::
+    :maxdepth: 2
+
+    internal/index
 
 
 Indices and tables
