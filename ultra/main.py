@@ -1,5 +1,5 @@
 import sys, os, getopt
-from ultra import *
+import ultra
 
 
 def daemonize(pid_file):
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     if daemon_flag:
         daemonize(pid_file)
 
-    Ultra().run()
+    ultra.run()
 
     if daemon_flag:
         # remove pid file
