@@ -11,36 +11,37 @@ class OrbitalPass():
         ground station elevation in m
     horizon_deg : float
         horizon degrees
-    AOS_datetime : datetime
+    AOS_datetime : str
         datetime at acquisition of signal
-    AOS_azimuth : str
-        azimuth string at acquisition of signal
-    AOS_altitude : str
-        altitude degrees string at acquisition of signal
-    AOS_distance : int
-        distance to satellite at acquistion of signal in m
-    LOS_datetime : datetime
+    AOS_azimuth : float
+        azimuth at acquisition of signal
+    AOS_altitude : float
+        altitude degrees at acquisition of signal
+    AOS_distance : float
+        distance to satellite at acquistion of signal in kilometers
+    LOS_datetime : str
         datetime at loss of signal
-    LOS_azimuth : str
-        azimuth string at loss of signal
-    LOS_altitude : str
-        altitude degrees string at loss of signal
-    LOS_distance : int
-        distance to satellite at loss of signal in m
     """
-    def __init__(self):
+    def __init__(self,
+            gs_latitude,
+            gs_longitude,
+            gs_elevation_m,
+            horizon_deg,
+            AOS_datetime_utc,
+            AOS_altitude,
+            AOS_azimuth,
+            AOS_distance,
+            LOS_datetime_utc
+            ):
         # Location data for the ground station
-        self.gs_latitude = 0.0
-        self.gs_longitude = 0.0
-        self.gs_elevation_m = 0.0
-        self.horizon_deg = 0.0
+        self.gs_latitude = gs_latitude
+        self.gs_longitude = gs_longitude
+        self.gs_elevation_m = gs_elevation_m
+        self.horizon_deg = horizon_deg
         # Event data at Acquisition of Signal
-        self.AOS_datetime_utc = None
-        self.AOS_azimuth = None
-        self.AOS_altitude = None
-        self.AOS_distance = 0.0
+        self.AOS_datetime_utc = AOS_datetime_utc
+        self.AOS_altitude = AOS_altitude
+        self.AOS_azimuth = AOS_azimuth
+        self.AOS_distance = AOS_distance
         # Event data at Loss of Signal
-        self.LOS_datetime_utc = None
-        self.LOS_azimuth = None
-        self.LOS_altitude = None
-        self.LOS_distance = 0.0
+        self.LOS_datetime_utc = LOS_datetime_utc

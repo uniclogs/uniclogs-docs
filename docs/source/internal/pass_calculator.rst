@@ -8,11 +8,8 @@ calculate passes from a TLE (two-line element) and LatLong coordinates.
 
 .. autofunction:: pass_calculator.calculator.get_all_passes
 
-.. autofunction:: pass_calculator.calculator._calc_topocentric
+.. autofunction:: pass_calculator.calculator.pass_overlap
 
-.. autofunction:: pass_calculator.calculator._pass_overlap
-
-.. automodule:: pass_calculator.orbitalpass
+.. autoclass:: pass_calculator.orbitalpass.OrbitalPass
    :members:
-   :show-inheritance:
 

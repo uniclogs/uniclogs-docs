@@ -6,4 +6,5 @@ Internal
    :maxdepth: 4
 
    pass_calculator
+   ultra
 

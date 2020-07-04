@@ -2,76 +2,71 @@ from .orbitalpass import OrbitalPass
 from skyfield.api import Topos, \
                          load, \
                          EarthSatellite
+from datetime import datetime
 
 
-def _calc_topocentric(satellite, location, dt):
-    """Calculates topocentric coordinates for a satellite at a datetime.
-
-    Parameters
-    ---------
-    satellite : EarthSatellite
-        Satellite object to use.
-    location : Topos
-        A location on earth to use.
-    dt : ts
-        A timescale to calculate topocentric coordinates.
-
-    Returns
-    -------
-    altitude : str
-        altitude in degress
-    azimuth : str
-        azimuth in degrees
-    distance : float
-        distance to satellite in kilometers
-
-    https://rhodesmill.org/skyfield/earth-satellites.html#generating-a-satellite-position
-    """
-
-    diff = satellite -  location
-    topocentric = diff.at(dt)
-    return topocentric.altaz()
+_DATETIME_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
 
 
-def _pass_overlap(new_pass, approved_passes):
-    """Checks to see if the possible pass will overlap with an existing approved pass.
+def pass_overlap(new_pass, approved_passes):
+    """Checks to see if the possible pass will overlap with an existing
+    approved pass.
 
     Parameters
     ----------
     new_pass : OrbitalPass
         A possbile pass.
-    approved_passes : list of OrbitalPass
+    approved_passes : [OrbitalPass]
         List of existing approved OrbitalPass objects to check against.
 
     Returns
     -------
     bool
-        True -- pass overlaps with an existing approved pass.
-        False -- no overlap
+        True if pass overlaps with an existing approved pass or False if no overlap
     """
 
     available = False
 
+    # convert string to datetime objects
+    np_AOS_dt = datetime.strptime(new_pass.AOS_datetime_utc, _DATETIME_STR_FORMAT)
+    np_LOS_dt = datetime.strptime(new_pass.LOS_datetime_utc, _DATETIME_STR_FORMAT)
+
     for ap in approved_passes:
+        # convert string to datetime objects
+        ap_AOS_dt = datetime.strptime(ap.AOS_datetime_utc, _DATETIME_STR_FORMAT)
+        ap_LOS_dt = datetime.strptime(ap.LOS_datetime_utc, _DATETIME_STR_FORMAT)
+
         """
         Check to see if the end of the possible pass overlaps with start of
         the approved pass and also check to if the start of the possible pass
         overlaps with end of the approved pass
         """
-        if (new_pass.AOS_datetime <= ap.AOS_datetime and new_pass.LOS_datetime > ap.AOS_datetime) \
-                or (new_pass.AOS_datetime < ap.LOS_datetime and new_pass.LOS_datetime <= ap.LOS_datetime):
+        if (np_AOS_dt <= ap_AOS_dt and np_LOS_dt > ap_AOS_dt) \
+                or (np_AOS_dt < ap_LOS_dt and np_LOS_dt <= ap_LOS_dt):
             available = True # pass overlap with an approved pass
             break # no reason to check against any other approved passes
 
     return available
 
 
-def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_deg=0.0, start_time_utc=None, end_time_utc=None, min_duration_s=0, approved_passes=[]):
+def get_all_passes(
+        tle=None,
+        lat_deg=None,
+        long_deg=None,
+        elev_m=0.0,
+        horizon_deg=0.0,
+        start_time_utc=None,
+        end_time_utc=None,
+        min_duration_s=0,
+        approved_passes=[]):
     """Get a list of all passes for a satellite and location for a time span.
+
+    Wrapper for Skyfield TLE ground station pass functions that produces an
+    OrbitalPass object list of possible passes.
 
     Parameters
     ----------
-    tle : list of str
+    tle : [str]
         Can be [tle_line1, tle_line2] or [tle_header, tle_line1, tle_line2]
     lat_deg : float
         latitude of ground station in degrees
@@ -87,8 +82,8 @@ def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_de
         The end datetime wanted.
     min_duration_s : int
         Minimum duration wanted
-    approved_passes : list of OrbitalPass
-    A list of OrbitalPass objects for existing approved passes.
+    approved_passes : [OrbitalPass]
+        A list of OrbitalPass objects for existing approved passes.
 
     Raises
     ------
@@ -99,7 +94,8 @@ def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_de
 
     Returns
     -------
-    list of OrbitalPass
+    [OrbitalPass]
+        List of OrbitalPass to that are available in the timespan.
 
     """
 
@@ -122,7 +118,8 @@ def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_de
 
     # make topocentric object
     loc = Topos(lat_deg, long_deg, elev_m)
-    loc = Topos(latitude_degrees=lat_deg, longitude_degrees=long_deg, elevation_m=elev_m)
+    loc = Topos(latitude_degrees=lat_deg,
+            longitude_degrees=long_deg, elevation_m=elev_m)
 
     # make satellite object from TLE
     if len(tle) == 2:
@@ -135,27 +132,30 @@ def get_all_passes(tle=None, lat_deg=None, long_deg=None, elev_m=0.0, horizon_de
     # find all events
     t, events = satellite.find_events(loc, t0, t1, horizon_deg)
 
-    # fill the pass_list with event data
-    for ti, event in zip(t, events):
-        event_name = ("acquisition", "max", "loss")[event]
+    # make oritbal pass list
+    for x in range(0, len(events)-3, 3):
+        AOS_datetime_utc = t[x].utc_datetime()
+        LOS_datetime_utc = t[x+2].utc_datetime()
+        duration_s = (LOS_datetime_utc - AOS_datetime_utc).total_seconds() / 60
 
-        if event_name == "acquisition":
-            new_pass = OrbitalPass()
-            new_pass.AOS_datetime_utc = ti.utc_datetime()
-            new_pass.AOS_altitude, new_pass.AOS_azimuth, new_pass.AOS_distance = _calc_topocentric(satellite, loc, ti)
-        elif event_name == "loss":
-            new_pass.LOS_datetime_utc = ti.utc_datetime()
-            new_pass.LOS_altitude, new_pass.LOS_azimuth, new_pass.LOS_distance = _calc_topocentric(satellite, loc, ti)
+        if duration_s > min_duration_s:
+            diff = satellite - loc
+            topocentric = diff.at(t[x])
+            AOS_alt, AOS_azi, AOS_dist = topocentric.altaz()
 
-            if _pass_overlap(new_pass, approved_passes):
-                continue # new pass overlap with an approved passes
+            new_pass = OrbitalPass(
+                    lat_deg,
+                    long_deg,
+                    elev_m,
+                    horizon_deg,
+                    AOS_datetime_utc.strftime(_DATETIME_STR_FORMAT),
+                    AOS_alt.degrees,
+                    AOS_azi.degrees,
+                    AOS_dist.km,
+                    LOS_datetime_utc.strftime(_DATETIME_STR_FORMAT)
+                    )
 
-            # check duration
-            if ((new_pass.LOS_datetime_utc - new_pass.AOS_datetime_utc).total_seconds()/60) > min_duration_s:
-                new_pass.gs_latitude = lat_deg
-                new_pass.gs_longitude = long_deg
-                new_pass.gs_elevation_m = elev_m
-                new_pass.horizon_deg = horizon_deg
+            if not pass_overlap(new_pass, approved_passes):
                 pass_list.append(new_pass) # add pass to list
 
     return pass_list
