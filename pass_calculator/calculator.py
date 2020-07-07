@@ -8,14 +8,17 @@ from datetime import datetime
 _DATETIME_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
 
 
-def pass_overlap(new_pass, approved_passes):
+def pass_overlap(start_datetime_utc, end_datetime_utc, approved_passes):
+    # type: (datetime, datetime, [ObjectPass]) -> bool
     """Checks to see if the possible pass will overlap with an existing
     approved pass.
 
     Parameters
     ----------
-    new_pass : OrbitalPass
-        A possbile pass.
+    start_datetime_utc : datetime
+        The start datetime for new pass.
+    end_datetime_utc : datetime
+        The end datetime for new pass.
     approved_passes : [OrbitalPass]
         List of existing approved OrbitalPass objects to check against.
 
@@ -27,10 +30,6 @@ def pass_overlap(new_pass, approved_passes):
 
     available = False
 
-    # convert string to datetime objects
-    np_AOS_dt = datetime.strptime(new_pass.AOS_datetime_utc, _DATETIME_STR_FORMAT)
-    np_LOS_dt = datetime.strptime(new_pass.LOS_datetime_utc, _DATETIME_STR_FORMAT)
-
     for ap in approved_passes:
         # convert string to datetime objects
         ap_AOS_dt = datetime.strptime(ap.AOS_datetime_utc, _DATETIME_STR_FORMAT)
@@ -41,8 +40,8 @@ def pass_overlap(new_pass, approved_passes):
         the approved pass and also check to if the start of the possible pass
         overlaps with end of the approved pass
         """
-        if (np_AOS_dt <= ap_AOS_dt and np_LOS_dt > ap_AOS_dt) \
-                or (np_AOS_dt < ap_LOS_dt and np_LOS_dt <= ap_LOS_dt):
+        if (start_datetime_utc <= ap_AOS_dt and end_datetime_utc > ap_AOS_dt) \
+                or (start_datetime_utc < ap_LOS_dt and end_datetime_utc <= ap_LOS_dt):
             available = True # pass overlap with an approved pass
             break # no reason to check against any other approved passes
 
@@ -59,6 +58,7 @@ def get_all_passes(
         end_time_utc=None,
         min_duration_s=0,
         approved_passes=[]):
+    # type: ([str], float, float, float, float, datetime, datetime, int, OrbitalPass) -> [{str, float}]
     """Get a list of all passes for a satellite and location for a time span.
 
     Wrapper for Skyfield TLE ground station pass functions that produces an
@@ -94,8 +94,10 @@ def get_all_passes(
 
     Returns
     -------
-    [OrbitalPass]
-        List of OrbitalPass to that are available in the timespan.
+    [{str, float}]
+        A diction of:
+            - A datetime str
+            - duration of pass in minutes
 
     """
 
@@ -136,26 +138,15 @@ def get_all_passes(
     for x in range(0, len(events)-3, 3):
         AOS_datetime_utc = t[x].utc_datetime()
         LOS_datetime_utc = t[x+2].utc_datetime()
-        duration_s = (LOS_datetime_utc - AOS_datetime_utc).total_seconds() / 60
+        duration_m = (LOS_datetime_utc - AOS_datetime_utc).total_seconds() / 60
 
-        if duration_s > min_duration_s:
-            diff = satellite - loc
-            topocentric = diff.at(t[x])
-            AOS_alt, AOS_azi, AOS_dist = topocentric.altaz()
+        if duration_m > min_duration_s/60:
+            new_pass = {
+                    "start_datetime_utc": AOS_datetime_utc.strftime(_DATETIME_STR_FORMAT),
+                    "duration_m": duration_m
+                    }
 
-            new_pass = OrbitalPass(
-                    lat_deg,
-                    long_deg,
-                    elev_m,
-                    horizon_deg,
-                    AOS_datetime_utc.strftime(_DATETIME_STR_FORMAT),
-                    AOS_alt.degrees,
-                    AOS_azi.degrees,
-                    AOS_dist.km,
-                    LOS_datetime_utc.strftime(_DATETIME_STR_FORMAT)
-                    )
-
-            if not pass_overlap(new_pass, approved_passes):
+            if not pass_overlap(AOS_datetime_utc, LOS_datetime_utc, approved_passes):
                 pass_list.append(new_pass) # add pass to list
 
     return pass_list

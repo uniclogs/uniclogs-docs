@@ -33,6 +33,8 @@ class OrbitalPass():
             AOS_distance,
             LOS_datetime_utc
             ):
+        # type: (float, float, float, float, str, float, float, float, str) -> ()
+
         # Location data for the ground station
         self.gs_latitude = gs_latitude
         self.gs_longitude = gs_longitude
