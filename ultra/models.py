@@ -18,13 +18,15 @@ class Request(db.Model):
 
 
 def testAddRequest():
-    logger.info("Call 1")
-    request_example = Request(user_token='tokentes1t1', is_approved=False, is_sent=False, pass_uid=None, created_date=None)
-    db.session.add(request_example)
-    #db.session.commit()
+    new_request = Request(user_token='test_tokesn', is_approved=False, is_sent=False, pass_uid=None, created_date=None)
+    db.session.add(new_request)
+    #When adding/updating/deleting a new record, we make sure the transaction had been commited
+    db.session.commit()
 
-    #request_list = Request.query.all()
+    #We query the list of request stored in the database
+    request_list = Request.query.all()
+    print(request_list)
 
-
-
-    #request_sent = session.query(Request).filter(Request.is_sent == True)
+    #We query the list of sent request stored in the database
+    request_sent = Request.query.filter(Request.is_sent == True).all()
+    print(request_sent)

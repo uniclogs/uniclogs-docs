@@ -5,7 +5,7 @@ from flask import Flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import text
-import sys, inspect
+import sys
 
 
 
@@ -27,9 +27,4 @@ api.add_resource(HelloWorld, '/')
 
 
 def run():
-    s = inspect.stack()
-    print(s)
-
-    from models import Request, testAddRequest
-    testAddRequest()
     app.run(debug=True)
