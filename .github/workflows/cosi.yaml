@@ -1,0 +1,49 @@
+name: CoSI Unit + Integration Tests
+
+on:
+  push:
+    branches: [ capstone-dev, cosi ]
+  pull_request:
+    branches: [ capstone-dev, cosi ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.6, 3.7, 3.8]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup ${{ matrix.python-version }} on ${{ matrix.os }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python -m pip install --upgrade pip
+    - run: pip install flake8 pytest
+
+    - name: Install dependencies
+      run: |
+        if [ -f cosi/requirements.txt ]; then
+          pip install -r cosi/requirements.txt
+        fi
+
+    - name: Lint code
+      run: flake8 ./cosi --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Run unit tests
+      run: pytest cosi/spec/spacetrack.py
+      env:
+        SATNOGS_TOKEN: ${{ secrets.SATNOGS_TOKEN }}
+
+        SPACETRACK_USERNAME: ${{ secrets.SPACETRACK_USERNAME }}
+        SPACETRACK_PASSWORD: ${{ secrets.SPACETRACK_PASSWORD }}
+
+        DART_HOST: localhost
+        DART_DB: cosmos
+        DART_TEST_DB: cosmos-dev
+        DART_USERNAME: psas
+        DART_PASSWORD: ${{ secrets.DART_PASSWORD }}
