@@ -1,0 +1,35 @@
+Unexpected Output:
+
+2020/05/26 22:55:06.789  FATAL: Fatal Exception! Exiting...
+2020/05/26 22:55:06.789  FATAL: Error : Packet not found
+
+Parsed output in /home/ivo/cosmos/outputs/tmp/config/targets/SYSTEM/cmd_tlm/override.txt
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/packets/packet_config.rb:183:in `block in process_file'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/config/config_parser.rb:200:in `parse_loop'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/config/config_parser.rb:200:in `parse_file'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/packets/packet_config.rb:126:in `process_file'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:868:in `block (2 levels) in load_packets_internal'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:866:in `each'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:866:in `block in load_packets_internal'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:865:in `each'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:865:in `load_packets_internal'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:894:in `block in load_packets'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:893:in `synchronize'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:893:in `load_packets'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:136:in `telemetry'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/system/system.rb:142:in `telemetry'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/tools/data_viewer/data_viewer.rb:79:in `block (2 levels) in initialize'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/qtbindings-4.8.6.5/lib/Qt4.rb:104:in `block in execute_in_main_thread'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/qtbindings-4.8.6.5/lib/Qt4.rb:57:in `callback_timeout'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/qtbindings-4.8.6.5/lib/Qt/qtruby4.rb:479:in `qt_metacall'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/qtbindings-4.8.6.5/lib/Qt/qtruby4.rb:479:in `method_missing'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/qtbindings-4.8.6.5/lib/Qt/qtruby4.rb:479:in `exec'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/gui/qt_tool.rb:325:in `block in run'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/top_level.rb:741:in `set_working_dir'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/gui/qt_tool.rb:306:in `run'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/tools/data_viewer/data_viewer.rb:785:in `block in run'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/top_level.rb:556:in `catch_fatal_exception'
+/home/ivo/.rbenv/versions/2.5.8/lib/ruby/gems/2.5.0/gems/cosmos-4.4.2/lib/cosmos/tools/data_viewer/data_viewer.rb:767:in `run'
+tools/DataViewer:15:in `block in <main>'
+/home/ivo/cosmos/tools/tool_launch.rb:16:in `tool_launch'
+tools/DataViewer:13:in `<main>'
