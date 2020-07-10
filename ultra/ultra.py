@@ -1,5 +1,7 @@
 import log_interface
-from endpoints.passes import *
+from endpoints.passes import Passes
+from endpoints.add_request import AddRequest
+from endpoints.modify_request import ModifyRequest
 from loguru import logger
 from flask import Flask
 from flask_restful import Api
@@ -25,5 +27,7 @@ def run():
     # setup endpoints
     api = Api(app)
     api.add_resource(Passes, '/passes')
+    api.add_resource(AddRequest, '/request/')
+    api.add_resource(ModifyRequest, '/request/<int:request_id>')
 
     app.run(debug=True)

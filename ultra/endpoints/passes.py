@@ -1,7 +1,4 @@
 """
-passes
-------
-
 Restful API endpoint for calculating orbital passes for locations.
 
 Input:
