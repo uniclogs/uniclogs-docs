@@ -18,7 +18,7 @@ Public API
 .. toctree::
     :maxdepth: 2
 
-    public_api
+    public_api/index
 
 
 Internal
