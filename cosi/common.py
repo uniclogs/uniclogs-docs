@@ -21,8 +21,8 @@ class EnvironmentVariableNotDefined(Exception):
 SATNOGS_TOKEN = getenv('SATNOGS_TOKEN')
 
 SATNOGS_URL = 'https://db.satnogs.org'
-SATNOGS_SATELITE = SATNOGS_URL + '/api/satellites/{}'
-SATNOGS_TELEMETRY = SATNOGS_URL + '/api/telemetry/{}'
+SATNOGS_SATELITE = SATNOGS_URL + '/api/satellites/{}/?format=json'
+SATNOGS_TELEMETRY = SATNOGS_URL + '/api/telemetry/?satellite={}&format=json'
 
 # Spacetrack (18th-Space) constants
 SPACETRACK_USERNAME = getenv('SPACETRACK_USERNAME')
