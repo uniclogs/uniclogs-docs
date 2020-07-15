@@ -1,5 +1,11 @@
 """
+Passes Endpoint
+===============
 Restful API endpoint for calculating orbital passes for locations.
+Endpoint is /passes.
+
+GET
+---
 
 Input:
     JSON str
@@ -54,9 +60,8 @@ class Passes(Resource):
     def __init__(self):
         # get args
         self._parser = reqparse.RequestParser()
-        #self._parser.add_argument("latitude")
-        self._parser.add_argument("latitude", required=True, type=float, location = "json")
-        self._parser.add_argument("longitude", required=True, type=float, location = "json")
+        self._parser.add_argument("latitude_deg", required=True, type=float, location = "json")
+        self._parser.add_argument("longitude_deg", required=True, type=float, location = "json")
         self._parser.add_argument("elevation_m", type=float)
         super(Passes, self).__init__()
 
@@ -92,8 +97,8 @@ class Passes(Resource):
         future = future.replace(tzinfo=timezone.utc)
         orbital_passes = pc.get_all_passes(
                 tle=tle,
-                lat_deg=args["latitude"],
-                long_deg=args["longitude"],
+                lat_deg=args["latitude_deg"],
+                long_deg=args["longitude_deg"],
                 start_time_utc=now,
                 end_time_utc=future)
 
@@ -101,5 +106,5 @@ class Passes(Resource):
         for op in orbital_passes:
             orbital_passes_dict.append(op)
 
-        return orbital_passes_dict, 201
+        return orbital_passes_dict, 200
 

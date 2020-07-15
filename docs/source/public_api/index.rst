@@ -4,17 +4,15 @@ Public API
 
 Endponts
 --------
-passes: Calcualte all OreSat passes for a location on Earth.
-request: Allow user to modify/see one of their requests.
-request_all: Allow user to make a new request.
-request_new: Allow user see all their requests.
+    - request: Allows a user to modify/see one of their requests.
+    - request_list: Allows a user to make a new request and see all their requests.
+    - passes: Calcualte all OreSat passes for a location on Earth.
 
 
 .. toctree::
    :maxdepth: 4
 
    request
-   request_all
-   request_new
+   request_list
    passes
 

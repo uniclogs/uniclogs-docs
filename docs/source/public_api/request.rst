@@ -1,5 +1,1 @@
-================
-Request endpoint
-================
-
-TBD
+.. automodule:: ultra.endpoints.request
