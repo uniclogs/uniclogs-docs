@@ -12,41 +12,28 @@ Restful API endpoint for add a new request for a user.
 Input:
     JSON str
         - user_token : user's token.
-        - username : user's full name.
-        - latitude_deg : latitude degrees as a float.
-        - longitude_deg : longitude degrees as a float.
-        - elevation_m : *Optional* elvation in meter as a float.
-        - start_datetime_utc : datetime string
+        - latitude : latitude degrees as a float.
+        - longitude : longitude degrees as a float.
+        - elevation_m : *Optional* elevation in meters as a float.
+        - aos_utc : datetime as a string
+        - los_utc : datetime as a string
 
     Example: ::
 
         {
             "token": 12345
             "name" : Bob
-            "latitude_deg": 45.512778,
-            "longitude_deg": 122.68278,
+            "latitude": 45.512778,
+            "longitude": 122.68278,
             "elevation_m": 0.0
-            "start_datetime_utc": "2020/07/13 14:24:25",
+            "aos_utc": "2020/07/13 14:24:25",
+            "aos_utc": "2020/07/13 14:29:31",
         }
 
 Output:
-    JSON str list of
-        - request_id : the unique id for the request as a int,
-        - latitude_deg : latitude degrees as a float.
-        - longitude_deg : longitude degrees as a float.
-        - elevation_m : elvation in meter as a float.
-        - start_datetime_utc : datetime string
-        - stop_datetime_utc : datetime string
-
-    Example: ::
-
+    A JSON message like
         {
-            "request_id": 123,
-            "latitude_deg": 45.512778,
-            "longitude_deg": 122.68278,
-            "elevation_m": 0.0
-            "start_datetime_utc": "2020/07/13 14:24:25",
-            "stop_datetime_utc": "2020/07/13 14:29:42",
+            "message": "New request submitted. Request id: 12345"
         }
 
 GET
@@ -57,22 +44,20 @@ Restful API endpoint for get a list of all request for a user.
 Input:
     JSON str
         - user_token : user's token.
-        - username : user's full name.
 
     Example: ::
 
         {
             "user_token": 12345
-            "username" : Bob
         }
 
 Output:
     JSON str list of
         - request_id : the unique id for the request as a int,
-        - latitude_deg : latitude degrees as a float.
-        - longitude_deg : longitude degrees as a float.
+        - latitude : latitude degrees as a float.
+        - longitude : longitude degrees as a float.
         - elevation_m : elvation in meter as a float.
-        - start_datetime_utc : datetime string
+        - aos_utc : datetime string
         - stop_datetime_utc : datetime string
 
     Example: ::
@@ -80,25 +65,25 @@ Output:
         [
             {
                 "request_id": 123,
-                "latitude_deg": 45.512778,
-                "longitude_deg": 122.68278,
+                "latitude": 45.512778,
+                "longitude": 122.68278,
                 "elevation_m": 0.0
-                "start_datetime_utc": "2020/07/13 14:24:25",
+                "aos_utc": "2020/07/13 14:24:25",
                 "stop_datetime_utc": "2020/07/13 14:29:42",
             },
             {
                 "request_id": 134,
-                "latitude_deg": 45.512778,
-                "longitude_deg": 122.68278,
+                "latitude": 45.512778,
+                "longitude": 122.68278,
                 "elevation_m": 0.0
-                "start_datetime_utc": "2020/07/13 16:01:42",
+                "aos_utc": "2020/07/13 16:01:42",
                 "stop_datetime_utc": "2020/07/13 16:09:24",
             },
                 "request_id": 141,
-                "latitude_deg": 45.512778,
-                "longitude_deg": 122.68278,
+                "latitude": 45.512778,
+                "longitude": 122.68278,
                 "elevation_m": 0.0
-                "start_datetime_utc": "2020/07/13 19:15:55",
+                "aos_utc": "2020/07/13 19:15:55",
                 "stop_datetime_utc": "2020/07/13 19:23:35",
             }
         ]
@@ -109,10 +94,11 @@ Output:
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
 from datetime import datetime, timezone, timedelta
+from ultra import db
 
 import sys
 sys.path.insert(0, '..')
-import pass_calculator.calculator as pc
+import pass_calculator as pc
 
 
 class RequestList(Resource):
@@ -134,16 +120,48 @@ class RequestList(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=int, location="json")
-        parser.add_argument("username", required=True, type=str, location="json")
-        parser.add_argument("latitude_deg", required=True, type=float, location="json")
-        parser.add_argument("longitude_deg", required=True, type=float, location="json")
-        parser.add_argument("elevation_m", type=float)
+        parser.add_argument("user_token", required=True, type=str, location="json")
+        parser.add_argument("latitude", required=True, type=float, location="json")
+        parser.add_argument("longitude", required=True, type=float, location="json")
+        parser.add_argument("elevation_m", default=0.0, type=float)
         parser.add_argument("start_datetime_utc", required=True, type=str, location="json")
+        parser.add_argument("end_datetime_utc", required=True, type=str, location="json")
         args = parser.parse_args()
 
-        print(args)
-        return "new request", 201
+        # TODO validate user token
+        # TODO user check user day count
+
+        # make datetime object from datetime str arg
+        try:
+            start_dt_utc = dateutil.parser.isoparse(args["start_datetime_utc"])
+            end_dt_utc = dateutil.parser.isoparse(args["end_datetime_utc"])
+        except:
+            return {"Error": "Invalid format for aos_utc or los_utc."}, 401
+
+        # TODO get latest TLE
+        # TODO validate pass with pass calculator
+
+        new_pass = Pass(
+                latitude=args["latitude"],
+                longtitude=args["longtitude"],
+                elevation=args["elevation_m"],
+                start_time=start_dt_utc,
+                end_time=end_dt_utc
+                )
+
+        new_request = Request(
+                user_token=args["user_token"],
+                is_approved=False,
+                is_sent=False,
+                pass_uid=new_pass.uid,
+                created_date=None # let model handle this
+                )
+
+        db.session.add(new_pass)
+        db.session.add(new_request)
+        db.session.commit()
+
+        return "New request submitted. Request id:" + str(new_pass.uid), 201
 
 
     def get(self):
@@ -154,18 +172,40 @@ class RequestList(Resource):
         Returns
         -------
         str
-            List of request for a user as a JSON.
+            List of request for a user or an error message as a JSON.
         int
             error code
         """
 
+        user_request_list = [] # list of user request to return
+
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=int, location="json")
-        parser.add_argument("username", required=True, type=str, location="json")
+        parser.add_argument("user_token", required=True, type=str, location="json")
         args = parser.parse_args()
 
-        print(args)
+        # TODO validate user token
+        # TODO user check user day count
 
-        return "list", 201
+        # get all request for user
+        result = db.session.query(Request).join(Pass).filter(Request.user_token == args[user_token]).all()
+
+        # make a nice list of dictionaries for easy conversion to JSON string
+        for r in result:
+            # convert dt obj to dt str
+            aos_utc_str = r.start_time.replace(tzinfo=datetime.timezone.utc).isoformat()
+            los_utc_str = r.end_time.replace(tzinfo=datetime.timezone.utc).isoformat()
+
+            request_entry = {
+                    "request_id": r.uid,
+                    "latitude": r.latitude,
+                    "longtitude": r.longtitude,
+                    "elevation_m": r.elevation,
+                    "aos_utc": aos_utc_str,
+                    "los_utc": los_utc_str
+                    }
+
+            user_request_list.append(request_entry)
+
+        return user_request_list, 200
 
 
