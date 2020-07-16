@@ -14,16 +14,17 @@ def initDb(user, password, db, app, host='localhost', port=5432):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
 
 
+log_interface.init(__name__)
+app = Flask(__name__)
+
+initDb('postgres', '069790153', 'capst', app)   # TODO read credentials from environment
+db = SQLAlchemy(app)
+
+# setup endpoints
+api = Api(app)
+api.add_resource(Passes, '/passes')
+
+
 
 def run():
-    log_interface.init(__name__)
-    app = Flask(__name__)
-
-    initDb('postgres', '069790153', 'capst', app)   # DB credentials hard-coded for now. It is planned moving it to a configuration file
-    db = SQLAlchemy(app)
-
-    # setup endpoints
-    api = Api(app)
-    api.add_resource(Passes, '/passes')
-
     app.run(debug=True)
