@@ -11,3 +11,5 @@ CREATE TABLE pass
     PRIMARY KEY (uid),
     CONSTRAINT pass_def UNIQUE (longtitude, latitude, start_time)
 );
+
+CREATE SEQUENCE pass_uid_seq start 1 increment 1;
