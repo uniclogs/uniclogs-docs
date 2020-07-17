@@ -2,7 +2,7 @@
 import curses
 import time
 from loguru import logger
-import log_interface
+from .log_interface import *
 
 
 #function to print the menu taking in a the standard screen and default row index 0
