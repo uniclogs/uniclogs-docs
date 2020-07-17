@@ -7,7 +7,6 @@ def init(name):
     Parameters
     ----------
     name : parameter description
-        A windows object initialized by curses.initscr() from the curses library
     Returns
     -------
     None
