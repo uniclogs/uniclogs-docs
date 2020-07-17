@@ -3,7 +3,7 @@ from loguru import logger
 from datetime import datetime
 
 def init(name):
-    ""Function Description.
+    ""Function that create a logger instance for the problem that will track all information, debug and errors messages in a log file
     Parameters
     ----------
     name : parameter description
