@@ -1,4 +1,4 @@
-from .orbitalpass import OrbitalPass
+from pass_calculator.orbitalpass import OrbitalPass
 from skyfield.api import Topos, \
                          load, \
                          EarthSatellite
@@ -9,7 +9,7 @@ _DATETIME_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
 
 
 def pass_overlap(start_datetime_utc, end_datetime_utc, approved_passes):
-    # type: (datetime, datetime, [ObjectPass]) -> bool
+    # type: (datetime, datetime, [OrbitalPass]) -> bool
     """Checks to see if the possible pass will overlap with an existing
     approved pass.
 
@@ -101,15 +101,15 @@ def get_all_passes(
 
     """
 
-    if tle == None:
+    if tle is None:
         raise AttributeError("Missing tle input\n")
-    elif lat_deg == None:
+    elif lat_deg is None:
         raise AttributeError("Missing lat_deg input\n")
-    elif long_deg == None:
+    elif long_deg is None:
         raise AttributeError("Missing long_deg input\n")
-    elif start_time_utc == None:
+    elif start_time_utc is None:
         raise AttributeError("Missing start_time_utc input\n")
-    elif end_time_utc == None:
+    elif end_time_utc is None:
         raise AttributeError("Missing end_time_utc input\n")
 
     pass_list = []
@@ -121,7 +121,8 @@ def get_all_passes(
     # make topocentric object
     loc = Topos(lat_deg, long_deg, elev_m)
     loc = Topos(latitude_degrees=lat_deg,
-            longitude_degrees=long_deg, elevation_m=elev_m)
+                longitude_degrees=long_deg,
+                elevation_m=elev_m)
 
     # make satellite object from TLE
     if len(tle) == 2:
@@ -141,12 +142,9 @@ def get_all_passes(
         duration_m = (LOS_datetime_utc - AOS_datetime_utc).total_seconds() / 60
 
         if duration_m > min_duration_s/60:
-            new_pass = {
-                    "start_datetime_utc": AOS_datetime_utc.strftime(_DATETIME_STR_FORMAT),
-                    "duration_m": duration_m
-                    }
+            new_pass = {"start_datetime_utc": AOS_datetime_utc.strftime(_DATETIME_STR_FORMAT), "duration_m": duration_m}
 
             if not pass_overlap(AOS_datetime_utc, LOS_datetime_utc, approved_passes):
-                pass_list.append(new_pass) # add pass to list
+                pass_list.append(new_pass)  # add pass to list
 
     return pass_list

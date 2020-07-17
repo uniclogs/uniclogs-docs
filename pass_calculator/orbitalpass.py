@@ -22,18 +22,18 @@ class OrbitalPass():
     LOS_datetime : str
         datetime at loss of signal
     """
+
     def __init__(self,
-            gs_latitude,
-            gs_longitude,
-            gs_elevation_m,
-            horizon_deg,
-            AOS_datetime_utc,
-            AOS_altitude,
-            AOS_azimuth,
-            AOS_distance,
-            LOS_datetime_utc
-            ):
-        # type: (float, float, float, float, str, float, float, float, str) -> ()
+                 gs_latitude,
+                 gs_longitude,
+                 gs_elevation_m,
+                 horizon_deg,
+                 AOS_datetime_utc,
+                 AOS_altitude,
+                 AOS_azimuth,
+                 AOS_distance,
+                 LOS_datetime_utc):
+        # type: (float, float, float, float, str, float, float, float, str)->()
 
         # Location data for the ground station
         self.gs_latitude = gs_latitude

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
-import ballcosmos.script as b
+# import daemon
+# import ballcosmos.script as b
 import cosi.satnogs as satnogs
 import cosi.spacetrack as spacetrack
 
@@ -33,7 +34,7 @@ def main(args):
         decoded_telemetry = satnogs.decode_telemetry_frame(encoded_telemetry)
         print('Decoded Telemetry: ' + str(decoded_telemetry))
         # import ipdb; ipdb.set_trace()
-        b.inject_tlm('TLM TEMPS TEMP1 = 300, TEMP2 = 400, TIMESTAMP = 00320203')
+        # b.inject_tlm('TLM TEMPS TEMP1 = 300, TEMP2 = 400, TIMESTAMP = 00320203')
 
 
 if __name__ == "__main__":
