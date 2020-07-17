@@ -3,7 +3,7 @@ from loguru import logger
 from datetime import datetime
 
 def init(name):
-    """Prints main menu and updates the display to current row/option selected.
+    ""Function Description.
     Parameters
     ----------
     name : parameter description
@@ -20,7 +20,7 @@ def init(name):
 
 
 def enableRetention():
-        """Function Description.
+    """Function Description.
     Parameters
     ----------
     None
