@@ -34,8 +34,6 @@ class Pass(db.Model):
     longtitude = db.Column(db.Float, nullable=False)
     start_time = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
     end_time   = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
-    azimuth    = db.Column(db.Integer)
-    altitude   = db.Column(db.Integer)
     elevation  = db.Column(db.Float)
 
     def __repr__(self):
