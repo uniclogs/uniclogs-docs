@@ -10,6 +10,8 @@ calculate passes from a TLE (two-line element) and LatLong coordinates.
 
 .. autofunction:: pass_calculator.calculator.pass_overlap
 
+.. autofunction:: pass_calculator.calculator.validate_pass
+
 .. autoclass:: pass_calculator.orbitalpass.OrbitalPass
     :members:
     :special-members: __init__
