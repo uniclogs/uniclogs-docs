@@ -19,7 +19,7 @@ def init(name):
 
 
 def enableRetention():
-    """Function Description.
+    """ Function that enables a log file assignment for each day period. Logs that are older than 10 days are archived.
     Parameters
     ----------
     None
