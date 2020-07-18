@@ -58,3 +58,22 @@ html_static_path = []
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3/', None)}
+
+# So sphinx can build docs without required libs installed.
+autodoc_mock_imports = [
+        "kaitaistruct",
+        "pkginfo",
+        "skyfield",
+        "psycopg2",
+        "requests",
+        "pytz",
+        "ballcosmos",
+        "loguru",
+        "flask",
+        "flask_restful",
+        "Flask-Cors",
+        "flask-sqlalchemy",
+        "psycopg2"
+        ]
+
+
