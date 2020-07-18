@@ -94,7 +94,6 @@ Output:
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
 from datetime import datetime, timezone, timedelta
-from ultra import db
 
 import sys
 sys.path.insert(0, '..')
