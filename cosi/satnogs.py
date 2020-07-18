@@ -24,6 +24,7 @@ class NoDecoderForTelemetryFrame(Exception):
     args : Error details
         In-length details about what broke.
     """
+
     def __init__(self, args):
         super().__init__(self, "Decoder frame failure! \
                                 Failed with arguments: " + str(args))
@@ -71,7 +72,8 @@ def get_age(first, second=datetime.now(utc)):
 
 
 def request_satelite(norad_id=None):
-    """Makes a request to satnogs.org for metadata on the satelite specified by Norad ID.
+    """Makes a request to satnogs.org for metadata on the satelite specified by
+    Norad ID.
 
     Parameters
     ----------
@@ -80,7 +82,8 @@ def request_satelite(norad_id=None):
 
     Returns
     -------
-    Satelite -- A satellite data structure containing useful metadata about the satellite.
+    Satelite -- A satellite data structure containing useful metadata about the
+                satellite.
     """
     try:
         headers = {'Accept': 'application/json',
@@ -95,7 +98,8 @@ def request_satelite(norad_id=None):
 
 
 def request_telemetry(norad_id=None):
-    """Makes a request to satnogs.org for the raw telemetry frame of the satelite specified by Norad ID.
+    """Makes a request to satnogs.org for the raw telemetry frame of the
+    satelite specified by Norad ID.
 
     Parameters
     ----------
@@ -128,8 +132,9 @@ def request_telemetry(norad_id=None):
         return None
 
 
-def parse_telemetry_frame(telemetry, f_type=Csim):
-    """Takes a raw and encoded telemetry frame and decodes it according to a provided Kaitai Struct
+def parse_telemetry_frame(telemetry: dict):
+    """Takes a raw and encoded telemetry frame and decodes it according to a
+    provided Kaitai Struct
 
     Parameters
     ----------
@@ -142,11 +147,4 @@ def parse_telemetry_frame(telemetry, f_type=Csim):
         -- norad_cat_id : Satellite Norad ID
     """
     frame = bytearray.fromhex(telemetry.get('frame'))
-    info = Csim.from_bytes(frame) .ax25_frame \
-                                  .payload \
-                                  .ax25_info
-    if(type(f_type) is Csim and type(info) is Csim.BeaconLong):
-        return info.filtered_speed_rpm3
-    else:
-        raise NoDecoderForTelemetryFrame(type(f_type),
-                                         "No decoder found for telemetry frame!")
+    return Csim.from_bytes(frame).ax25_frame.payload.ax25_info
