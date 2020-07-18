@@ -127,10 +127,6 @@ def get_all_passes(
         los_utc = t[x+2].utc_datetime()
         duration_s = (los_utc - aos_utc).total_seconds()
 
-        """
-        Pass meets minimum duration and does not over overlap with any approved
-        passses.
-        """
         if duration_s > min_duration_s:
 
             new_pass =OrbitalPass(
@@ -150,10 +146,9 @@ def get_all_passes(
 
 def validate_pass(
         tle: [str],
-        orbital_pass: OrbitalPass,
-        approved_passes: [OrbitalPass]=None
+        orbital_pass: OrbitalPass
         ):
-    # type: ([str], OrbitalPass, [OrbitalPass]) -> bool
+    # type: ([str], OrbitalPass) -> bool
     """
     Checks to see if all data in the OrbitalPass args is valid pass.
 
@@ -163,8 +158,6 @@ def validate_pass(
         Can be [tle_line1, tle_line2] or [tle_header, tle_line1, tle_line2]
     orbital_pass : OrbitalPass
         The pass to validate.
-    approved_passes : [OrbitalPass]
-        List of existing approved OrbitalPass objects to check against.
 
     Returns
     -------
@@ -172,7 +165,7 @@ def validate_pass(
         True if valid and False if invalid.
     """
 
-    # Add a buffer so skyfeild can run.
+    # Add a decent buffer so skyfeild can run.
     aos_utc_tolerence = orbital_pass.aos_utc - timedelta(hours=2)
     los_utc_tolerence = orbital_pass.los_utc + timedelta(hours=2)
 

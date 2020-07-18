@@ -102,7 +102,6 @@ def test_validate_pass():
     ret2 = pc.validate_pass(
             tle = [TEST_TLE_HEADER, TEST_TLE_LINE_1, TEST_TLE_LINE_2],
             orbital_pass = invalid_orbital_pass,
-            approved_passes = pass_list
             )
 
     assert ret2 == False

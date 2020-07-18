@@ -24,7 +24,7 @@ class OrbitalPass():
             gs_elevation_m=0.0,
             horizon_deg=0.0
             ):
-        # type: (float, float, float, float, datetime, datetime) -> ()
+        # type: (float, float, datetime, datetime, float, float) -> ()
 
         # Location data for the ground station
         self.gs_latitude_deg = gs_latitude_deg
