@@ -184,9 +184,6 @@ def validate_pass(
         aos_diff_s = abs((p.aos_utc - orbital_pass.aos_utc).total_seconds())
         los_diff_s = abs((p.los_utc - orbital_pass.los_utc).total_seconds())
 
-        print("{} {}".format(p.aos_utc, p.los_utc))
-        print("{} {}".format(aos_diff_s, los_diff_s))
-
         if aos_diff_s < VALIDATE_TIME_TOLERENCE_S or \
                 los_diff_s < VALIDATE_TIME_TOLERENCE_S:
             return True # valid pass
