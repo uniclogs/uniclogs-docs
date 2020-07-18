@@ -60,8 +60,8 @@ class Passes(Resource):
     def __init__(self):
         # get args
         self._parser = reqparse.RequestParser()
-        self._parser.add_argument("latitude_deg", required=True, type=float, location = "json")
-        self._parser.add_argument("longitude_deg", required=True, type=float, location = "json")
+        self._parser.add_argument("latitude", required=True, type=float, location = "json")
+        self._parser.add_argument("longitude", required=True, type=float, location = "json")
         self._parser.add_argument("elevation_m", type=float)
         super(Passes, self).__init__()
 
@@ -97,14 +97,22 @@ class Passes(Resource):
         future = future.replace(tzinfo=timezone.utc)
         orbital_passes = pc.get_all_passes(
                 tle=tle,
-                lat_deg=args["latitude_deg"],
-                long_deg=args["longitude_deg"],
-                start_time_utc=now,
-                end_time_utc=future)
+                lat_deg=args["latitude"],
+                long_deg=args["longitude"],
+                start_datetime_utc=now,
+                end_datetime_utc=future
+                )
 
         # make list of dictionary from list of objects
         for op in orbital_passes:
-            orbital_passes_dict.append(op)
+            op_json = {
+                    "latitude": op.gs_latitude_deg,
+                    "longitude": op.gs_longitude_deg,
+                    "elevation_m": op.gs_elevation_m,
+                    "aos_utc": "",
+                    "los_utc": ""
+                    }
+            orbital_passes_dict.append(op_json)
 
         return orbital_passes_dict, 200
 
