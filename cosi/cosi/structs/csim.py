@@ -1,11 +1,15 @@
 # This is a generated file! Please edit source .ksy file and use kaitai-struct-compiler to rebuild
 
 from pkg_resources import parse_version
-from kaitaistruct import __version__ as ks_version, KaitaiStruct, KaitaiStream, BytesIO
+from kaitaistruct import __version__ as ks_version, \
+                                        KaitaiStruct, \
+                                        KaitaiStream, \
+                                        BytesIO
 
 
 if parse_version(ks_version) < parse_version('0.7'):
     raise Exception("Incompatible Kaitai Struct Python API: 0.7 or later is required, but you have %s" % (ks_version))
+
 
 class Csim(KaitaiStruct):
     """:field dest_callsign: ax25_frame.ax25_header.dest_callsign_raw.callsign_ror.callsign
@@ -178,7 +182,7 @@ class Csim(KaitaiStruct):
     :field aid_status: ax25_frame.payload.ax25_info.aid_status
     :field star_id_status: ax25_frame.payload.ax25_info.star_id_status
     :field power_status: ax25_frame.payload.ax25_info.power_status
-    
+
     Attention: `rpt_callsign` cannot be accessed because `rpt_instance` is an
     array of unknown size at the beginning of the parsing process! Left an
     example in here.
@@ -548,6 +552,3 @@ class Csim(KaitaiStruct):
             self._raw_callsign_ror = KaitaiStream.process_rotate_left(self._raw__raw_callsign_ror, 8 - (1), 1)
             io = KaitaiStream(BytesIO(self._raw_callsign_ror))
             self.callsign_ror = self._root.Callsign(io, self, self._root)
-
-
-
