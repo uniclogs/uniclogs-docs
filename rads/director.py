@@ -1,8 +1,25 @@
 #should be in latest python library
 import curses
 import time
+import datetime
+
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, \
+                       UniqueConstraint, \
+                       ForeignKeyConstraint, \
+                       Boolean, \
+                       Integer, \
+                       Float, \
+                       Text, \
+                       DateTime, \
+                       create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from loguru import logger
-from .log_interface import *
+import log_interface
+from .commonrads import PSQL_USERNAME, \
+                    PSQL_PASSWORD, \
+                    EnvironmentVariableNotDefined
+  
 
 
 #function to print the menu taking in a the standard screen and default row index 0
@@ -59,7 +76,8 @@ def main():
     stdscreen.keypad(True)
 
     #menu options
-    menu = ['Approve/Deny Request', 'Create Request', 'Check Schedule', 'Archive', 'Exit']
+    #menu = ['Approve/Deny Request', 'Create Request', 'Check Schedule', 'Archive', 'Exit']
+    menu = ['Approve/Deny Request', 'Check Schedule', 'Archive', 'Exit']
     current_row_index = 0
     print_menu(stdscreen, menu, current_row_index)
 
@@ -76,9 +94,10 @@ def main():
         #upper bound case
         elif key == curses.KEY_DOWN and current_row_index < len(menu)-1:
             current_row_index += 1
+        elif key == curse
         #all possible values that enter key might be depending on keyboard
         elif key == curses.KEY_ENTER or key in [10,13]:
-            #temporary code for selecting menu options other then exit
+            #code for selecting menu from menu list options 0 = Approve/Deny, 1 = Check Schedule = 2,  Archive = 3, Exit = 4 
             if current_row_index < len(menu)-1:
                 stdscreen.clear()
                 stdscreen.addstr(0, 0, "You Selected {}".format(menu[current_row_index]))

@@ -27,5 +27,5 @@ def enableRetention():
     -------
     None
     """
-        logger.add("file_X.log", retention="10 days")  # Cleanup after 10 day s
-        logger.add("file_Y.log", compression="zip")    # Compress history
+    logger.add("file_X.log", retention="10 days")  # Cleanup after 10 day s
+    logger.add("file_Y.log", compression="zip")    # Compress history
