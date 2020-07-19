@@ -96,13 +96,15 @@ def print_pad(panel, stdscreen, menu, current_row_index):
         else:
             panel.addstr(y, x, row)
 
-#    panel.refresh(0,0, 5,5, 20,75)
+    panel.refresh(0,0, 5,5, 20,75)
 
 #function to print schedule of upcoming requests
 def schedule(stdscreen):
     """Prints main menu and updates the display to current row/option selected.
 
     Parameters
+    stdscreen : window object
+        A windows object initialized by curses.initscr() from the curses library.
     ----------
     Returns
     -------
@@ -114,7 +116,7 @@ def schedule(stdscreen):
     vheight, vwidth = stdscreen.getmaxyx()
     panel = curses.newpad(vheight -1, vwidth-2)
  #   print_pad(panel, stdscreen, list1, schedule_index)
-    print_menu(stdscreen, list1, schedule_index)
+ #   print_menu(stdscreen, list1, schedule_index)
     while True:
         #interprets arrow key strokes
         key = stdscreen.getch()
@@ -139,8 +141,9 @@ def schedule(stdscreen):
             stdscreen.addstr(0, 0, "You Selected {}".format(list1[schedule_index]))
             stdscreen.refresh()
             stdscreen.getch()
-        print_menu(stdscreen, list1, schedule_index)
+#        print_menu(stdscreen, list1, schedule_index)
         stdscreen.refresh() 
+
 def main():
 
     log_interface.init('rads')

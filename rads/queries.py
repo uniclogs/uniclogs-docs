@@ -34,5 +34,5 @@ Query to Deny requests using a user token
 UPDATE requests
 SET is_approved = true,
 	last_modified = NOW()
-WHERE user_token = 'user token'
+WHERE user_token = 'user token' AND created_date = 'date'
 '''
