@@ -1,5 +1,0 @@
-COMMAND TLM COLLECT BIG_ENDIAN "Starts a collect"
-  <%= render "_ccsds_cmd.txt", locals: {id: 1} %>
-
-COMMAND TLM ABORT BIG_ENDIAN "Aborts a collect"
-  <%= render "_ccsds_cmd.txt", locals: {id: 2} %>
