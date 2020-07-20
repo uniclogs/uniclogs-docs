@@ -103,3 +103,13 @@ def test_validate_pass():
             )
 
     assert ret2 == False
+
+    # check invalid pass with a one valid time and on invalid time
+    invalid_orbital_pass = pass_list[13]
+    invalid_orbital_pass.los_utc = pass_list[14].los_utc
+    ret = pc.validate_pass(
+            tle = [TEST_TLE_HEADER, TEST_TLE_LINE_1, TEST_TLE_LINE_2],
+            orbital_pass = invalid_orbital_pass
+            )
+
+    assert ret == False
