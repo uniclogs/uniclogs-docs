@@ -16,11 +16,21 @@ from sqlalchemy import Column, \
 from sqlalchemy.ext.declarative import declarative_base
 from loguru import logger
 import log_interface
-                    
-from commonrads import PSQL_USERNAME, \
-                    PSQL_PASSWORD, \
-                    EnvironmentVariableNotDefined
+
+
+#from commonrads import PSQL_USERNAME, \
+#                    PSQL_PASSWORD, \
+#                    EnvironmentVariableNotDefined
   
+#from sqlalchemy.ext.declarative import declarative_base
+#from models import *
+
+'''
+Base = declarative_base()
+db_url = 'postgresql://{}:{}@{}:{}/{}'.format(PSQL_USERNAME,
+                                              PSQL_PASSWORD)
+engine = create_engine(db_url)
+'''
 
 
 #function to print the menu taking in a the standard screen and default row index 0
@@ -116,8 +126,9 @@ def schedule(stdscreen):
     vheight, vwidth = stdscreen.getmaxyx()
     panel = curses.newpad(vheight -1, vwidth-2)
  #   print_pad(panel, stdscreen, list1, schedule_index)
- #   print_menu(stdscreen, list1, schedule_index)
-    while True:
+    print_menu(stdscreen, list1, schedule_index)
+    loop = True
+    while loop == True:
         #interprets arrow key strokes
         key = stdscreen.getch()
         stdscreen.clear()
@@ -134,14 +145,14 @@ def schedule(stdscreen):
             stdscreen.addstr(0, 0, "You have pressed the F1 key!")
             stdscreen.refresh()
             time.sleep(0.75)
-            break
+            loop = False 
         #all possible values that enter key might be depending on keyboard
         elif key == curses.KEY_ENTER or key in [10,13]:
             stdscreen.clear()
             stdscreen.addstr(0, 0, "You Selected {}".format(list1[schedule_index]))
             stdscreen.refresh()
             stdscreen.getch()
-#        print_menu(stdscreen, list1, schedule_index)
+        print_menu(stdscreen, list1, schedule_index)
         stdscreen.refresh() 
 
 def main():

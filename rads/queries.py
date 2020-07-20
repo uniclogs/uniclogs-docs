@@ -8,9 +8,10 @@ ORDER BY last_modified ASC
 '''
 
 '''currentschedule()
-Query to find Scheduled requests approved
+Query to find Scheduled requests approved slightly wrong needs to get public.pass start time > NOW () and match pass id with user token
+Can fix by using a join between the tables to get the data needed
 SELECT * FROM public.requests
-WHERE is_approved IS true AND created_date > NOW()
+WHERE is_approved IS true AND  pass.start_time > NOW()
 ORDER BY created_date ASC
 '''
 
