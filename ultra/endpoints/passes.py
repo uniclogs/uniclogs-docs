@@ -1,49 +1,3 @@
-"""
-Passes Endpoint
-===============
-Restful API endpoint for calculating orbital passes for locations.
-Endpoint is /passes.
-
-GET
----
-
-Input:
-    JSON str
-        - latitude : latitude degrees as a float.
-        - longitude : longitude degrees as a float.
-        - elevation_m : elvation in meter as a float.
-
-    Example: ::
-
-        {
-            "latitude": 45.512778,
-            "longitude": 122.68278,
-            "elevation_m": 0.0
-        }
-
-Output:
-    JSON str list of
-        - start_datetime_utc : datetime string
-        - duration_m : duration in mintues as a float
-
-    Example: ::
-
-        [
-            {
-                "start_datetime_utc": "2020/07/13 14:24:25",
-                "duration_m": 10.91405
-            },
-            {
-                "start_datetime_utc": "2020/07/13 16:01:42",
-                "duration_m": 10.55885
-            },
-                "start_datetime_utc": "2020/07/13 19:15:55",
-                "duration_m": 10.88742
-            }
-        ]
-
-"""
-
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
 from datetime import datetime, timezone, timedelta
@@ -55,15 +9,8 @@ import pass_calculator.calculator as pc
 
 class Passes(Resource):
     """
-    passes endpoint for ULTRA.
+    /passes endpoint for ULTRA.
     """
-    def __init__(self):
-        # get args
-        self._parser = reqparse.RequestParser()
-        self._parser.add_argument("latitude", required=True, type=float, location = "json")
-        self._parser.add_argument("longitude", required=True, type=float, location = "json")
-        self._parser.add_argument("elevation_m", type=float)
-        super(Passes, self).__init__()
 
     def get(self):
         # type: () -> str, int
@@ -79,9 +26,12 @@ class Passes(Resource):
 
         """
         orbital_passes_dict = []
-        #request.get_json(force=True)
 
-        args = self._parser.parse_args()
+        parser = reqparse.RequestParser()
+        parser.add_argument("latitude", required=True, type=float, location = "json")
+        parser.add_argument("longitude", required=True, type=float, location = "json")
+        parser.add_argument("elevation_m", type=float)
+        args = parser.parse_args()
 
         # get latest LTE and approved passes list from DB
         tle = [ # TODO get from DB
@@ -103,16 +53,5 @@ class Passes(Resource):
                 end_datetime_utc=future
                 )
 
-        # make list of dictionary from list of objects
-        for op in orbital_passes:
-            op_json = {
-                    "latitude": op.gs_latitude_deg,
-                    "longitude": op.gs_longitude_deg,
-                    "elevation_m": op.gs_elevation_m,
-                    "aos_utc": "",
-                    "los_utc": ""
-                    }
-            orbital_passes_dict.append(op_json)
-
-        return orbital_passes_dict, 200
+        return orbital_passes, 200
 

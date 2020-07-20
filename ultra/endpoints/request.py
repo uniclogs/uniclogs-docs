@@ -1,127 +1,5 @@
-"""
-Request Endpoint
-================
-For reading, replacing, or deleting a specific request.
-Endpoint is /replace/<int>.
-
-GET
----
-
-Get a info for a user's request.
-
-Input:
-    JSON str
-        - user_token : user's token.
-
-    Example: ::
-
-        {
-            "user_token": 12345
-        }
-
-Output:
-    JSON str list of
-        - latitude : latitude degrees as a float.
-        - longitude : longitude degrees as a float.
-        - elevation_m : elvation in meter as a float.
-        - aos_utc : datetime string
-        - stop_datetime_utc : datetime string
-
-    Example: ::
-
-        {
-            "latitude": 45.512778,
-            "longitude": 122.68278,
-            "elevation_m": 0.0
-            "aos_utc": "2020/07/13 14:24:25",
-            "stop_datetime_utc": "2020/07/13 14:29:42",
-        }
-
-PUT
----
-
-Replace the info for the user's request.
-
-Input:
-    JSON str
-        - user_token : user's token.
-        - latitude : latitude degrees as a float.
-        - longitude : longitude degrees as a float.
-        - elevation_m : elvation in meter as a float.
-        - aos_utc : datetime string
-
-    Example: ::
-
-        {
-            "user_token": 12345
-            "latitude": 45.512778,
-            "longitude": 122.68278,
-            "elevation_m": 0.0
-            "aos_utc": "2020/07/13 14:24:25",
-            "stop_datetime_utc": "2020/07/13 14:29:42",
-        }
-
-Output:
-    JSON str list of
-        - latitude : latitude degrees as a float.
-        - longitude : longitude degrees as a float.
-        - elevation_m : elvation in meter as a float.
-        - aos_utc : datetime string
-        - stop_datetime_utc : datetime string
-
-    Example: ::
-
-        {
-            "latitude": 45.512778,
-            "longitude": 122.68278,
-            "elevation_m": 0.0
-            "aos_utc": "2020/07/13 14:24:25",
-            "stop_datetime_utc": "2020/07/13 14:29:42",
-        }
-
-
-DELETE
-------
-
-Delete the a user's request.
-
-Input:
-    JSON str
-        - user_token : user's token.
-
-    Example: ::
-
-        {
-            "user_token": 12345
-        }
-
-Output:
-    JSON message
-        - message : an error message or a success message
-
-    Examples: ::
-
-        {
-            "message": "Request 12345 was deleted."
-        }
-
-        or
-
-        {
-            "message": "Permission denied."
-        }
-
-        or
-
-        {
-            "message": "Request 12345 was not found."
-        }
-
-
-"""
-
 from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 
 import sys
@@ -210,15 +88,15 @@ class Request(Resource):
 
         # only can edit if is_approved is NULL
         if result.is_approved:
-            return "Can't use modied once approved for denied", 400
+            return {"Error": "Can't use modied once approved for denied"}, 400
 
         # get pass
         pass_result = db.session.query(Pass).filter(Pass.uid == request_id)
 
         # make datetime object from datetime str arg
         try:
-            start_dt_utc = dateutil.parser.isoparse(args["start_time_utc"])
-            end_dt_utc = dateutil.parser.isoparse(args["end_time_utc"])
+            start_dt_utc = inputs.datetime_from_iso8601(args["start_datetime_utc"])
+            end_dt_utc = inputs.datetime_from_iso8601(args["end_datetime_utc"])
         except:
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
@@ -233,7 +111,7 @@ class Request(Resource):
 
         db.session.commit()
 
-        return "modified request", 201
+        return {"message": "modified request succesful"}
 
 
     def delete(self, request_id):
@@ -254,5 +132,5 @@ class Request(Resource):
         # TODO user check user day count
         # TODO delete from DB
 
-        return "deleted request", 201
+        return {"message": "deleted request"}
 

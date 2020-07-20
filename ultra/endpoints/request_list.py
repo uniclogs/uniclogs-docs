@@ -1,98 +1,5 @@
-"""
-Request List Endpoint
-=====================
-For add a new request to a user request list or getting the list of request
-for a user. Endpoint is /replace.
-
-POST
-----
-
-Restful API endpoint for add a new request for a user.
-
-Input:
-    JSON str
-        - user_token : user's token.
-        - latitude : latitude degrees as a float.
-        - longitude : longitude degrees as a float.
-        - elevation_m : *Optional* elevation in meters as a float.
-        - aos_utc : datetime as a string
-        - los_utc : datetime as a string
-
-    Example: ::
-
-        {
-            "token": 12345
-            "name" : Bob
-            "latitude": 45.512778,
-            "longitude": 122.68278,
-            "elevation_m": 0.0
-            "aos_utc": "2020/07/13 14:24:25",
-            "aos_utc": "2020/07/13 14:29:31",
-        }
-
-Output:
-    A JSON message like
-        {
-            "message": "New request submitted. Request id: 12345"
-        }
-
-GET
----
-
-Restful API endpoint for get a list of all request for a user.
-
-Input:
-    JSON str
-        - user_token : user's token.
-
-    Example: ::
-
-        {
-            "user_token": 12345
-        }
-
-Output:
-    JSON str list of
-        - request_id : the unique id for the request as a int,
-        - latitude : latitude degrees as a float.
-        - longitude : longitude degrees as a float.
-        - elevation_m : elvation in meter as a float.
-        - aos_utc : datetime string
-        - stop_datetime_utc : datetime string
-
-    Example: ::
-
-        [
-            {
-                "request_id": 123,
-                "latitude": 45.512778,
-                "longitude": 122.68278,
-                "elevation_m": 0.0
-                "aos_utc": "2020/07/13 14:24:25",
-                "stop_datetime_utc": "2020/07/13 14:29:42",
-            },
-            {
-                "request_id": 134,
-                "latitude": 45.512778,
-                "longitude": 122.68278,
-                "elevation_m": 0.0
-                "aos_utc": "2020/07/13 16:01:42",
-                "stop_datetime_utc": "2020/07/13 16:09:24",
-            },
-                "request_id": 141,
-                "latitude": 45.512778,
-                "longitude": 122.68278,
-                "elevation_m": 0.0
-                "aos_utc": "2020/07/13 19:15:55",
-                "stop_datetime_utc": "2020/07/13 19:23:35",
-            }
-        ]
-
-"""
-
-
 from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 
 import sys
@@ -123,8 +30,8 @@ class RequestList(Resource):
         parser.add_argument("latitude", required=True, type=float, location="json")
         parser.add_argument("longitude", required=True, type=float, location="json")
         parser.add_argument("elevation_m", default=0.0, type=float)
-        parser.add_argument("start_datetime_utc", required=True, type=str, location="json")
-        parser.add_argument("end_datetime_utc", required=True, type=str, location="json")
+        parser.add_argument("aos_utc", required=True, type=str, location="json")
+        parser.add_argument("los_utc", required=True, type=str, location="json")
         args = parser.parse_args()
 
         # TODO validate user token
@@ -132,14 +39,28 @@ class RequestList(Resource):
 
         # make datetime object from datetime str arg
         try:
-            start_dt_utc = dateutil.parser.isoparse(args["start_datetime_utc"])
-            end_dt_utc = dateutil.parser.isoparse(args["end_datetime_utc"])
+            aos_utc = inputs.datetime_from_iso8601(args["aos_utc"])
+            los_utc = inputs.datetime_from_iso8601(args["los_utc"])
         except:
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
-        # TODO get latest TLE
-        # TODO validate pass with pass calculator
+        tle = [ # TODO get from DB
+                "1 25544U 98067A   20185.75040611  .00000600  00000-0  18779-4 0  9992",
+                "2 25544  51.6453 266.4797 0002530 107.7809  36.4383 15.49478723234588"
+                ]
 
+        new_pass = pc.orbitalpass.OrbitalPass(
+                gs_latitude_deg=args["latitude"],
+                gs_longitude_deg=args["longitude"],
+                gs_elevation_m=args["elevation_m"],
+                aos_utc=aos_utc,
+                los_utc=los_utc
+                )
+
+        if not pc.calculator.validate_pass(tle, new_pass):
+            return {"error": "Invalid pass"}, 401
+
+        """
         new_pass = Pass(
                 latitude=args["latitude"],
                 longtitude=args["longtitude"],
@@ -159,8 +80,9 @@ class RequestList(Resource):
         db.session.add(new_pass)
         db.session.add(new_request)
         db.session.commit()
+        """
 
-        return "New request submitted. Request id:" + str(new_pass.uid), 201
+        return {"message": "New request submitted."}
 
 
     def get(self):
@@ -190,21 +112,15 @@ class RequestList(Resource):
 
         # make a nice list of dictionaries for easy conversion to JSON string
         for r in result:
-            # convert dt obj to dt str
-            aos_utc_str = r.start_time.replace(tzinfo=datetime.timezone.utc).isoformat()
-            los_utc_str = r.end_time.replace(tzinfo=datetime.timezone.utc).isoformat()
+            pass_data = pc.orbitalpass.OrbitalPass(
+                    latitude = r.latitude,
+                    longtitude= r.longtitude,
+                    elevation_m =  r.elevation,
+                    aos_utc = r.start_time,
+                    los_utc = r.end_time,
+                    horizon_deg = 0.0
+                    )
 
-            request_entry = {
-                    "request_id": r.uid,
-                    "latitude": r.latitude,
-                    "longtitude": r.longtitude,
-                    "elevation_m": r.elevation,
-                    "aos_utc": aos_utc_str,
-                    "los_utc": los_utc_str
-                    }
+            user_request_list.append({"request_id": r.uid, "pass_data": pass_data})
 
-            user_request_list.append(request_entry)
-
-        return user_request_list, 200
-
-
+        return user_request_list
