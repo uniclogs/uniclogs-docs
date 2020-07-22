@@ -1,0 +1,18 @@
+<% if false %>
+ commenting this out for now, we'll deal with ccsds packet format post-capstone
+
+COMMAND ENGR_LINK COLLECT BIG_ENDIAN "Starts a collect"
+  <%= render "_ccsds_cmd.txt", locals: {id: 1} %>
+
+COMMAND ENGR_LINK ABORT BIG_ENDIAN "Aborts a collect"
+  <%= render "_ccsds_cmd.txt", locals: {id: 2} %>
+<% end %>
+
+COMMAND ENGR_LINK PASS_SCHEDULE BIG_ENDIAN "Schedule an Oresat Live Pass"
+  APPEND_ID_PARAMETER PKT_ID  16 UINT MIN MAX 10 "Packet id"
+  APPEND_PARAMETER    PASS_ID 16 UINT MIN MAX  1 "Pass id"
+<%# TODO fill in other parameters so Oresat has all the info it needs about the pass %>
+
+COMMAND ENGR_LINK PASS_CANCEL BIG_ENDIAN "Cancel a scheduled Oresat Live Pass"
+  APPEND_ID_PARAMETER PKT_ID  16 UINT MIN MAX 20 "Packet id"
+  APPEND_PARAMETER    PASS_ID 16 UINT MIN MAX  1 "Pass id"
