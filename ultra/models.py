@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from ultra import logger
-from ultra import db
+from database import db
 import datetime
 
 
@@ -54,7 +53,11 @@ def testPassModel():
     print(pass_list)
 
 def testTleModel():
-    new_tle = Tle(header_text='Long long header', first_line='Beautiful line', second_line='Enhance beautiful line')
+    new_tle = Tle(
+            header_text="ISS (ZARYA)",
+            first_line="1 25544U 98067A   20199.71986111 -.00000291  00000-0  28484-5 0  9999",
+            second_line="2 25544  51.6429 197.3485 0001350 125.7534 225.4894 15.49513771236741"
+            )
     db.session.add(new_tle)
     db.session.commit()
 

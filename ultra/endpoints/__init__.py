@@ -290,6 +290,6 @@ Output:
 
 """
 
-from .passes import *
-from .request import *
-from .request_list import *
+from .passes import PassesEndpoint
+from .request_id import RequestIdEndpoint
+from .request import RequestEndpoint

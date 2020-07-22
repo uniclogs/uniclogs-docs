@@ -1,10 +1,10 @@
 import log_interface
-from endpoints import *
-from loguru import logger
+from endpoints import PassesEndpoint, RequestEndpoint, RequestIdEndpoint
 from flask import Flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from database import db, init_db
+from os import getenv
 
 import sys
 sys.path.insert(0, '..')
@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 api = Api(app)
 
-initDb('postgres', '069790153', 'capst', app)
+initDb('root', '', 'cosmos-dev', app)
 
 
 # add OrbitalPass json encoder to app
@@ -34,12 +34,13 @@ app.config["RESTFUL_JSON"] = {
 
 
 # setup endpoints
-api.add_resource(Passes, '/passes')
-api.add_resource(RequestList, '/request')
-api.add_resource(Request, '/request/<int:request_id>')
+api.add_resource(PassesEndpoint, '/passes')
+api.add_resource(RequestEndpoint, '/request')
+api.add_resource(RequestIdEndpoint, '/request/<int:request_id>')
 
 
 def run():
     init_db(app)
     app.run(debug=True)
+
 

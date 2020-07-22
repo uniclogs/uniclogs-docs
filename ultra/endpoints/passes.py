@@ -1,14 +1,17 @@
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
 from datetime import datetime, timezone, timedelta
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from database import db
+from models import Tle
 
 import sys
 sys.path.insert(0, '..')
 import pass_calculator.calculator as pc
 
 
-class Passes(Resource):
+class PassesEndpoint(Resource):
     """
     /passes endpoint for ULTRA.
     """
@@ -34,11 +37,18 @@ class Passes(Resource):
         parser.add_argument("elevation_m", type=float)
         args = parser.parse_args()
 
-        # get latest LTE and approved passes list from DB
-        tle = [ # TODO get from DB
-                "1 25544U 98067A   20185.75040611  .00000600  00000-0  18779-4 0  9992",
-                "2 25544  51.6453 266.4797 0002530 107.7809  36.4383 15.49478723234588"
+        # get latest LTE from DB
+        try:
+            latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
+            latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
+        except:
+            return "internal TLE error", 400
+        tle = [
+                latest_tle.first_line,
+                latest_tle.second_line
                 ]
+
+        # get latest LTE and approved passes list from DB
         approved_passes = [] # TODO get from DB
 
         # call pass calculator
@@ -51,7 +61,8 @@ class Passes(Resource):
                 lat_deg=args["latitude"],
                 long_deg=args["longitude"],
                 start_datetime_utc=now,
-                end_datetime_utc=future
+                end_datetime_utc=future,
+                approved_passes=approved_passes
                 )
 
         return orbital_passes, 200
