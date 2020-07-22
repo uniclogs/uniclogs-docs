@@ -41,7 +41,7 @@ class Pass(db.Model):
 class PassRequest(db.Model): #many to many relationship between pass and req
     __tablename__ = 'pass_requests'
     pass_id       = db.Column(db.Integer, db.ForeignKey('pass.uid'), primary_key=True)           # reference to pass uid
-    req_token     = db.Column(db.Text   , db.ForeignKey('request.user_token'), primary_key=True) # reference to token uid
+    req_token     = db.Column(db.Text   , db.ForeignKey('requests.user_token'), primary_key=True) # reference to token uid
 
 def testPassModel():
     new_pass = Pass(latitude=11.0, longtitude=11.01, azimuth=3)

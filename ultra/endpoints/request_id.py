@@ -1,8 +1,9 @@
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
+from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass
+from models import Request, Tle, Pass, PassRequest
 
 import sys
 sys.path.insert(0, "..")
@@ -22,40 +23,33 @@ class RequestIdEndpoint(Resource):
         request_id : int
             Request unique id.
         """
-        print(request_id)
 
         parser = reqparse.RequestParser()
         parser.add_argument("user_token", required=True, type=str, location = "json")
 
         args = parser.parse_args()
 
-        # TODO validate user token
         # TODO user check user day count
 
-        # find request
-        result = db.session.query(Request).join(Pass).filter(Pass.uid == request_id)
-        if not result:
-            return "Request not found", 400
+        try:
+            result = db.session.query(Pass)\
+                           .join(Request, Pass.uid == Request.pass_uid)\
+                           .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
+                           .one()
+        except:
+            return {"Error" : "Pass not valid or wrong user token"}, 400
 
-        # make sure it owned by user
-        if result.user_token == args["user_token"]:
-            return "Permission denied. Request " + str(request_id) + \
-                    " is not register to your token.", 400
 
-        # convert dt obj to dt str
-        start_dt_utc_str = result.start_time.replace(tzinfo=datetime.timezone.utc).isoformat()
-        end_dt_utc_str = result.end_time.replace(tzinfo=datetime.timezone.utc).isoformat()
+        pass_data = pc.orbitalpass.OrbitalPass(
+                gs_latitude_deg = result.latitude,
+                gs_longitude_deg = result.longtitude,
+                gs_elevation_m =  result.elevation,
+                aos_utc = result.start_time,
+                los_utc = result.end_time,
+                horizon_deg = 0.0
+                )
 
-        # make a nice dictionary for easy conversion to JSON string
-        request_entry = {
-                "latitude": result.latitude,
-                "longtitude": result.longtitude,
-                "elevation_m": result.elevation,
-                "aos_utc": start_dt_utc_str,
-                "los_utc": end_dt_utc_str
-                }
-
-        return request_entry
+        return pass_data
 
 
     def put(self, request_id):
@@ -66,7 +60,6 @@ class RequestIdEndpoint(Resource):
         request_id : int
             Request unique id.
         """
-        print(request_id)
 
         parser = reqparse.RequestParser()
         parser.add_argument("user_token", required=True, type=str, location="json")
@@ -78,38 +71,52 @@ class RequestIdEndpoint(Resource):
 
         args = parser.parse_args()
 
-        # TODO validate user token
         # TODO user check user day count
-        # TODO get latest TLE
-        # TODO validate replacement pass
 
-        # make sure request/pass exist in db
-        result = db.session.query(Request).join(Pass).filter(Pass.uid == request_id)
-        if not result:
-            return "Request not found", 400
-
-        # only can edit if is_approved is NULL
-        if result.is_approved:
-            return {"Error": "Can't use modied once approved for denied"}, 400
-
-        # get pass
-        pass_result = db.session.query(Pass).filter(Pass.uid == request_id)
-
-        # make datetime object from datetime str arg
         try:
-            start_dt_utc = inputs.datetime_from_iso8601(args["start_datetime_utc"])
-            end_dt_utc = inputs.datetime_from_iso8601(args["end_datetime_utc"])
+            result = db.session.query(Request)\
+                           .join(Pass , Pass.uid == Request.pass_uid)\
+                           .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
+                           .one()
+        except DbException:
+            return {"Error" : "Pass not valid or wrong user token"}, 400
+
+        try:
+            latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
+            latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
+        except:
+            return {"Error" : "internal TLE error"}, 400
+
+        tle = [latest_tle.first_line, latest_tle.second_line]
+
+
+        # make orbital pass object
+        try:
+            aos_utc = inputs.datetime_from_iso8601(args["aos_utc"])
+            los_utc = inputs.datetime_from_iso8601(args["los_utc"])
         except:
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
-        # update entry
-        pass_result = Pass(
-                latitude=args["latitude"],
-                longtitude=args["longtitude"],
-                elevation=args["elevation_m"],
-                start_time=start_dt_utc,
-                end_time=end_dt_utc
+        input_orbital_pass = pc.orbitalpass.OrbitalPass(
+                latitude_deg = args["latitude"],
+                longtitude_deg = args["longitude"],
+                aos_utc = aos_utc,
+                los_utc = los_utc,
+                elevation_m = args["elevation"],
+                horizon_deg = 0.0
                 )
+
+        # validate replacement pass
+        if not validate_pass(tle=tle, orbital_pass=input_orbital_pass):
+            return {"Error": "Invalid pass."}, 401
+
+        # update entry
+        result.latitude = input_orbital_pass.gs_latitude_deg,
+        result.longtitude = input_orbital_pass.gs_longitude_deg,
+        result.elevation = input_orbital_pass.gs_elevation_m,
+        result.horizon_deg = input_orbital_pass.horizon_deg,
+        result.start_time = input_orbital_pass.aos_utc,
+        result.end_time = input_orbital_pass.los_utc
 
         db.session.commit()
 
@@ -124,15 +131,23 @@ class RequestIdEndpoint(Resource):
         request_id : int
             Request unique id.
         """
-        print(request_id)
 
         parser = reqparse.RequestParser()
         parser.add_argument("user_token", required=True, type=str, location="json")
         args = parser.parse_args()
 
-        # TODO validate user token
         # TODO user check user day count
-        # TODO delete from DB
+
+        try:
+            result = db.session.query(Pass)\
+                           .join(Request, Pass.uid == Request.pass_uid)\
+                           .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
+                           .one()
+        except:
+            return {"Error" : "Pass not valid or wrong user token"}, 400
+
+        db.session.delete(result) # NOTE or should flip acflag?
+        db.session.commit()
 
         return {"message": "deleted request"}
 

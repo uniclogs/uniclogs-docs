@@ -1,8 +1,9 @@
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
+from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass
+from models import Request, Tle, Pass, PassRequest
 
 import sys
 sys.path.insert(0, '..')
@@ -46,45 +47,75 @@ class RequestEndpoint(Resource):
         except:
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
-        tle = [ # TODO get from DB
-                "1 25544U 98067A   20185.75040611  .00000600  00000-0  18779-4 0  9992",
-                "2 25544  51.6453 266.4797 0002530 107.7809  36.4383 15.49478723234588"
-                ]
+        # validate pass
+        try:
+            latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
+            latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
+        except:
+            return {"Error" : "internal TLE error"}, 400
 
-        new_pass = pc.orbitalpass.OrbitalPass(
+        tle = [latest_tle.first_line, latest_tle.second_line]
+
+        orbital_pass = pc.orbitalpass.OrbitalPass(
                 gs_latitude_deg=args["latitude"],
                 gs_longitude_deg=args["longitude"],
-                gs_elevation_m=args["elevation_m"],
                 aos_utc=aos_utc,
-                los_utc=los_utc
+                los_utc=los_utc,
+                gs_elevation_m=args["elevation_m"],
+                horizon_deg=0.0
                 )
 
-        if not pc.calculator.validate_pass(tle, new_pass):
+        if not pc.calculator.validate_pass(tle, orbital_pass):
             return {"error": "Invalid pass"}, 401
 
-        """
-        new_pass = Pass(
-                latitude=args["latitude"],
-                longtitude=args["longtitude"],
-                elevation=args["elevation_m"],
-                start_time=start_dt_utc,
-                end_time=end_dt_utc
-                )
+        # make sure the pass is not already in db
+        try:
+            pass_check = db.session.query(Pass).filter(
+                    Pass.latitude == args["latitude"],
+                    Pass.longtitude == args["longitude"],
+                    Pass.start_time == aos_utc
+                    ).all()
+            if len(pass_check) != 0:
+                print(pass_check)
+                return {"Error" : "Pass already in db"}, 400
+        except:
+            return {"Error" : "internal TLE error"}, 400
 
-        new_request = Request(
-                user_token=args["user_token"],
-                is_approved=False,
-                is_sent=False,
-                pass_uid=new_pass.uid,
-                created_date=None # let model handle this
+        new_pass = Pass(
+                latitude = args["latitude"],
+                longtitude = args["longitude"],
+                elevation = args["elevation_m"],
+                start_time = aos_utc,
+                end_time = los_utc
                 )
 
         db.session.add(new_pass)
-        db.session.add(new_request)
-        db.session.commit()
-        """
+        db.session.flush()
 
-        return {"message": "New request submitted."}
+        new_request = Request(
+                user_token = args["user_token"],
+                is_approved = False,
+                is_sent = False,
+                pass_uid = new_pass.uid
+                )
+
+        db.session.add(new_request)
+        db.session.flush()
+
+        new_pass_request = PassRequest(
+                pass_id = new_pass.uid,
+                req_token = new_request.user_token
+                )
+
+        db.session.add(new_pass_request)
+        db.session.flush()
+
+        db.session.commit()
+
+        return {
+                "message": "New request submitted.",
+                "request_id": new_request.pass_uid
+                }
 
 
     def get(self):
@@ -109,16 +140,20 @@ class RequestEndpoint(Resource):
         # TODO validate user token
         # TODO user check user day count
 
-        # get all request for user
-        """
-        result = db.session.query(Request).join(Pass).filter(Request.user_token == args[user_token]).all()
+        try:
+            result = db.session.query(Pass)\
+                           .join(Request, Pass.uid == Request.pass_uid)\
+                           .filter(Request.user_token == args["user_token"])\
+                           .all()
+        except:
+            return {"Error" : "No requests or invalid user token"}, 400
 
         # make a nice list of dictionaries for easy conversion to JSON string
         for r in result:
             pass_data = pc.orbitalpass.OrbitalPass(
-                    latitude = r.latitude,
-                    longtitude= r.longtitude,
-                    elevation_m =  r.elevation,
+                    gs_latitude_deg = r.latitude,
+                    gs_longitude_deg = r.longtitude,
+                    gs_elevation_m =  r.elevation,
                     aos_utc = r.start_time,
                     los_utc = r.end_time,
                     horizon_deg = 0.0
@@ -127,5 +162,3 @@ class RequestEndpoint(Resource):
             user_request_list.append({"request_id": r.uid, "pass_data": pass_data})
 
         return user_request_list
-        """
-        return "hi"

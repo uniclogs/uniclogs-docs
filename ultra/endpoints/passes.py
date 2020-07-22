@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
 from datetime import datetime, timezone, timedelta
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from database import db
 from models import Tle
