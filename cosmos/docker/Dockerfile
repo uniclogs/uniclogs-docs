@@ -59,4 +59,3 @@ RUN rm -rf /opt/*
 RUN mv /cosmos /opt
 WORKDIR /opt/cosmos
 RUN bundle install
-CMD ruby Launcher
