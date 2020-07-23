@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-
+import sys
 import socket
-import datetime
 
 
 def receive_packet(connection):
@@ -10,7 +9,7 @@ def receive_packet(connection):
         raise Exception("Connection closed")
 
     print(cmd_data)  # pktid is the first 16 bytes
-    return
+    pktid = cmd_data[:16]
     if pktid == 10:
         print("received PASS_SCHEDULE command")
     elif pktid == 20:
@@ -21,7 +20,7 @@ def receive_packet(connection):
     return pktid
 
 
-if __name__ == "__main__":
+def main(args):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('localhost', 8888)
     sock.bind(server_address)
@@ -34,9 +33,14 @@ if __name__ == "__main__":
         print('connection from', client_address)
         while True:
             pktid = receive_packet(connection)
+            print('packet id: {}'.format(pktid))
     except KeyboardInterrupt:
         print('Goodbye')
     finally:
         print('shutting down socket')
         connection.shutdown(socket.SHUT_RDWR)
         connection.close()
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
