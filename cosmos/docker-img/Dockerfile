@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-ENV TIMEZONE=America/Los_Angeles
+ENV TIMEZONE America/Los_Angeles
 ENV COSMOS_REPO https://github.com/oresat/uniclogs-software
 ENV COSMOS_BRANCH capstone-dev
 ENV COSMOS_VERSION 4.4.2
@@ -59,3 +59,4 @@ RUN rm -rf /opt/*
 RUN mv /cosmos /opt
 WORKDIR /opt/cosmos
 RUN bundle install --clean --deployment
+CMD ruby Launcher
