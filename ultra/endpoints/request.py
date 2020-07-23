@@ -76,7 +76,6 @@ class RequestEndpoint(Resource):
                     Pass.start_time == aos_utc
                     ).all()
             if len(pass_check) != 0:
-                print(pass_check)
                 return {"Error" : "Pass already in db"}, 400
         except:
             return {"Error" : "internal TLE error"}, 400
@@ -143,8 +142,8 @@ class RequestEndpoint(Resource):
         try:
             result = db.session.query(Pass)\
                            .join(Request, Pass.uid == Request.pass_uid)\
-                           .filter(Request.user_token == args["user_token"])\
                            .all()
+                           #.filter(Request.user_token == args["user_token"])\ TODO readd this when primary key is fixed
         except:
             return {"Error" : "No requests or invalid user token"}, 400
 

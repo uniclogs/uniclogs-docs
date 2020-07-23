@@ -37,7 +37,7 @@ class RequestIdEndpoint(Resource):
                            .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
                            .one()
         except:
-            return {"Error" : "Pass not valid or wrong user token"}, 400
+            return {"Error" : "No matching pass or wrong user token"}, 400
 
 
         pass_data = pc.orbitalpass.OrbitalPass(
@@ -74,12 +74,13 @@ class RequestIdEndpoint(Resource):
         # TODO user check user day count
 
         try:
-            result = db.session.query(Request)\
-                           .join(Pass , Pass.uid == Request.pass_uid)\
-                           .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
-                           .one()
+            result = db.session.query(Pass)\
+                   .join(Request, Pass.uid == Request.pass_uid)\
+                   .filter(Pass.uid == request_id and
+                           Request.user_token == args["user_token"])\
+                   .one()
         except DbException:
-            return {"Error" : "Pass not valid or wrong user token"}, 400
+            return {"Error" : "No matching pass or wrong user token"}, 400
 
         try:
             latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
@@ -89,7 +90,6 @@ class RequestIdEndpoint(Resource):
 
         tle = [latest_tle.first_line, latest_tle.second_line]
 
-
         # make orbital pass object
         try:
             aos_utc = inputs.datetime_from_iso8601(args["aos_utc"])
@@ -98,17 +98,19 @@ class RequestIdEndpoint(Resource):
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
         input_orbital_pass = pc.orbitalpass.OrbitalPass(
-                latitude_deg = args["latitude"],
-                longtitude_deg = args["longitude"],
+                gs_latitude_deg = args["latitude"],
+                gs_longitude_deg = args["longitude"],
                 aos_utc = aos_utc,
                 los_utc = los_utc,
-                elevation_m = args["elevation"],
+                gs_elevation_m = args["elevation_m"],
                 horizon_deg = 0.0
                 )
 
         # validate replacement pass
-        if not validate_pass(tle=tle, orbital_pass=input_orbital_pass):
+        if not pc.calculator.validate_pass(tle=tle, orbital_pass=input_orbital_pass):
             return {"Error": "Invalid pass."}, 401
+
+        #TODO check to see if other requested the same pass, if theya have make an new Pass for this user
 
         # update entry
         result.latitude = input_orbital_pass.gs_latitude_deg,
@@ -120,7 +122,7 @@ class RequestIdEndpoint(Resource):
 
         db.session.commit()
 
-        return {"message": "modified request succesful"}
+        return {"message": "Request {} succesfully modified.".format(request_id)}
 
 
     def delete(self, request_id):
@@ -139,15 +141,27 @@ class RequestIdEndpoint(Resource):
         # TODO user check user day count
 
         try:
-            result = db.session.query(Pass)\
-                           .join(Request, Pass.uid == Request.pass_uid)\
-                           .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
-                           .one()
+            pass_result = db.session.query(Pass)\
+                    .filter(Pass.uid == request_id)\
+                    .one()
+            request_result = db.session.query(Request)\
+                   .filter(Request.pass_uid == request_id and
+                           Request.user_token == args["user_token"])\
+                   .one()
+            pass_request_result = db.session.query(PassRequest)\
+                   .filter(PassRequest.pass_id == request_id and
+                           PassRequest.req_token == args["user_token"])\
+                   .one()
         except:
-            return {"Error" : "Pass not valid or wrong user token"}, 400
+            return {"Error" : "No matching pass or wrong user token"}, 400
 
-        db.session.delete(result) # NOTE or should flip acflag?
+        db.session.delete(pass_request_result) # NOTE or should flip a flag?
+        db.session.flush()
+        db.session.delete(request_result) # NOTE or should flip a flag?
+        db.session.flush()
+        db.session.delete(pass_result) # NOTE or should flip a flag?
+        db.session.flush()
         db.session.commit()
 
-        return {"message": "deleted request"}
+        return {"message": "Deleted request {}".format(request_id)}
 
