@@ -1,4 +1,5 @@
 from schedule_pass import *
+
 class Util:
     def mainMenu(self):
         menuOption = 0
@@ -39,4 +40,5 @@ def main():
             
         choice = menu.mainMenu()
 
-main()
+if __name__ == "__main__":
+    main()
