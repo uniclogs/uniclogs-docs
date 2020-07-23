@@ -59,8 +59,7 @@ class Schedule_Pass:
              "PASS_ID": pass_info.loc[index,'Pass_ID'],\
              "LATITUDE": pass_info.loc[index, 'Latitude'],\
              "LONGITUDE": pass_info.loc[index, 'Longitude'],\
-             "STARTTIME": pass_info.loc[index, 'StartTime'],\
-             "ENDTIME": pass_info.loc[index, 'EndTime']\
+             "AOS": pass_info.loc[index, 'StartTime'],\
              })            
         shutdown_cmd_tlm()
         # possibly need error check? 
