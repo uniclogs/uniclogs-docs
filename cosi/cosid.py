@@ -6,19 +6,7 @@ import cosi.satnogs as satnogs
 import cosi.spacetrack as spacetrack
 
 
-def main(args):
-    if(len(args) == 0):
-        print('Expected Norad ID!')
-        sys.exit(-1)
-
-    try:
-        norad_id = int(args[0])
-    except ValueError:
-        print('Norad ID must be an integer!')
-        sys.exit(-1)
-
-    print('Norad ID: ' + str(norad_id))
-
+def cycle(norad_id):
     tle = spacetrack.request_tle(norad_id)
     print('TLE: ' + str(tle))
 
@@ -34,6 +22,19 @@ def main(args):
         decoded_telemetry = satnogs.decode_telemetry_frame(encoded_telemetry)
         print('Decoded Telemetry: ' + str(decoded_telemetry))
         b.inject_tlm('ENGR_LINK', 'TLM TEMPS TEMP1 = 300, TEMP2 = 400, TIMESTAMP = 00320203')
+
+
+def main(args):
+    if(len(args) == 0):
+        print('Expected Norad ID!')
+        sys.exit(-1)
+    for id in args:
+        try:
+            id = int(id)
+        except ValueError:
+            print('Norad ID must be an integer!')
+            sys.exit(-1)
+        cycle(id)
 
 
 if __name__ == "__main__":
