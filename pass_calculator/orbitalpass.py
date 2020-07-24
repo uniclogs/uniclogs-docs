@@ -1,7 +1,7 @@
-import datetime
+from datetime import timezone
+import json
 
-
-class OrbitalPass():
+class OrbitalPass(object):
     """POD class for holding all info realated to a pass.
 
     Attributes
@@ -19,6 +19,19 @@ class OrbitalPass():
     horizon_deg : float
         *optional* horizon degrees
     """
+    gs_latitude_deg = 0.0
+    gs_longitude_deg = 0.0
+    gs_elevation_m = 0.0
+    horizon_deg = 0.0
+
+    RESTFUL_JSON = {
+            "latitude": gs_latitude_deg,
+            "longitude": gs_longitude_deg,
+            "elevation_m": gs_elevation_m,
+            "horizon_deg": horizon_deg,
+            "aos_utc": "",
+            "los_utc": ""
+            }
 
     def __init__(self,
                  gs_latitude_deg,
@@ -38,3 +51,20 @@ class OrbitalPass():
         # datetimes
         self.aos_utc = aos_utc
         self.los_utc = los_utc
+
+
+class OrbitalPassJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, OrbitalPass):
+            json_str = {
+                    "latitude": obj.gs_latitude_deg,
+                    "longitude": obj.gs_longitude_deg,
+                    "elevation_m": obj.gs_elevation_m,
+                    "horizon_deg": obj.horizon_deg,
+                    "aos_utc": obj.aos_utc.replace(tzinfo=timezone.utc).isoformat(),
+                    "los_utc": obj.los_utc.replace(tzinfo=timezone.utc).isoformat()
+                    }
+            return json_str
+
+         # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
