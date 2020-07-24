@@ -34,13 +34,12 @@ class OrbitalPass(object):
             }
 
     def __init__(self,
-            gs_latitude_deg,
-            gs_longitude_deg,
-            aos_utc,
-            los_utc,
-            gs_elevation_m=0.0,
-            horizon_deg=0.0
-            ):
+                 gs_latitude_deg,
+                 gs_longitude_deg,
+                 aos_utc,
+                 los_utc,
+                 gs_elevation_m=0.0,
+                 horizon_deg=0.0):
         # type: (float, float, datetime, datetime, float, float) -> ()
 
         # Location data for the ground station

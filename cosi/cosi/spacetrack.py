@@ -18,6 +18,7 @@ class TLERequestFailed(Exception):
     args : Error details
         In-length details about what broke.
     """
+
     def __init___(self, reason: str, response: dict):
         super().__init__(self, "TLE request failure: " + reason
                          + '\n\tResponse Body: ' + str(response))
@@ -57,5 +58,5 @@ def request_tle(norad_id):
         res = session.get(SPACETRACK_TLE.format(norad_id))
         if res.status_code != 200:
             raise TLERequestFailed("Bad request!", res)
-        data = json.loads(res.text)
+        data = json.loads(res.text)[0]
     return data

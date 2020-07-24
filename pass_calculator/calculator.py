@@ -8,11 +8,9 @@ from skyfield.api import Topos, \
 VALIDATE_TIME_TOLERENCE_S = 5.0
 
 
-def pass_overlap(
-        new_pass: OrbitalPass,
-        approved_passes : [OrbitalPass]
-        ):
-    # type: (ObjectPass, [ObjectPass]) -> bool
+def pass_overlap(new_pass: OrbitalPass,
+                 approved_passes: [OrbitalPass]):
+    # type: (OrbitalPass, [OrbitalPass]) -> bool
     """Checks to see if the possible pass will overlap with an existing
     approved pass.
 
@@ -31,9 +29,8 @@ def pass_overlap(
 
     available = False
 
-    if approved_passes == None:
-        return available # nothing to check
-
+    if approved_passes is None:
+        return available  # nothing to check
 
     for ap in approved_passes:
         """
@@ -41,25 +38,25 @@ def pass_overlap(
         the approved pass and also check to if the start of the possible pass
         overlaps with end of the approved pass
         """
-        if (new_pass.aos_utc <= ap.aos_utc and new_pass.los_utc > ap.aos_utc) \
-                or (new_pass.aos_utc < ap.los_utc and new_pass.los_utc <= ap.los_utc):
-            available = True # pass overlap with an approved pass
-            break # no reason to check against any other approved passes
+        if (new_pass.aos_utc <= ap.aos_utc
+            and new_pass.los_utc > ap.aos_utc) \
+            or (new_pass.aos_utc < ap.los_utc
+                and new_pass.los_utc <= ap.los_utc):
+            available = True  # pass overlap with an approved pass
+            break  # no reason to check against any other approved passes
 
     return available
 
 
-def get_all_passes(
-        tle: [str],
-        lat_deg: float,
-        long_deg: float,
-        start_datetime_utc: datetime,
-        end_datetime_utc: datetime,
-        approved_passes: [OrbitalPass]=None,
-        elev_m: float=0.0,
-        horizon_deg: float=0.0,
-        min_duration_s: int=0
-        ):
+def get_all_passes(tle: [str],
+                   lat_deg: float,
+                   long_deg: float,
+                   start_datetime_utc: datetime,
+                   end_datetime_utc: datetime,
+                   approved_passes: [OrbitalPass] = None,
+                   elev_m: float = 0.0,
+                   horizon_deg: float = 0.0,
+                   min_duration_s: int = 0):
     # type: ([str], float, float, datetime, datetime, [OrbitalPass], float, float, int) -> [OrbitalPass]
     """
     Get a list of all passes for a satellite and location for a time span.
@@ -108,7 +105,8 @@ def get_all_passes(
     # make topocentric object
     loc = Topos(lat_deg, long_deg, elev_m)
     loc = Topos(latitude_degrees=lat_deg,
-            longitude_degrees=long_deg, elevation_m=elev_m)
+                longitude_degrees=long_deg,
+                elevation_m=elev_m)
 
     # make satellite object from TLE
     if len(tle) == 2:
@@ -129,25 +127,20 @@ def get_all_passes(
 
         if duration_s > min_duration_s:
 
-            new_pass =OrbitalPass(
-                gs_latitude_deg=lat_deg,
-                gs_longitude_deg=long_deg,
-                aos_utc=aos_utc,
-                los_utc=los_utc,
-                gs_elevation_m=0.0,
-                horizon_deg=0.0
-                )
+            new_pass = OrbitalPass(gs_latitude_deg=lat_deg,
+                                   gs_longitude_deg=long_deg,
+                                   aos_utc=aos_utc,
+                                   los_utc=los_utc,
+                                   gs_elevation_m=0.0,
+                                   horizon_deg=0.0)
 
             if not pass_overlap(new_pass, approved_passes):
-                pass_list.append(new_pass) # add pass to list
-
+                pass_list.append(new_pass)  # add pass to list
     return pass_list
 
 
-def validate_pass(
-        tle: [str],
-        orbital_pass: OrbitalPass
-        ):
+def validate_pass(tle: [str],
+                  orbital_pass: OrbitalPass):
     # type: ([str], OrbitalPass) -> bool
     """
     Checks to see if all data in the OrbitalPass args is valid pass.
@@ -169,23 +162,19 @@ def validate_pass(
     aos_utc_tolerence = orbital_pass.aos_utc - timedelta(hours=2)
     los_utc_tolerence = orbital_pass.los_utc + timedelta(hours=2)
 
-    pass_list = get_all_passes(
-            tle,
-            orbital_pass.gs_latitude_deg,
-            orbital_pass.gs_longitude_deg,
-            aos_utc_tolerence,
-            los_utc_tolerence,
-            elev_m = orbital_pass.gs_elevation_m,
-            horizon_deg = orbital_pass.horizon_deg
-            )
+    pass_list = get_all_passes(tle,
+                               orbital_pass.gs_latitude_deg,
+                               orbital_pass.gs_longitude_deg,
+                               aos_utc_tolerence,
+                               los_utc_tolerence,
+                               elev_m=orbital_pass.gs_elevation_m,
+                               horizon_deg=orbital_pass.horizon_deg)
 
     for p in pass_list:
-
         aos_diff_s = abs((p.aos_utc - orbital_pass.aos_utc).total_seconds())
         los_diff_s = abs((p.los_utc - orbital_pass.los_utc).total_seconds())
 
-        if aos_diff_s < VALIDATE_TIME_TOLERENCE_S or \
+        if aos_diff_s < VALIDATE_TIME_TOLERENCE_S and \
                 los_diff_s < VALIDATE_TIME_TOLERENCE_S:
-            return True # valid pass
-
-    return False # invalid pass
+            return True  # valid pass
+    return False  # invalid pass

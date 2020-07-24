@@ -1,1 +1,1 @@
-skyfield
+skyfield==1.22

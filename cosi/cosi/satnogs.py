@@ -1,11 +1,11 @@
 import requests
+import cosi.structs.csim as csim
 from socket import gaierror
 from pytz import utc
 from datetime import datetime, \
                      timedelta
 from dateutil.parser import parse
-from .structs.csim import Csim
-from .common import SATNOGS_SATELITE, \
+from cosi.common import SATNOGS_SATELITE, \
                     SATNOGS_TELEMETRY, \
                     SATNOGS_TOKEN, \
                     EnvironmentVariableNotDefined
@@ -132,7 +132,7 @@ def request_telemetry(norad_id=None):
         return None
 
 
-def parse_telemetry_frame(telemetry: dict):
+def decode_telemetry_frame(telemetry: dict):
     """Takes a raw and encoded telemetry frame and decodes it according to a
     provided Kaitai Struct
 
@@ -147,4 +147,4 @@ def parse_telemetry_frame(telemetry: dict):
         -- norad_cat_id : Satellite Norad ID
     """
     frame = bytearray.fromhex(telemetry.get('frame'))
-    return Csim.from_bytes(frame).ax25_frame.payload.ax25_info
+    return csim.Csim.from_bytes(frame).ax25_frame.payload.ax25_info
