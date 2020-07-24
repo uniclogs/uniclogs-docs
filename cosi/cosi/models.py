@@ -1,5 +1,5 @@
 import datetime
-import cosi.cosi as cosi
+import cosi
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, \
                        UniqueConstraint, \
