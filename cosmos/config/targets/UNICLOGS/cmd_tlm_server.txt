@@ -6,3 +6,4 @@
 
 INTERFACE UNICLOGS_INT udp_interface.rb station 8080 8080
   TARGET UNICLOGS
+  DONT_CONNECT  # dont connect by default
