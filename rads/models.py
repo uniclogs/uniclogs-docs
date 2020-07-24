@@ -1,54 +1,86 @@
-import log_interface
-#from flask import Flask
-#from flask_sqlalchemy import SQLAlchemy
-from loguru import logger
-#from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import text
+from sqlalchemy import create_engine, Column, Integer, String, Date, Text, DateTime, Float, Boolean, Sequence
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from os import getenv
+import datetime
 
+PSQL_USERNAME = getenv('PSQL_USERNAME')
+PSQL_PASSWORD = getenv('PSQL_PASSWORD')
+PSQL_HOST = getenv('PSQL_HOST')
+PSQL_PORT = getenv('PSQL_PORT')
+PSQL_DB = getenv('PSQL_DB')
+ 
+Base = declarative_base()
 
-def initDb(user, password, db, app, host='localhost', port=5432):
-    url = 'postgresql://{}:{}@{}:{}/{}'
-    url = url.format(user, password, host, port, db)
-    app.config['SQLALCHEMY_DATABASE_URI'] = url
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
-
-'''
-
-class Request(db.Model):
-    __tablename__ = 'requests'
-    user_token    = db.Column(db.String(120), primary_key=True, nullable=False)  #A unique token for each PAWS user. 
-    is_approved   = db.Column(db.Boolean, default=True, nullable=False) #flag to say if the request is approved (True) or denied (False) or no process yet (NULL)
-    is_sent       = db.Column(db.Boolean, nullable=False) #flag to say if the request has been sent
-    pass_uid      = db.Column(db.Integer, nullable=False) # reference to pass uid
-    created_date  = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
-    observation_type = db.Column(db.String(120), nullable=True) #String {“uniclogs”, “oresat live”, “CFC”}
-
-    def __repr__(self):
-        return '<Ticket {}>'.format(self.user_token)
-
-class Tle(db.Model):
+DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'
+DATABASE_URI = DATABASE_URI.format(PSQL_USERNAME, PSQL_PASSWORD, PSQL_HOST, PSQL_PORT, PSQL_DB)
+engine = create_engine(DATABASE_URI)
+Session = sessionmaker(bind=engine) #factory of sessions
+ 
+class Tle(Base):
     __tablename__ = 'tles'
-    header_text   = db.Column(db.Text, nullable=False, primary_key=True)
-    first_line    = db.Column(db.Text, nullable=False)
-    second_line   = db.Column(db.Text, nullable=False)
-    time_added    = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow(), primary_key=True)
-
+    header_text   = Column(Text, nullable=False, primary_key=True)
+    first_line    = Column(Text, nullable=False)
+    second_line   = Column(Text, nullable=False)
+    time_added    = Column(DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow(), primary_key=True)
+ 
     def __repr__(self):
         return '<TLE {}, {}>'.format(self.header_text, self.time_added)
-
-class Pass(db.Model):
+ 
+ 
+class Request(Base):
+    __tablename__ = 'requests'
+    user_token    = Column(String(120), primary_key=True, nullable=False)  #A unique token for each PAWS user.  *I don't know how this will work
+    is_approved   = Column(Boolean, default=True, nullable=False) #flag to say if the request is approved (True) or denied (False) or no process yet (NULL)
+    is_sent       = Column(Boolean, nullable=False) #flag to say if the request has been sent
+    pass_uid      = Column(Integer, nullable=False) # reference to pass uid
+    created_date  = Column(DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
+    observation_type = Column(String(120), nullable=True) #String {“uniclogs”, “oresat live”, “CFC”}
+ 
+    def __repr__(self):
+        return '<Ticket {}>'.format(self.user_token)
+ 
+class Pass(Base):
     __tablename__ = 'pass'
-    uid        = db.Column(db.Integer, db.Sequence('pass_uid_seq'), primary_key=True) # reference to pass uid
-    latitude   = db.Column(db.Float, nullable=False)
-    longtitude = db.Column(db.Float, nullable=False)
-    start_time = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
-    end_time   = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
-    elevation  = db.Column(db.Float)
-
+    uid        = Column(Integer, Sequence('pass_uid_seq'), primary_key=True) # reference to pass uid
+    latitude   = Column(Float, nullable=False)
+    longtitude = Column(Float, nullable=False)
+    start_time = Column(DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
+    end_time   = Column(DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
+    elevation  = Column(Float)
+ 
     def __repr__(self):
         return '<Pass {}, {}, {}>'.format(self.uid, self.latitude, self.longtitude)
 
-class PassRequest(db.Model): #many to many relationship between pass and req
-    __tablename__ = 'pass_requests'
-    pass_id       = db.Column(db.Integer, db.ForeignKey('pass.uid'), primary_key=True)           # reference to pass uid
-    req_token     = db.Column(db.Text   , db.ForeignKey('request.user_token'), primary_key=True) # reference to token uid
+def requestSelect():
+    s = Session()
+    with engine.connect() as con:
+        #request_list = s.query(Request).all()
+        #print(request_list)
+        request_data = con.execute('SELECT * FROM public.requests WHERE is_approved IS NULL ORDER BY created_date ASC')
+#        for row in request_data:
+#            print(row)
+        return request_data
+    s.close()
+
+
+def scheduleSelect():
+    s = Session()
+    with engine.connect() as con:
+        request_data = con.execute('SELECT requests.*, pass.start_time FROM public.requests, public.pass_requests, public.pass WHERE requests.is_approved IS true AND requests.user_token=pass_requests.req_token AND pass_requests.pass_id=pass.uid AND pass.start_time > NOW() ORDER BY pass.start_time ASC')
+#        for row in request_data:
+#            print(row)
+        return request_data
+    s.close()
+
+def archiveSelect():
+    s = Session()
+    with engine.connect() as con:
+        #request_list = s.query(Request).all()
+        #print(request_list)
+        request_data = con.execute('SELECT * FROM public.requests WHERE is_approved IS True OR is_approved IS False ORDER BY created_date ASC')
+ #       for row in request_data:
+ #          print(row)
+        return request_data
+    s.close()
+

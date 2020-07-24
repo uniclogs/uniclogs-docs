@@ -16,7 +16,8 @@ from sqlalchemy import Column, \
 from sqlalchemy.ext.declarative import declarative_base
 from loguru import logger
 import log_interface
-
+from os import getenv
+from models import *
 
 #from commonrads import PSQL_USERNAME, \
 #                    PSQL_PASSWORD, \
@@ -25,12 +26,18 @@ import log_interface
 #from sqlalchemy.ext.declarative import declarative_base
 #from models import *
 
-'''
-Base = declarative_base()
-db_url = 'postgresql://{}:{}@{}:{}/{}'.format(PSQL_USERNAME,
-                                              PSQL_PASSWORD)
-engine = create_engine(db_url)
-'''
+#PSQL_USERNAME = getenv('PSQL_USERNAME')
+#PSQL_PASSWORD = getenv('PSQL_PASSWORD')
+#PSQL_HOST = getenv('PSQL_HOST')
+#PSQL_PORT = getenv('PSQL_PORT')
+#PSQL_DB = getenv('PSQL_DB')
+
+#Base = declarative_base()
+
+#DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'
+#DATABASE_URI = DATABASE_URI.format(PSQL_USERNAME, PSQL_PASSWORD, PSQL_HOST, PSQL_PORT, PSQL_DB)
+#engine = create_engine(DATABASE_URI)
+#Session = sessionmaker(bind=engine) #factory of sessions
 
 
 #function to print the menu taking in a the standard screen and default row index 0
@@ -71,42 +78,71 @@ def print_menu(stdscreen,menu, current_row_index):
 
     stdscreen.refresh()
 
-def print_pad(panel, stdscreen, menu, current_row_index):
+def print_schedulepad(stdscreen):
     """Prints main menu and updates the display to current row/option selected.
 
     Parameters
     ----------
     stdscreen : window object
         A windows object initialized by curses.initscr() from the curses library.
-    menu: list
-        A list that contains all text for the main menu options.
-    current_row_index: int
-        The current index row number of the current menu option selected.
     Returns
     -------
     None
     """
 
-    stdscreen.clear()
+    stdscreen.nodelay(True)
+    stdscreen.scrollok(True)      # Enable window scroll
+    stdscreen.refresh()
+    schedule_index = 0
+    loop = True
     #gets the max height and width
-    h, w = stdscreen.getmaxyx()
+    height, width = stdscreen.getmaxyx()
+    width -= 1
+    draw_height = height -2
 
-    #enumerate loops over menu and creates a counter to know what part of the menu is selected
-    for index, row in enumerate(menu):
-        #X is equal to center of screen with text alignment of the x axis
-        x = w//2 - len(row)//2
-        #y is equal to the center of the screen of the axis
-        y = h//2 - len(menu)//2 + index
-        #highlights the selected text
-        if index == current_row_index:
-            panel.attron(curses.color_pair(1))
-            panel.addstr(y, x, row)
-            panel.attroff(curses.color_pair(1))
-        #adds menu text not selected
-        else:
-            panel.addstr(y, x, row)
+    panel = curses.newpad(height, width)
+    schedule = list(scheduleSelect())
+    time.sleep(0.1)
+    #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
-    panel.refresh(0,0, 5,5, 20,75)
+    while loop == True:
+        #interprets arrow key strokes
+        key = stdscreen.getch()
+
+        #menu navigation
+        #lower bound case
+        if key == curses.KEY_UP and schedule_index > 0:
+            schedule_index-=1
+        #upper bound case
+        elif key == curses.KEY_DOWN and schedule_index < len(schedule)-1:
+            schedule_index += 1
+        elif(key == curses.KEY_BACKSPACE):
+            loop = False
+
+        if(len(schedule) >= (height - 2)):
+            height = height*2
+            panel.resize(height, width)
+            panel.clear()
+
+       # print_pad(panel, stdscreen, list1, schedule_index)
+        
+        if(len(schedule) < (height - 2)):
+        #enumerate loops over menu and creates a counter to know what part of the menu is selected
+            for index, row in enumerate(schedule):
+                if index == schedule_index:
+                    panel.attron(curses.color_pair(1))
+                panel.addstr(index + 1, 1, str(row))
+                panel.attroff(curses.color_pair(1))
+    
+        panel.box()
+        #panel.addstr(0, 1, "User_Token Is_Approved Is_Sent Pass_ID Created_Date Last_Modified Observation_Type Pass_Start_time")
+        panel.addstr(0, 1, "Upcoming Pass Schedule")
+        panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
+        time.sleep(0.1)
+    #panel.endwin()
+    stdscreen.refresh()
+    stdscreen.scrollok(False)      # Enable window scroll
+    stdscreen.nodelay(False)
 
 #function to print schedule of upcoming requests
 def schedule(stdscreen):
@@ -122,38 +158,16 @@ def schedule(stdscreen):
     """
     schedule_index = 0
     stdscreen.clear()
-    list1 = ['op1','op2','op3','op4','op5','op6','op7','op8','op9','op10']
+    #test list
+   # list1 = ['op1','op2','op3','op4','op5','op6','op7','op8','op9','op10']
+    schedule = list(scheduleSelect())
+    #print_menu(stdscreen, schedule, 0)
+    #print(schedule)
     vheight, vwidth = stdscreen.getmaxyx()
-    panel = curses.newpad(vheight -1, vwidth-2)
- #   print_pad(panel, stdscreen, list1, schedule_index)
-    print_menu(stdscreen, list1, schedule_index)
-    loop = True
-    while loop == True:
-        #interprets arrow key strokes
-        key = stdscreen.getch()
-        stdscreen.clear()
-
-        #menu navigation
-        #lower bound case
-        if key == curses.KEY_UP and schedule_index > 0:
-            schedule_index-=1
-        #upper bound case
-        elif key == curses.KEY_DOWN and schedule_index < len(list1)-1:
-            schedule_index += 1
-        elif key == curses.KEY_F1:
-            stdscreen.clear()
-            stdscreen.addstr(0, 0, "You have pressed the F1 key!")
-            stdscreen.refresh()
-            time.sleep(0.75)
-            loop = False 
-        #all possible values that enter key might be depending on keyboard
-        elif key == curses.KEY_ENTER or key in [10,13]:
-            stdscreen.clear()
-            stdscreen.addstr(0, 0, "You Selected {}".format(list1[schedule_index]))
-            stdscreen.refresh()
-            stdscreen.getch()
-        print_menu(stdscreen, list1, schedule_index)
-        stdscreen.refresh() 
+    #width -= 1
+    #draw_height = height -2
+    panel = curses.newpad(vheight, vwidth)
+    print_schedulepad(stdscreen)
 
 def main():
 
@@ -169,6 +183,7 @@ def main():
     curses.cbreak() #disable line buffering
     curses.curs_set(False) #disable the cursor display
     stdscreen.keypad(True)
+    #stdscreen.nodelay(True)
 
     #menu options
     #menu = ['Approve/Deny Request', 'Create Request', 'Check Schedule', 'Archive', 'Exit']
@@ -200,6 +215,7 @@ def main():
             #check schedule
             if current_row_index == 1:
                 schedule(stdscreen)
+               # print_menu(stdscreen, menu, current_row_index)
            # if current_row_index < len(menu)-1:
             #    stdscreen.clear()
              #   stdscreen.addstr(0, 0, "You Selected {}".format(menu[current_row_index]))
@@ -214,6 +230,7 @@ def main():
                 break
 
         #update menu change
+        #time.sleep(0.1)
         print_menu(stdscreen, menu, current_row_index)
         stdscreen.refresh()
 
@@ -224,6 +241,7 @@ def main():
     curses.curs_set(True) #Enable the cursor display
     curses.resetty() # Restore terminal state
     stdscreen.keypad(False)
+    #stdscreen.nodelay(False)
     curses.endwin() #Destroy virtual screen
 
 
