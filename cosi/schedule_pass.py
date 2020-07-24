@@ -30,7 +30,7 @@ class Schedule_Pass:
         """
         self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
         self.passRequestList = pd.DataFrame((self.passRequestList),\
-                columns=['idx','Pass_ID','Latitude','Longitude','StartTime','EndTime'])
+                columns=['idx','pass_id','latitude','longitude','start_time','end_time','elevation'])
         self.numberOfRequests =  len(self.passRequestList.index)
 
 
@@ -56,31 +56,28 @@ class Schedule_Pass:
                 .format(pass_info.loc[index, 'Pass_ID']))
         cmd("ENGR_LINK", "PASS_SCHEDULE",\
             {"PKT_ID": 10,\
-             "PASS_ID": pass_info.loc[index,'Pass_ID'],\
-             "LATITUDE": pass_info.loc[index, 'Latitude'],\
-             "LONGITUDE": pass_info.loc[index, 'Longitude'],\
-             "STARTTIME": pass_info.loc[index, 'StartTime'],\
-             "ENDTIME": pass_info.loc[index, 'EndTime']\
-             })            
+             "PASS_ID": pass_info.loc[index,'pass_id'],\
+             "LATITUDE": pass_info.loc[index, 'latitude'],\
+             "LONGITUDE": pass_info.loc[index, 'longitude'],\
+             "AOS": pass_info.loc[index, 'start_time'],\
+             })
         shutdown_cmd_tlm()
-        # possibly need error check? 
-        # condition to show passes scheduled is True?
 
         return print('command sent')
-        
+
 
     def cancel(self, pass_info, index):
         """ Helper function to send attribute info to Cosmos interface
             to schedule passes. Called by cancel_all().
         """
-        
+
         set_replay_mode(False)
         connect_interface('ENGR_LINK_INT')
         print('\nsending CANCEL command...\n{}\n'\
-                .format(pass_info.loc[index,'Pass_ID']))
+                .format(pass_info.loc[index,'pass_id']))
         cmd("ENGR_LINK", "PASS_CANCEL",\
             {"PKT_ID": 20,\
-             "PASS_ID": pass_info.loc[index,'Pass_ID'],\
+             "PASS_ID": pass_info.loc[index,'pass_id'],\
             })
         shutdown_cmd_tlm()
         # need error check 
