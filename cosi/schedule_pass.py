@@ -53,7 +53,7 @@ class Schedule_Pass:
         set_replay_mode(False)
         connect_interface('ENGR_LINK_INT')
         print('\nsending SCHEDULE command for PASS_ID: {}...\n'\
-                .format(pass_info.loc[index, 'Pass_ID']))
+                .format(pass_info.loc[index, 'pass_id']))
         cmd("ENGR_LINK", "PASS_SCHEDULE",\
             {"PKT_ID": 10,\
              "PASS_ID": pass_info.loc[index,'pass_id'],\
@@ -92,7 +92,7 @@ class Schedule_Pass:
         ----------
         passRequestList : list retrieved from pass_request database
         numberOfRequests : total number of passes to schedule 
-        
+
         """
         for row in range(0,self.numberOfRequests):
             self.sched(self.passRequestList,row)
@@ -105,9 +105,9 @@ class Schedule_Pass:
 
         Attributes
         ----------
-        passRequestList : list retrieved from pass_request database 
+        passRequestList : list retrieved from pass_request database
         elem : provides user feedback on number of approved requests
-        response: collects user input 
+        response: collects user input
         emptyPassRequestList : collects the newly emptied list
         """
         print("This request cannot be undone.")
@@ -115,12 +115,12 @@ class Schedule_Pass:
         if response.lower() == 'y' or response.lower() == 'yes':
             for row in range(0,self.numberOfRequests):
                 self.cancel(self.passRequestList,row)
-            return print("{} requests(s) deleted.".format(self.numberOfRequests))              
+            return print("{} requests(s) deleted.".format(self.numberOfRequests))
         else:
             print("List not deleted")
             return self.passRequestList
-        
-        
+
+
 #if __name__ == "__main__":
     #sp = Schedule_Pass()
     #sp.show_list()
