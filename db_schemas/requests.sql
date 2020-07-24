@@ -5,6 +5,7 @@ CREATE TABLE requests
     is_sent boolean,
     pass_uid integer,
     created_date timestamp without time zone,
+    updated_date timestamp without time zone,
     observation_type character varying(120), --uniclogs, oresat live, CFC”
     CONSTRAINT requests_pkey PRIMARY KEY (user_token),
     CONSTRAINT pass_fk FOREIGN KEY (pass_uid)
