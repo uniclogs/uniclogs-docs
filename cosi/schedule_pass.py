@@ -31,13 +31,11 @@ class Schedule_Pass:
         self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
         self.passRequestList = pd.DataFrame((self.passRequestList),\
                 columns=['idx','pass_id','latitude','longitude','start_time','end_time','elevation'])
-        self.passRequestList = self.passRequestList['idx'].astype['uint16']
-        self.passRequestList = self.passRequestList['pass_id'].astype['uint16']
-        self.passRequestList = self.passRequestList['latitude'].astype['float32']
-        self.passRequestList = self.passRequestList['longitude'].astype['float32']
-        self.passRequestList = self.passRequestList['start_time'].astype['string']
-        self.passRequestList = self.passRequestList['end_time'].astype['string']
-        self.passRequestList = self.passRequestList['elevation'].astype['float32']
+        self.passRequestList = self.passRequestList.astype({\
+            "idx":'uint16', "pass_id":'uint16',\
+            "latitude":'float32', "longitude":'float32',\
+            "start_time":'string',"end_time":'string',\
+            "elevation":'float32'})
         self.numberOfRequests =  len(self.passRequestList.index)
 
         #uint16, uint16 float32 float32 starttime string32

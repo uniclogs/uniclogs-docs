@@ -30,7 +30,12 @@ class Schedule_Pass:
         """
         self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
         self.passRequestList = pd.DataFrame((self.passRequestList),\
-                columns=['idx','pass_id','latitude','longitude','start_time','end_time', 'elevation'])
+                columns=['idx','pass_id','latitude','longitude','start_time','end_time','elevation'])
+        self.passRequestList = self.passRequestList.astype({\
+            "idx":'uint16', "pass_id":'uint16',\
+            "latitude":'float32', "longitude":'float32',\
+            "start_time":'string',"end_time":'string',\
+            "elevation":'float32'})
         self.numberOfRequests =  len(self.passRequestList.index)
 
 
@@ -60,7 +65,7 @@ class Schedule_Pass:
              "LATITUDE": pass_info.loc[index, 'latitude'],\
              "LONGITUDE": pass_info.loc[index, 'longitude'],\
              "AOS": pass_info.loc[index, 'start_time'],\
-             })            
+             })
         shutdown_cmd_tlm()
 
         return print('command sent')
