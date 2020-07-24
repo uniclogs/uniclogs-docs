@@ -5,6 +5,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import sessionmaker
 import psycopg2
 import pandas as pd
+import numpy as np
 from ballcosmos.script \
     import set_replay_mode,\
             connect_interface,\
@@ -28,14 +29,14 @@ class Schedule_Pass:
             Pass_ID, Latitude, Longitude, StartTime, EndTime
         numberOfRequests : number of passes to be scheduled or canceled
         """
-        self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer', dtype=str)
+        self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
         self.passRequestList = pd.DataFrame((self.passRequestList),\
                 columns=['idx','pass_id','latitude','longitude','start_time','end_time','elevation'])
         #self.passRequestList = self.passRequestList.astype({\
-        #    "idx":'int16', "pass_id":'string',\
-        #    "latitude":'string', "longitude":'string',\
-        #    "start_time":'string',"end_time":'string',\
-        #   "elevation":'string'})
+        #        "idx":'int16', "pass_id":'int16',\
+        #    "latitude":'float32', "longitude":'float32',\
+        #    "start_time":'object',"end_time":'object',\
+        #    "elevation":'object'})
         self.numberOfRequests =  len(self.passRequestList.index)
 
 
@@ -59,12 +60,23 @@ class Schedule_Pass:
         connect_interface('ENGR_LINK_INT')
         print('\nsending SCHEDULE command for PASS_ID: {}...\n'\
                 .format(pass_info.loc[index, 'pass_id']))
+        pass_info = pass_info.astype({\
+            'pass_id':'uint16',\
+            'latitude':'float32',\
+            'longitude':'float32',\
+            'start_time':'string'}).dtypes
+        print(pass_info, "tthis", type(pass_info))
+        pass_id = pass_info.loc[index, 'pass_id']
+        latitude = pass_info.loc[index, 'latitude']
+        longitude = pass_info.loc[index, 'longitude']
+        AOS = pass_info.loc[index, 'start_time']
+
         cmd("ENGR_LINK", "PASS_SCHEDULE",\
             {"PKT_ID": 10,\
-             "PASS_ID": pass_info.loc[index,'pass_id'],\
-             "LATITUDE": pass_info.loc[index, 'latitude'],\
-             "LONGITUDE": pass_info.loc[index, 'longitude'],\
-             "AOS": pass_info.loc[index, 'start_time'],\
+             "PASS_ID": pass_id,\
+             "LATITUDE": latitude,\
+             "LONGITUDE": longitude,\
+             "AOS": AOS\
              })
         shutdown_cmd_tlm()
 
