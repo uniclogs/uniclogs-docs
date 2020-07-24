@@ -85,6 +85,8 @@ def print_schedulepad(stdscreen):
     ----------
     stdscreen : window object
         A windows object initialized by curses.initscr() from the curses library.
+    menu : list
+        A list containing all the items in a given request query
     Returns
     -------
     None
@@ -160,15 +162,79 @@ def schedule(stdscreen):
     stdscreen.clear()
     #test list
    # list1 = ['op1','op2','op3','op4','op5','op6','op7','op8','op9','op10']
-    schedule = list(scheduleSelect())
+#    schedule = list(scheduleSelect())
     #print_menu(stdscreen, schedule, 0)
     #print(schedule)
-    vheight, vwidth = stdscreen.getmaxyx()
+#    vheight, vwidth = stdscreen.getmaxyx()
     #width -= 1
     #draw_height = height -2
-    panel = curses.newpad(vheight, vwidth)
+#    panel = curses.newpad(vheight, vwidth)
     print_schedulepad(stdscreen)
 
+#function to print accepted/denied requests
+def print_archive(stdscreen):
+    """Prints main menu and updates the display to current row/option selected.
+
+    Parameters
+    stdscreen : window object
+        A windows object initialized by curses.initscr() from the curses library.
+    ----------
+    Returns
+    -------
+    None
+    """
+    archive_index = 0
+    stdscreen.nodelay(True)
+    stdscreen.scrollok(True)      # Enable window scroll
+    stdscreen.refresh()
+    loop = True
+    #gets the max height and width
+    height, width = stdscreen.getmaxyx()
+    width -= 1
+    draw_height = height -2
+
+    panel = curses.newpad(height, width)
+    archive = list(archiveSelect())
+    time.sleep(0.1)
+    #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
+
+    while loop == True:
+        #interprets arrow key strokes
+        key = stdscreen.getch()
+
+        #menu navigation
+        #lower bound case
+        if key == curses.KEY_UP and archive_index > 0:
+            archive_index-=1
+        #upper bound case
+        elif key == curses.KEY_DOWN and archive_index < len(archive)-1:
+            archive_index += 1
+        elif(key == curses.KEY_BACKSPACE):
+            loop = False
+
+        if(len(archive) >= (height - 2)):
+            height = height*2
+            panel.resize(height, width)
+            panel.clear()
+
+       # print_pad(panel, stdscreen, list1, schedule_index)
+
+        if(len(archive) < (height - 2)):
+        #enumerate loops over menu and creates a counter to know what part of the menu is selected
+            for index, row in enumerate(archive):
+                if index == archive_index:
+                    panel.attron(curses.color_pair(1))
+                panel.addstr(index + 1, 1, str(row))
+                panel.attroff(curses.color_pair(1))
+
+        panel.box()
+        panel.addstr(0, 1, "Archives")
+        panel.refresh(archive_index, 0, 1, 1, draw_height, width)
+        time.sleep(0.1)
+    #panel.endwin()
+    stdscreen.refresh()
+    stdscreen.scrollok(False)      # Enable window scroll
+    stdscreen.nodelay(False)
 def main():
 
     log_interface.init('rads')
@@ -215,12 +281,8 @@ def main():
             #check schedule
             if current_row_index == 1:
                 schedule(stdscreen)
-               # print_menu(stdscreen, menu, current_row_index)
-           # if current_row_index < len(menu)-1:
-            #    stdscreen.clear()
-             #   stdscreen.addstr(0, 0, "You Selected {}".format(menu[current_row_index]))
-              #  stdscreen.refresh()
-              #  stdscreen.getch()
+            if current_row_index == 2:
+                print_archive(stdscreen)
             #code that terminates the program after selecting exit
             if current_row_index == len(menu)-1:
                 stdscreen.addstr(0, 0, "Program successfully closed!")

@@ -67,7 +67,7 @@ def requestSelect():
 def scheduleSelect():
     s = Session()
     with engine.connect() as con:
-        request_data = con.execute('SELECT requests.*, pass.start_time FROM public.requests, public.pass_requests, public.pass WHERE requests.is_approved IS true AND requests.user_token=pass_requests.req_token AND pass_requests.pass_id=pass.uid AND pass.start_time > NOW() ORDER BY pass.start_time ASC')
+        request_data = con.execute('SELECT requests.*, pass.start_time FROM public.requests, public.pass WHERE requests.is_approved IS true AND requests.pass_uid=pass.uid AND pass.start_time > NOW() ORDER BY pass.start_time ASC')
 #        for row in request_data:
 #            print(row)
         return request_data
