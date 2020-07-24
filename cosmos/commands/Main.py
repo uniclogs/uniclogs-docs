@@ -40,5 +40,5 @@ def main():
             
         choice = menu.mainMenu()
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+main()

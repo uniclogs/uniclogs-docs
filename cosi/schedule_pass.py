@@ -28,17 +28,17 @@ class Schedule_Pass:
             Pass_ID, Latitude, Longitude, StartTime, EndTime
         numberOfRequests : number of passes to be scheduled or canceled
         """
-        self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
+        self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer', dtype=str)
         self.passRequestList = pd.DataFrame((self.passRequestList),\
                 columns=['idx','pass_id','latitude','longitude','start_time','end_time','elevation'])
-        self.passRequestList = self.passRequestList.astype({\
-            "idx":'uint16', "pass_id":'uint16',\
-            "latitude":'float32', "longitude":'float32',\
-            "start_time":'string',"end_time":'string',\
-            "elevation":'float32'})
+        #self.passRequestList = self.passRequestList.astype({\
+        #    "idx":'int16', "pass_id":'string',\
+        #    "latitude":'string', "longitude":'string',\
+        #    "start_time":'string',"end_time":'string',\
+        #   "elevation":'string'})
         self.numberOfRequests =  len(self.passRequestList.index)
 
-        #uint16, uint16 float32 float32 starttime string32
+
     def show_list(self):
         """ Prints pass_id for items on current list 
             for user confirmation of items on the list.
