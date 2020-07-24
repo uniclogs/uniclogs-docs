@@ -55,8 +55,6 @@ class Pass(Base):
 def requestSelect():
     s = Session()
     with engine.connect() as con:
-        #request_list = s.query(Request).all()
-        #print(request_list)
         request_data = con.execute('SELECT * FROM public.requests WHERE is_approved IS NULL ORDER BY created_date ASC')
 #        for row in request_data:
 #            print(row)
@@ -76,8 +74,6 @@ def scheduleSelect():
 def archiveSelect():
     s = Session()
     with engine.connect() as con:
-        #request_list = s.query(Request).all()
-        #print(request_list)
         request_data = con.execute('SELECT * FROM public.requests WHERE is_approved IS True OR is_approved IS False ORDER BY created_date ASC')
  #       for row in request_data:
  #          print(row)

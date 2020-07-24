@@ -2,6 +2,7 @@
 import curses
 import time
 import datetime
+import random
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, \
@@ -78,6 +79,80 @@ def print_menu(stdscreen,menu, current_row_index):
 
     stdscreen.refresh()
 
+def print_adrequest(stdscreen):
+    """Prints main menu and updates the display to current row/option selected.
+
+    Parameters
+    stdscreen : window object
+        A windows object initialized by curses.initscr() from the curses library.
+    ----------
+    Returns
+    -------
+    None
+    """
+    ad_index = 0
+    stdscreen.nodelay(True)
+    stdscreen.scrollok(True)      # Enable window scroll
+    stdscreen.refresh()
+    loop = True
+    #gets the max height and width
+    height, width = stdscreen.getmaxyx()
+    width -= 1
+    draw_height = height -2
+
+    panel = curses.newpad(height, width)
+    adrequest = list(requestSelect())
+    time.sleep(0.1)
+    #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
+
+    while loop == True:
+        #interprets arrow key strokes
+        key = stdscreen.getch()
+        curses.flushinp()
+        #menu navigation
+        #lower bound case
+        if key == curses.KEY_UP and ad_index > 0:
+            ad_index-=1
+        #upper bound case
+        elif key == curses.KEY_DOWN and ad_index < len(adrequest)-1:
+            ad_index_index += 1
+        elif(key == curses.KEY_BACKSPACE):
+            loop = False
+        elif key == curses.KEY_F1:
+            stdscreen.clear()
+            stdscreen.addstr(0, 0, "You have pressed the F1 key!")
+            stdscreen.refresh()
+            stdscreen.getch()
+        elif key == curses.KEY_F4:
+            stdscreen.clear()
+            stdscreen.addstr(0, 0, "You have pressed the F4 key!")
+            stdscreen.refresh()
+            stdscreen.getch()
+
+
+        if(len(adrequest) >= (height - 2)):
+            height = height*2
+            panel.resize(height, width)
+            panel.clear()
+
+       # print_pad(panel, stdscreen, list1, schedule_index)
+
+        if(len(adrequest) < (height - 2)):
+        #enumerate loops over menu and creates a counter to know what part of the menu is selected
+            for index, row in enumerate(adrequest):
+                if index == ad_index:
+                    panel.attron(curses.color_pair(1))
+                panel.addstr(index + 1, 1, str(row))
+                panel.attroff(curses.color_pair(1))
+
+        panel.box()
+        panel.addstr(0, 1, "Archives")
+        panel.refresh(ad_index, 0, 1, 1, draw_height, width)
+        time.sleep(0.1)
+    stdscreen.refresh()
+    stdscreen.scrollok(False)      # Enable window scroll
+    stdscreen.nodelay(False)
+
 def print_schedulepad(stdscreen):
     """Prints main menu and updates the display to current row/option selected.
 
@@ -103,14 +178,16 @@ def print_schedulepad(stdscreen):
     draw_height = height -2
 
     panel = curses.newpad(height, width)
-    schedule = list(scheduleSelect())
-    time.sleep(0.1)
+    #schedule = list(scheduleSelect())
+    schedule = []
+    for _ in range(100):
+        schedule.append(random.randrange(100))
     #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
     while loop == True:
         #interprets arrow key strokes
         key = stdscreen.getch()
-
+        curses.flushinp()
         #menu navigation
         #lower bound case
         if key == curses.KEY_UP and schedule_index > 0:
@@ -201,7 +278,7 @@ def print_archive(stdscreen):
     while loop == True:
         #interprets arrow key strokes
         key = stdscreen.getch()
-
+        curses.flushinp()
         #menu navigation
         #lower bound case
         if key == curses.KEY_UP and archive_index > 0:
@@ -235,6 +312,7 @@ def print_archive(stdscreen):
     stdscreen.refresh()
     stdscreen.scrollok(False)      # Enable window scroll
     stdscreen.nodelay(False)
+
 def main():
 
     log_interface.init('rads')
@@ -278,6 +356,8 @@ def main():
         #all possible values that enter key might be depending on keyboard
         elif key == curses.KEY_ENTER or key in [10,13]:
             #code for selecting menu from menu list options 0 = Approve/Deny, 1 = Check Schedule, 2 =  Archive, 3 = Exit 
+            if current_row_index == 0:
+                print_adrequest(stdscreen)
             #check schedule
             if current_row_index == 1:
                 schedule(stdscreen)
