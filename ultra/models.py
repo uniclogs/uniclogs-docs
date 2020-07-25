@@ -11,6 +11,7 @@ class Request(db.Model):
     is_sent       = db.Column(db.Boolean, nullable=False) #flag to say if the request has been sent
     pass_uid      = db.Column(db.Integer, nullable=False) # reference to pass uid
     created_date  = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
+    updated_date  = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
     observation_type = db.Column(db.String(120), nullable=True) #String {“uniclogs”, “oresat live”, “CFC”}
 
     def __repr__(self):

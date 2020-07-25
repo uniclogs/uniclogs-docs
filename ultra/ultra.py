@@ -11,9 +11,9 @@ sys.path.insert(0, '..')
 import pass_calculator as pc
 
 
-def initDb(user, password, db, app, host='localhost', port=5432):
+def initDb(app):
     url = 'postgresql://{}:{}@{}:{}/{}'
-    url = url.format(user, password, host, port, db)
+    url = url.format(getenv("ULTRA_USER_NAME"), getenv("ULTRA_PASSWORD"), getenv("DART_HOST"), int(getenv("DART_PORT")), getenv("DART_DB"))
     app.config['SQLALCHEMY_DATABASE_URI'] = url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # silence the deprecation warning
 
@@ -22,7 +22,7 @@ app = Flask(__name__)
 
 api = Api(app)
 
-initDb('root', '', 'cosmos-dev', app)
+initDb(app)
 
 
 # add OrbitalPass json encoder to app
@@ -42,5 +42,3 @@ api.add_resource(RequestIdEndpoint, '/request/<int:request_id>')
 def run():
     init_db(app)
     app.run(debug=True)
-
-

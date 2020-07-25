@@ -3,7 +3,8 @@ from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass, PassRequest
+from models import Request, Tle, Pass, PassRequest, testTleModel
+from loguru import logger
 
 import sys
 sys.path.insert(0, "..")
@@ -30,13 +31,17 @@ class RequestIdEndpoint(Resource):
         args = parser.parse_args()
 
         # TODO user check user day count
-
+        testTleModel()
         try:
+            print("test)")
             result = db.session.query(Pass)\
                            .join(Request, Pass.uid == Request.pass_uid)\
                            .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
                            .one()
-        except:
+            print(result)
+        except Exception as e:
+            logger.error(e)
+            logger.error("Error fetching token '{}'".format(args["user_token"]))
             return {"Error" : "No matching pass or wrong user token"}, 400
 
 
@@ -164,4 +169,3 @@ class RequestIdEndpoint(Resource):
         db.session.commit()
 
         return {"message": "Deleted request {}".format(request_id)}
-
