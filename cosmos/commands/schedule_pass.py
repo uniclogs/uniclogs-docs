@@ -29,6 +29,7 @@ class Schedule_Pass:
         numberOfRequests : number of passes to be scheduled or canceled
         """
         self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
+        self.passRequestList = self.passRequestList.to_json('passData.json')
         self.passRequestList = pd.DataFrame((self.passRequestList),\
                 columns=['idx','pass_id','latitude','longitude','start_time','end_time','elevation'])
         self.passRequestList = self.passRequestList.astype({\
