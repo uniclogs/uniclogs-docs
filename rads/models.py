@@ -53,4 +53,8 @@ class Request(Base):
     def __repr__(self):
         return '<Ticket {}>'.format(self.user_token)
 
+class PassRequest(Base):
+    __tablename__ = 'pass_requests'
+    pass_id       = Column(Integer, ForeignKey('pass.uid'), primary_key=True)           # reference to pass uid
+    req_token     = Column(Text   , ForeignKey('requests.user_token'), primary_key=True) # reference to token uid
 

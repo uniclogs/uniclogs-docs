@@ -4,6 +4,19 @@ from datetime import datetime
 
 
 def _fill_request_data(result):
+    """
+    Make a RequestData object for a Pass and Request models join.
+
+    Parameters
+    ----------
+    result
+        A list of Request models joined with Pass models
+
+    Returns
+    -------
+    [RequestData]
+        A list of RequestData obj to be used by the ncruses.
+    """
 
     requests = []
 
@@ -27,6 +40,15 @@ def _fill_request_data(result):
 
 
 def query_new_requests():
+    """
+    Queries all the new requests (NULL for is_approved).
+
+    Returns
+    -------
+    [RequestData]
+        A list of all new pass requests in acending created datetime order.
+    """
+
     session = Session()
 
     #TODO get lock
@@ -47,14 +69,23 @@ def query_new_requests():
 
 
 def query_upcomming_requests():
+    """
+    Queries all the archived requests.
+
+    Returns
+    -------
+    [RequestData]
+        A list of upcomming approved pass requests in acending AOS order.
+    """
+
     session = Session()
 
     #TODO get lock
 
     result = session.query(Request)\
             .join(Pass, Pass.uid == Request.pass_uid)\
-            .filter(Pass.start_time > datetime.utcnow())\
-            .order_by(Request.created_date.asc())\
+            .filter(Pass.start_time > datetime.utcnow(), Request.is_approved == True)\
+            .order_by(Pass.start_time.asc())\
             .all()
 
     ret = _fill_request_data(result)
@@ -67,14 +98,23 @@ def query_upcomming_requests():
 
 
 def query_archived_requests():
+    """
+    Queries all the archived requests.
+
+    Returns
+    -------
+    [RequestData]
+        A list of archive pass requests in descending AOS order.
+    """
+
     session = Session()
 
     #TODO get lock
 
     result = session.query(Request)\
             .join(Pass, Pass.uid == Request.pass_uid)\
-            .filter(Pass.start_time <= datetime.utcnow())\
-            .order_by(Request.created_date.asc())\
+            .filter(Pass.start_time <= dstart_timecnow())\
+            .order_by(Pass.start_time.desc())\
             .all()
 
     ret = _fill_request_data(result)
@@ -88,6 +128,12 @@ def query_archived_requests():
 
 def update_approve_deny(request_list):
     """
+    Update request in th db to be approved or denied.
+
+    Parameter
+    ---------
+    request_list: RequestData
+        A list of requests to update
     """
 
     session = Session()
@@ -121,4 +167,30 @@ def update_approve_deny(request_list):
     #TODO release lock
 
     session.close()
+
+
+def query_tle():
+    """
+    Get the latest tle from db.
+
+    Returns
+    -------
+    [str]
+        TLE data in the format of [tle_line1, tle_line2]
+    """
+    session = Session()
+
+    #TODO get lock
+
+    latest_tle_time = session.query(func.max(Tle.time_added)).one()
+    latest_tle = session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
+
+    tle = [latest_tle.first_line, latest_tle.second_line]
+
+    #TODO release lock
+
+    session.close()
+
+    return tle
+
 
