@@ -19,26 +19,7 @@ from loguru import logger
 import log_interface
 from os import getenv
 from models import *
-
-#from commonrads import PSQL_USERNAME, \
-#                    PSQL_PASSWORD, \
-#                    EnvironmentVariableNotDefined
-  
-#from sqlalchemy.ext.declarative import declarative_base
-#from models import *
-
-#PSQL_USERNAME = getenv('PSQL_USERNAME')
-#PSQL_PASSWORD = getenv('PSQL_PASSWORD')
-#PSQL_HOST = getenv('PSQL_HOST')
-#PSQL_PORT = getenv('PSQL_PORT')
-#PSQL_DB = getenv('PSQL_DB')
-
-#Base = declarative_base()
-
-#DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'
-#DATABASE_URI = DATABASE_URI.format(PSQL_USERNAME, PSQL_PASSWORD, PSQL_HOST, PSQL_PORT, PSQL_DB)
-#engine = create_engine(DATABASE_URI)
-#Session = sessionmaker(bind=engine) #factory of sessions
+from db_interface import *
 
 
 #function to print the menu taking in a the standard screen and default row index 0
@@ -49,7 +30,7 @@ def print_menu(stdscreen,menu, current_row_index):
     ----------
     stdscreen : window object
         A windows object initialized by curses.initscr() from the curses library.
-    menu: list 
+    menu: list
         A list that contains all text for the main menu options.
     current_row_index: int
         The current index row number of the current menu option selected.
@@ -98,10 +79,11 @@ def print_adrequest(stdscreen):
     #gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height -2
+    draw_height = height - 2
 
     panel = curses.newpad(height, width)
-    adrequest = list(requestSelect())
+    adrequest = query_new_requests()
+    adrequest.insert(0, RequestHeader) #TODO fix this
     time.sleep(0.1)
     #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
@@ -146,7 +128,7 @@ def print_adrequest(stdscreen):
                 panel.attroff(curses.color_pair(1))
 
         panel.box()
-        panel.addstr(0, 1, "Archives")
+        panel.addstr(0, 1, "Approve Deny")
         panel.refresh(ad_index, 0, 1, 1, draw_height, width)
         time.sleep(0.1)
     stdscreen.refresh()
@@ -175,13 +157,11 @@ def print_schedulepad(stdscreen):
     #gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height -2
+    draw_height = height - 2
 
     panel = curses.newpad(height, width)
-    #schedule = list(scheduleSelect())
-    schedule = []
-    for _ in range(100):
-        schedule.append(random.randrange(100))
+    schedule = query_upcomming_requests()
+    schedule.insert(0, RequestHeader) # TODO fix this
     #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
     while loop == True:
@@ -204,7 +184,7 @@ def print_schedulepad(stdscreen):
             panel.clear()
 
        # print_pad(panel, stdscreen, list1, schedule_index)
-        
+
         if(len(schedule) < (height - 2)):
         #enumerate loops over menu and creates a counter to know what part of the menu is selected
             for index, row in enumerate(schedule):
@@ -212,7 +192,7 @@ def print_schedulepad(stdscreen):
                     panel.attron(curses.color_pair(1))
                 panel.addstr(index + 1, 1, str(row))
                 panel.attroff(curses.color_pair(1))
-    
+
         panel.box()
         #panel.addstr(0, 1, "User_Token Is_Approved Is_Sent Pass_ID Created_Date Last_Modified Observation_Type Pass_Start_time")
         panel.addstr(0, 1, "Upcoming Pass Schedule")
@@ -271,7 +251,8 @@ def print_archive(stdscreen):
     draw_height = height -2
 
     panel = curses.newpad(height, width)
-    archive = list(archiveSelect())
+    archive = query_archived_requests()
+    archive.insert(0, RequestHeader) # TODO fix this
     time.sleep(0.1)
     #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
