@@ -97,7 +97,7 @@ def print_adrequest(stdscreen):
             ad_index-=1
         #upper bound case
         elif key == curses.KEY_DOWN and ad_index < len(adrequest)-1:
-            ad_index_index += 1
+            ad_index += 1
         elif(key == curses.KEY_BACKSPACE):
             loop = False
         elif key == curses.KEY_F1:
