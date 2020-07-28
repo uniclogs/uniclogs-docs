@@ -142,8 +142,6 @@ def print_schedulepad(stdscreen):
     ----------
     stdscreen : window object
         A windows object initialized by curses.initscr() from the curses library.
-    menu : list
-        A list containing all the items in a given request query
     Returns
     -------
     None
