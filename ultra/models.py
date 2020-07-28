@@ -5,6 +5,27 @@ import datetime
 
 
 class Request(db.Model):
+    """
+    Used to model Request table in database.
+    Attributes
+    ----------
+    __tablename__ : str
+        The raw postgresql table name.
+    user_token : str
+        A unique token for each user.
+    is_approved : bool
+        A flag to say if the request is approved. True for approved, False for
+        denied, or None for not aprocess yet.
+    is_sent : bool
+        A flag to say if the request has been sent to COSMOS. True for sent to
+        COMOS, False for not sent to COSMOS, or None for not aprocess yet.
+    pass_uid : int
+        Reference to a pass uid.
+    observation_type : str
+        The pass/observation type. Can be "uniclogs", “oresat live”, or “CFC”.
+    pass_data : Pass
+        Used when joined with Pass.
+    """
     __tablename__ = 'requests'
     user_token    = db.Column(db.String(120), primary_key=True, nullable=False)  #A unique token for each PAWS user.  *I don't know how this will work
     is_approved   = db.Column(db.Boolean, default=True, nullable=False) #flag to say if the request is approved (True) or denied (False) or no process yet (NULL)
@@ -18,6 +39,21 @@ class Request(db.Model):
         return '<Ticket {}>'.format(self.user_token)
 
 class Tle(db.Model):
+    """
+    Used to model the TLE table in database.
+    Attributes
+    ----------
+    __tablename__ : str
+        The raw postgresql table name.
+    header_text : str
+        The TLE's header.
+    first_line : str
+        The TLE's 1st line.
+    second_line : str
+        The TLE's 2nd line.
+    time_added : datetime
+        The datetime when the TLE was added.
+    """
     __tablename__ = 'tles'
     header_text   = db.Column(db.Text, nullable=False, primary_key=True)
     first_line    = db.Column(db.Text, nullable=False)
@@ -28,6 +64,25 @@ class Tle(db.Model):
         return '<TLE {}, {}>'.format(self.header_text, self.time_added)
 
 class Pass(db.Model):
+    """
+    Used to model the Pass table in database.
+    Attributes
+    ----------
+    __tablename__ : str
+        The raw postgresql table name.
+    uid : int
+        Unique id for a pass.
+    latitude : float
+        Ground station's latitude for pass.
+    longtitude : float
+        Ground station's longtitude for pass.
+    start_time : datetime
+        UTC datetime when pass starts for observer.
+    end_time : datetime
+        UTC datetime when pass ends for observer.
+    elevation : float
+        Ground station's elevation in meters for pass.
+    """
     __tablename__ = 'pass'
     uid        = db.Column(db.Integer, db.Sequence('pass_uid_seq'), primary_key=True) # reference to pass uid
     latitude   = db.Column(db.Float, nullable=False)
@@ -39,10 +94,40 @@ class Pass(db.Model):
     def __repr__(self):
         return '<Pass {}, {}, {}>'.format(self.uid, self.latitude, self.longtitude)
 
-class PassRequest(db.Model): #many to many relationship between pass and req
+class PassRequest(db.Model):
+    """
+    Used to model PassRequest table in database.
+    This models a many-to-1 relationship from Pass to Request
+    Attributes
+    ----------
+    __tablename__ : str
+        The raw postgresql table name.
+    pass_uid : int
+        Reference to a pass uid.
+    req_token : str
+        Reference to unique token for each user.
+    """
     __tablename__ = 'pass_requests'
     pass_id       = db.Column(db.Integer, db.ForeignKey('pass.uid'), primary_key=True)           # reference to pass uid
     req_token     = db.Column(db.Text   , db.ForeignKey('requests.user_token'), primary_key=True) # reference to token uid
+
+
+class UserTokens(db.Model):
+    """
+    Used to model UserTokens table in database.
+    This models a many-to-many relationship between Request and User
+    Attributes
+    ----------
+    __tablename__ : str
+        The raw postgresql table name.
+    token : str
+        Reference to unique token for each request.
+    user_id : str
+        Reference to user uid token for each user.
+    """
+    __tablename__ = 'user_tokens'
+    token = db.Column(db.Text, db.ForeignKey('request.user_token'), primary_key=True) # reference to token uid
+    user_id = db.Column(db.String(120), nullable=False, primary_key=True)
 
 def testPassModel():
     new_pass = Pass(latitude=11.0, longtitude=11.01, azimuth=3)
