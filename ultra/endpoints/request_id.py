@@ -26,7 +26,7 @@ class RequestIdEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location = "json")
+        parser.add_argument("user_token", required=True, type=str, location = "json") #request uid
 
         args = parser.parse_args()
 

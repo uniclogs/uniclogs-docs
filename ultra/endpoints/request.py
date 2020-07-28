@@ -3,7 +3,8 @@ from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass, PassRequest
+from models import Request, Tle, Pass, PassRequest, UserTokens
+from loguru import logger
 
 import sys
 sys.path.insert(0, '..')
@@ -133,31 +134,32 @@ class RequestEndpoint(Resource):
         user_request_list = [] # list of user request to return
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location="json")
+        parser.add_argument("user_uid", type=inputs.regex('^\w{1,25}$'), required=True, location="json") #length(user_uid) shouldn't > 25 chars
         args = parser.parse_args()
 
-        # TODO validate user token
         # TODO user check user day count
-
         try:
-            result = db.session.query(Pass)\
-                           .join(Request, Pass.uid == Request.pass_uid)\
-                           .all()
-                           #.filter(Request.user_token == args["user_token"])\ TODO readd this when primary key is fixed
-        except:
-            return {"Error" : "No requests or invalid user token"}, 400
+            result = db.session.query(UserTokens, Pass)\
+                            .join(Request, UserTokens.token == Request.user_token)\
+                            .join(Pass, Pass.uid == Request.pass_uid)\
+                            .filter(UserTokens.user_id == args["user_uid"])\
+                            .all()
+        except Exception as e:
+            logger.error(e)
+            logger.error("Error fetching token '{}'".format(args["user_uid"]))
+            return {"Error" : "No requests or invalid user uid"}, 400
 
         # make a nice list of dictionaries for easy conversion to JSON string
-        for r in result:
+        for u, p in result:
             pass_data = pc.orbitalpass.OrbitalPass(
-                    gs_latitude_deg = r.latitude,
-                    gs_longitude_deg = r.longtitude,
-                    gs_elevation_m =  r.elevation,
-                    aos_utc = r.start_time,
-                    los_utc = r.end_time,
+                    gs_latitude_deg = p.latitude,
+                    gs_longitude_deg = p.longtitude,
+                    gs_elevation_m =  p.elevation,
+                    aos_utc = p.start_time,
+                    los_utc = p.end_time,
                     horizon_deg = 0.0
                     )
 
-            user_request_list.append({"request_id": r.uid, "pass_data": pass_data})
+            user_request_list.append({"request_token": u.token, "pass_data": pass_data})
 
         return user_request_list

@@ -30,7 +30,7 @@ class Request(db.Model):
     user_token    = db.Column(db.String(120), primary_key=True, nullable=False)  #A unique token for each PAWS user.  *I don't know how this will work
     is_approved   = db.Column(db.Boolean, default=True, nullable=False) #flag to say if the request is approved (True) or denied (False) or no process yet (NULL)
     is_sent       = db.Column(db.Boolean, nullable=False) #flag to say if the request has been sent
-    pass_uid      = db.Column(db.Integer, nullable=False) # reference to pass uid
+    pass_uid      = db.Column(db.Integer, db.ForeignKey('pass.uid'), nullable=False) # reference to pass uid
     created_date  = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
     updated_date  = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
     observation_type = db.Column(db.String(120), nullable=True) #String {“uniclogs”, “oresat live”, “CFC”}
