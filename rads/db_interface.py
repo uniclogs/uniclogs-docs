@@ -116,7 +116,7 @@ def query_archived_requests():
 
     result = session.query(Request)\
         .join(Pass, Pass.uid == Request.pass_uid)\
-        .filter(Pass.start_time <= datetime.utnow())\
+        .filter(Pass.start_time <= datetime.utcnow())\
         .order_by(Pass.start_time.desc())\
         .all()
 
