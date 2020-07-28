@@ -1,6 +1,7 @@
 from models import Request, Pass, Tle, Session
-from request_data import RequestData, RequestHeader
+from request_data import RequestData
 from datetime import datetime
+from sqlalchemy import func, exc
 
 
 def _fill_request_data(result):
@@ -51,17 +52,18 @@ def query_new_requests():
 
     session = Session()
 
-    #TODO get lock
+    # TODO get lock
 
     result = session.query(Request)\
-            .join(Pass, Pass.uid == Request.pass_uid)\
-            .filter(Pass.start_time > datetime.utcnow(), Request.is_approved.is_(None))\
-            .order_by(Request.created_date.asc())\
-            .all()
+        .join(Pass, Pass.uid == Request.pass_uid)\
+        .filter(Pass.start_time > datetime.utcnow(),
+                Request.is_approved.is_(None))\
+        .order_by(Request.created_date.asc())\
+        .all()
 
     ret = _fill_request_data(result)
 
-    #TODO release lock
+    # TODO release lock
 
     session.close()
 
@@ -80,17 +82,18 @@ def query_upcomming_requests():
 
     session = Session()
 
-    #TODO get lock
+    # TODO get lock
 
     result = session.query(Request)\
-            .join(Pass, Pass.uid == Request.pass_uid)\
-            .filter(Pass.start_time > datetime.utcnow(), Request.is_approved == True)\
-            .order_by(Pass.start_time.asc())\
-            .all()
+        .join(Pass, Pass.uid == Request.pass_uid)\
+        .filter(Pass.start_time > datetime.utcnow(),
+                Request.is_approved is True)\
+        .order_by(Pass.start_time.asc())\
+        .all()
 
     ret = _fill_request_data(result)
 
-    #TODO release lock
+    # TODO release lock
 
     session.close()
 
@@ -109,17 +112,17 @@ def query_archived_requests():
 
     session = Session()
 
-    #TODO get lock
+    # TODO get lock
 
     result = session.query(Request)\
-            .join(Pass, Pass.uid == Request.pass_uid)\
-            .filter(Pass.start_time <= dstart_timecnow())\
-            .order_by(Pass.start_time.desc())\
-            .all()
+        .join(Pass, Pass.uid == Request.pass_uid)\
+        .filter(Pass.start_time <= datetime.utnow())\
+        .order_by(Pass.start_time.desc())\
+        .all()
 
     ret = _fill_request_data(result)
 
-    #TODO release lock
+    # TODO release lock
 
     session.close()
 
@@ -138,10 +141,10 @@ def update_approve_deny(request_list):
 
     session = Session()
 
-    #TODO get lock
+    # TODO get lock
 
     for r in request_list:
-        if r.updated == False:
+        if r.updated is False:
             continue
 
         try:
@@ -151,20 +154,17 @@ def update_approve_deny(request_list):
                 .filter(Request.user_token == r.user_token and
                         r.pass_id == Pass.uid)\
                 .one()
-        except:
-            print("query failed")
-            continue
-
+        except exc.SQLAlchemyError:
+            continue  # TODO log
 
         # make sure request/pass data has not changed
-        print("{} {} {} {}".format(result.pass_data.start_time, r.pass_data.aos_utc, result.pass_data.end_time,  r.pass_data.los_utc))
-        if result.pass_data.start_time == r.pass_data.aos_utc and result.pass_data.end_time == r.pass_data.los_utc:
-            print("hi")
+        if result.pass_data.start_time == r.pass_data.aos_utc and \
+                result.pass_data.end_time == r.pass_data.los_utc:
             result.is_approved = r.is_approved
 
     session.commit()
 
-    #TODO release lock
+    # TODO release lock
 
     session.close()
 
@@ -180,17 +180,17 @@ def query_tle():
     """
     session = Session()
 
-    #TODO get lock
+    # TODO get lock
 
     latest_tle_time = session.query(func.max(Tle.time_added)).one()
-    latest_tle = session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
+    latest_tle = session.query(Tle)\
+        .filter(Tle.time_added == latest_tle_time)\
+        .one()
 
     tle = [latest_tle.first_line, latest_tle.second_line]
 
-    #TODO release lock
+    # TODO release lock
 
     session.close()
 
     return tle
-
-

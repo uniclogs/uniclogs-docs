@@ -20,8 +20,8 @@ class RequestData():
     _observation_type = None
     _data_updated = False
 
-
-    def __init__(self,
+    def __init__(
+            self,
             user_token: str,
             pass_id: int,
             is_approved: bool,
@@ -36,21 +36,26 @@ class RequestData():
             ):
         self._user_token = user_token
         self._pass_id = pass_id
-        self._pass_data = OrbitalPass(latitude, longitude, aos, los, elevation_m)
+        self._pass_data = OrbitalPass(
+                latitude,
+                longitude,
+                aos,
+                los,
+                elevation_m
+                )
         self._is_approved = is_approved
         self._is_sent = is_sent
         self._created_dt = created_dt
         self._observation_type = observation_type
 
-
     def __str__(self):
         obs_type = self._observation_type
-        if obs_type is None: # TODO fix this
+        if obs_type is None:  # TODO fix this
             obs_type = "unkown"
 
-        if self.is_approved == True:
+        if self.is_approved is True:
             ad_status = "approved"
-        elif self.is_approved == False:
+        elif self.is_approved is False:
             ad_status = "denied"
         else:
             ad_status = " "
@@ -67,26 +72,21 @@ class RequestData():
                 self._pass_data.gs_elevation_m
                 )
 
-
     @property
     def user_token(self):
         return self._user_token
-
 
     @property
     def pass_id(self):
         return self._pass_id
 
-
     @property
     def pass_data(self):
         return self._pass_data
 
-
     @property
     def is_approved(self):
         return self._is_approved
-
 
     @is_approved.setter
     def is_approved(self, value: bool):
@@ -97,16 +97,13 @@ class RequestData():
         else:
             print("aproved failed")
 
-
     @property
     def is_sent(self):
         return self._is_sent
 
-
     @property
     def created_dt(self):
         return self._created_dt
-
 
     @property
     def observation_type(self):
@@ -115,4 +112,3 @@ class RequestData():
     @property
     def updated(self):
         return self._data_updated
-
