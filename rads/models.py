@@ -128,8 +128,8 @@ class Request(Base):
     """
     __tablename__ = 'requests'
     user_token = Column(String(120), primary_key=True, nullable=False)
-    is_approved = Column(Boolean, default=True, nullable=False)
-    is_sent = Column(Boolean, nullable=False)
+    is_approved = Column(Boolean, default=None)
+    is_sent = Column(Boolean, nullable=None)
     pass_uid = Column(Integer, ForeignKey('pass.uid'), nullable=False)
     created_date = Column(
             DateTime(timezone=False),

@@ -87,7 +87,7 @@ def query_upcomming_requests():
     result = session.query(Request)\
         .join(Pass, Pass.uid == Request.pass_uid)\
         .filter(Pass.start_time > datetime.utcnow(),
-                Request.is_approved is True)\
+                Request.is_approved.is_(True))\
         .order_by(Pass.start_time.asc())\
         .all()
 
