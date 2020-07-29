@@ -19,7 +19,7 @@ tle = [
     ]
 
 latitude = 44.0533
-longitude = -121.334
+longitude = -121.3345
 elevation_m = 100.0
 
 now = datetime.now()
@@ -54,7 +54,7 @@ for op in orbital_passes:
 
     new_request = Request(
         user_token=randomword(10),
-        is_approved=random.choice([True, False]),
+        is_approved=random.choice([True, False, None]),
         is_sent=random.choice([True, False]),
         pass_uid=new_pass.uid
         )
