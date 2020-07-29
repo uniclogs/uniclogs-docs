@@ -18,12 +18,11 @@ tle = [
     "2 25544  51.6453 266.4797 0002530 107.7809  36.4383 15.49478723234588"
     ]
 
-latitude = 44.0533
+latitude = 44.1234
 longitude = -121.3345
 elevation_m = 100.0
 
 now = datetime.now()
-now = now - timedelta(days=1)
 now = now.replace(tzinfo=timezone.utc)
 future = now + timedelta(days=7)
 future = future.replace(tzinfo=timezone.utc)
