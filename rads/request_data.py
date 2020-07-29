@@ -6,8 +6,8 @@ from pass_calculator.orbitalpass import OrbitalPass
 
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
-_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:19} | {:19} | {:.8} | {:.8} | {:.4}"
-RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:19} | {:19} | {:9} | {:10} | {:4}".format("ID", "Status", "Type", "Created", "AOS", "LOS","Latitude", "Longitude", "Elevation (m)")
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:19} | {:19} | {:9.5f} | {:10.5f} | {:.4}"
+RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:19} | {:19} | {:9} | {:10} | {:4}".format("ID", "Status", "Type", "Created", "AOS", "LOS", "Latitude", "Longitude", "Elevation (m)")
 
 
 class RequestData():
