@@ -23,6 +23,7 @@ def _fill_request_data(result):
 
     for r in result:
         rd = RequestData(
+                r.uid,
                 r.user_token,
                 r.pass_uid,
                 r.is_approved,
