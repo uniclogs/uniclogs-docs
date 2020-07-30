@@ -131,8 +131,8 @@ def get_all_passes(tle: [str],
                                    gs_longitude_deg=long_deg,
                                    aos_utc=aos_utc,
                                    los_utc=los_utc,
-                                   gs_elevation_m=0.0,
-                                   horizon_deg=0.0)
+                                   gs_elevation_m=elev_m,
+                                   horizon_deg=horizon_deg)
 
             if not pass_overlap(new_pass, approved_passes):
                 pass_list.append(new_pass)  # add pass to list
