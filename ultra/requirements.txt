@@ -3,3 +3,4 @@ flask
 flask_restful
 flask-sqlalchemy
 psycopg2
+dateutil
