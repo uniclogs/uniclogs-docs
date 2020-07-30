@@ -51,7 +51,7 @@ class RequestData():
     def __str__(self):
         obs_type = self._observation_type
         if obs_type is None:  # TODO fix this
-            obs_type = "unkown"
+            obs_type = " "
 
         if self.is_approved is True:
             ad_status = "approved"
