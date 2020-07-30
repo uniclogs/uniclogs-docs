@@ -127,16 +127,17 @@ class Request(Base):
         Used when joined with Pass.
     """
     __tablename__ = 'requests'
-    user_token = Column(String(120), primary_key=True, nullable=False)
+    uid = Column(Integer, Sequence('requests_seq'), primary_key=True)
+    user_token = Column(String(120), nullable=False)
     is_approved = Column(Boolean, default=None)
     is_sent = Column(Boolean, nullable=None)
     pass_uid = Column(Integer, ForeignKey('pass.uid'), nullable=False)
+    observation_type = Column(String(120), nullable=True)
     created_date = Column(
             DateTime(timezone=False),
             nullable=False,
             default=datetime.datetime.utcnow()
             )
-    observation_type = Column(String(120), nullable=True)
     pass_data = relationship("Pass", foreign_keys=[pass_uid])
 
     def __repr__(self):
