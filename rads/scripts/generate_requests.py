@@ -102,9 +102,10 @@ def insert_into_db(generated_passes, random_status=False):
 
         # make a random created_dt
         days = random.randrange(14)
+        hours = random.randrange(24)
         mins = random.randrange(60)
         secs = random.randrange(60)
-        created_dt = start - timedelta(days=days, minutes=mins, seconds=secs)
+        created_dt = start - timedelta(days=days, hours=hours, minutes=mins, seconds=secs)
         created_dt = created_dt.replace(tzinfo=timezone.utc)
 
         new_request = Request(

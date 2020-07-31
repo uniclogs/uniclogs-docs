@@ -147,4 +147,9 @@ def decode_telemetry_frame(telemetry: dict):
         -- norad_cat_id : Satellite Norad ID
     """
     frame = bytearray.fromhex(telemetry.get('frame'))
-    return csim.Csim.from_bytes(frame).ax25_frame.payload.ax25_info
+    payload = csim.Csim.from_bytes(frame).ax25_frame.payload.ax25_info
+
+    if(payload is csim.Csim.BeaconLong):
+        return payload
+    else:
+        return None

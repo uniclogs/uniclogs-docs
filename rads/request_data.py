@@ -6,11 +6,12 @@ from pass_calculator.orbitalpass import OrbitalPass
 
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
-_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:19} | {:19} | {:9.5f} | {:10.5f} | {:.4}"
-RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:19} | {:19} | {:9} | {:10} | {:4}".format("ID", "Status", "Type", "Created", "AOS", "LOS", "Latitude", "Longitude", "Elevation (m)")
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:7} |{:19} | {:19} | {:9.5f} | {:10.5f} | {:7.2f}"
+RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:7} | {:19} | {:19} | {:9} | {:10} | {:7}".format("ID", "Status", "Type", "Created", "Pass ID", "AOS", "LOS", "Latitude", "Longitude", "Elevation (m)")
 
 
 class RequestData():
+    _id = 0
     _user_token = ""
     _pass_id = 0
     _pass_data = None
@@ -22,6 +23,7 @@ class RequestData():
 
     def __init__(
             self,
+            id: int,
             user_token: str,
             pass_id: int,
             is_approved: bool,
@@ -34,6 +36,7 @@ class RequestData():
             aos: datetime,
             los: datetime
             ):
+        self._id = id
         self._user_token = user_token
         self._pass_id = pass_id
         self._pass_data = OrbitalPass(
@@ -61,10 +64,11 @@ class RequestData():
             ad_status = " "
 
         return _STR_FORMAT.format(
-                self._pass_id,
+                self._id,
                 ad_status,
                 obs_type,
                 self._created_dt.strftime(_DT_STR_FORMAT),
+                self._pass_id,
                 self._pass_data.aos_utc.strftime(_DT_STR_FORMAT),
                 self._pass_data.los_utc.strftime(_DT_STR_FORMAT),
                 self._pass_data.gs_latitude_deg,
