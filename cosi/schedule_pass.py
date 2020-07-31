@@ -1,10 +1,6 @@
 #schedule_pass.py
 
 import os 
-import sqlalchemy as db
-from sqlalchemy.orm import sessionmaker
-import psycopg2
-import pandas as pd
 import numpy as np
 from ballcosmos.script \
     import set_replay_mode,\
@@ -12,32 +8,37 @@ from ballcosmos.script \
             cmd, shutdown_cmd_tlm
 
 
-# short example list for testing purposes   
-# a <pass> consists of UID, latitude, longitude, start_time, end_time, elevation
-#passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
-
 class Schedule_Pass:
-    def __init__(self):
+    def __init__(self, request):
         """
         Schedule_Pass data object is loaded with data 
         from Passes table retrieved through RADS
 
         Attributes
         ----------
-        passRequestList : pandas dataframe of table data
-            each row contains a 'pass' consisting of 
-            Pass_ID, Latitude, Longitude, StartTime, EndTime
+        passRequestList : a query/list received from RADS consisting of  
+            request = (
+                [0] user_token,
+                [1] pass_uid,
+                [2] is_approved,
+                [3] is_sent,
+                [4] created_date,
+                [5] observation_type,
+                [6] pass_data.latitude,
+                [7] pass_data.longitude,
+                [8] pass_data.elevation,
+                [9] pass_data.start_time,
+                [10] pass_data.end_time
+                )
+
+         
+            Note: only the pass_uid, latitude, longitude, start_time will be 
+            sent to the satellite
+request = ('user_token', 0293,'pass_uid', 93.402, -3.494,'is_approved', True)
         numberOfRequests : number of passes to be scheduled or canceled
         """
-        self.passRequestList = pd.read_csv('passData.csv', sep=',', header='infer')
-        self.passRequestList = pd.DataFrame((self.passRequestList),\
-                columns=['idx','pass_id','latitude','longitude','start_time','end_time','elevation'])
-        #self.passRequestList = self.passRequestList.astype({\
-        #        "idx":'int16', "pass_id":'int16',\
-        #    "latitude":'float32', "longitude":'float32',\
-        #    "start_time":'object',"end_time":'object',\
-        #    "elevation":'object'})
-        self.numberOfRequests =  len(self.passRequestList.index)
+        self.passRequestList = request
+        self.numberOfRequests =  len(self.passRequestList)
 
 
     def show_list(self):
@@ -46,7 +47,7 @@ class Schedule_Pass:
 
         Attributes
         ----------
-        None. 
+        None.
         """
         return print("Current list: \n{}\n".format(self.passRequestList))
 
@@ -59,25 +60,20 @@ class Schedule_Pass:
         set_replay_mode(False)
         connect_interface('ENGR_LINK_INT')
         print('\nsending SCHEDULE command for PASS_ID: {}...\n'\
-                .format(pass_info.loc[index, 'pass_id']))
-        pass_info = pass_info.astype({\
-            'pass_id':'uint16',\
-            'latitude':'float32',\
-            'longitude':'float32',\
-            'start_time':'string'}).dtypes
-        print(pass_info, "tthis", type(pass_info))
-        pass_id = pass_info.loc[index, 'pass_id']
-        latitude = pass_info.loc[index, 'latitude']
-        longitude = pass_info.loc[index, 'longitude']
-        AOS = pass_info.loc[index, 'start_time']
+                .format(pass_info[1]))
+
+        # typecasts for cmd_tlm_server input
+        pass_id = np.uint16(pass_info[1])
+        latitude = np.float32(pass_info[6])
+        longitude = np.float32(pass_info[7])
+        AOS = str(pass_info[9])
 
         cmd("ENGR_LINK", "PASS_SCHEDULE",\
             {"PKT_ID": 10,\
              "PASS_ID": pass_id,\
              "LATITUDE": latitude,\
              "LONGITUDE": longitude,\
-             "AOS": AOS\
-             })
+             "AOS": AOS })
         shutdown_cmd_tlm()
 
         return print('command sent')
@@ -90,14 +86,14 @@ class Schedule_Pass:
         set_replay_mode(False)
         connect_interface('ENGR_LINK_INT')
         print('\nsending CANCEL command...\n{}\n'\
-                .format(pass_info.loc[index,'pass_id']))
+                .format(pass_info[1]))
+        # cast to uint16 for cmd_tlm_server
+        pass_id = np.uint16(pass_info[1])
         cmd("ENGR_LINK", "PASS_CANCEL",\
             {"PKT_ID": 20,\
-             "PASS_ID": pass_info.loc[index,'pass_id'],\
-            })
+             "PASS_ID":pass_id })
         shutdown_cmd_tlm()
-        # need error check 
-        # condition to show passes cancelled is True
+
         return print('command sent')
 
 
@@ -139,24 +135,14 @@ class Schedule_Pass:
 
 
 #if __name__ == "__main__":
-    #sp = Schedule_Pass()
+    #sp = Schedule_Pass(request)
     #sp.show_list()
     #sp.schedule_all()
     #sp.cancel_all()
 
 
 
-"""
-    set_replay_mode(False)
-    connect_interface('ENGR_LINK_INT')
-    print('sending command...')
-    cmd("ENGR_LINK", "PASS_SCHEDULE", {"PKT_ID": 10, "PASS_ID": 100})
-    cmd("ENGR_LINK", "PASS_CANCEL", {"PKT_ID": 20, "PASS_ID": 100})
-    print('command sent')
-    shutdown_cmd_tlm()
-
-"""
-#!/usr/bin/env python3
+# for testing purposes: 
 """
 All paths relative from uniclogs-software git root directory
 To run this script,
@@ -170,7 +156,7 @@ To run this script,
     Now both COSMOS and Terminal 1 should indicate they are connected
     Terminal 3:
     1. cd cosi
-    2. ./send_test_cmd.py
+    2. ./schedule_pass.py
     You should see command show up in COSMOS!
 """
 
