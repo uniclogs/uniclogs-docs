@@ -155,7 +155,7 @@ class PassRequest(Base):
     pass_uid : int
         Reference to a pass uid.
     req_token : str
-        Reference tounique token for each user.
+        Reference to a unique token for each user.
     """
     __tablename__ = 'pass_requests'
     pass_id = Column(Integer, ForeignKey('pass.uid'), primary_key=True)
@@ -164,3 +164,21 @@ class PassRequest(Base):
             ForeignKey('requests.user_token'),
             primary_key=True
             )
+
+
+class UserTokens(Base):
+    """
+    Used to model UserTokens table in database.
+    This models a many-to-many relationship between Request and User
+    Attributes
+    ----------
+    __tablename__ : str
+        The raw postgresql table name.
+    token : str
+        Reference to unique token for each request.
+    user_id : str
+        Reference to user uid token for each user.
+    """
+    __tablename__ = 'user_tokens'
+    token = Column(Text, ForeignKey('request.user_token'), primary_key=True)
+    user_id = Column(String(120), nullable=False, primary_key=True)
