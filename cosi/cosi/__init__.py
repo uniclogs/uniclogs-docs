@@ -1,7 +1,17 @@
 import os
-DART_HOST = os.getenv('DART_HOST')
-DART_PORT = int(os.getenv('DART_PORT'))
-DART_DB = os.getenv('DART_DB')
-DART_TEST_DB = os.getenv('DART_TEST_DB')
-DART_USERNAME = os.getenv('DART_USERNAME')
-DART_PASSWORD = os.getenv('DART_PASSWORD')
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+
+DB_HOST = os.getenv('DART_HOST')
+DB_PORT = int(os.getenv('DART_PORT'))
+DB_NAME = os.getenv('DART_DB')
+DB_USERNAME = os.getenv('COSI_USER_NAME')
+DB_PASSWORD = os.getenv('COSI_PASSWORD')
+
+Base = declarative_base()
+db_url = 'postgresql://{}:{}@{}:{}/{}'.format(DB_USERNAME,
+                                              DB_PASSWORD,
+                                              DB_HOST,
+                                              DB_PORT,
+                                              DB_NAME)
+engine = create_engine(db_url)
