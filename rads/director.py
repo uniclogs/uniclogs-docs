@@ -95,7 +95,7 @@ def print_adrequest(stdscreen):
         curses.flushinp()
         #menu navigation
         #lower bound case
-        if key == curses.KEY_UP and ad_index > 1:
+        if key == curses.KEY_UP and ad_index > 0:
             ad_index-=1
         #upper bound case
         elif key == curses.KEY_DOWN and ad_index < len(adrequest)-1:
@@ -130,10 +130,14 @@ def print_adrequest(stdscreen):
                 panel.attroff(curses.color_pair(1))
 
         panel.box()
-        info = "Arrow Keys: To Move, Backspace: Exit F1: Accept, F4: Deny"
-        stdscreen.addstr(0, vwidth//2 - len(info)//2, info) 
-        panel.addstr(0, 1, "Approve Deny (Sorted By Created Date)")
-        panel.refresh(ad_index, 0, 1, 1, draw_height, width)
+        stdscreen.addstr(0, (width+1)//2 - len("Accept Deny Requests(Ordered By Date Created)")//2, "Accept Deny Requests(Ordered By Date Created)")
+        info = "Arrow Keys: To Move, Backspace: Exit, F1: Accept, F2: Deny"
+        stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
+        stdscreen.addstr(3, 2, RequestHeader)
+        stdscreen.addstr(2, 0, " ")
+        draw_height = height -2
+        panel.refresh(ad_index, 0, 3, 1, draw_height, width)
+        stdscreen.refresh()
         time.sleep(0.1)
     stdscreen.refresh()
     stdscreen.scrollok(False)      # Enable window scroll
@@ -163,7 +167,7 @@ def print_schedulepad(stdscreen):
 
     panel = curses.newpad(height, width)
     schedule = query_upcomming_requests()
-    schedule.insert(0, RequestHeader) # TODO fix this
+    #schedule.insert(0, RequestHeader) # TODO fix this
     #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
     while loop == True:
@@ -182,12 +186,7 @@ def print_schedulepad(stdscreen):
 
         if(len(schedule) >= (height - 2)):
             height = height*2
-            #panel.endwin()
-            #panel = curses.newpad(height, width)
             panel.resize(height, width)
-            panel.clear()
-            panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
-       # print_pad(panel, stdscreen, list1, schedule_index)
 
         if(len(schedule) < (height - 2)):
         #enumerate loops over menu and creates a counter to know what part of the menu is selected
@@ -197,12 +196,17 @@ def print_schedulepad(stdscreen):
                 panel.addstr(index + 1, 1, str(row))
                 panel.attroff(curses.color_pair(1))
 
-        panel.box()
+     #   panel.box()
         #panel.addstr(0, 1, "User_Token Is_Approved Is_Sent Pass_ID Created_Date Last_Modified Observation_Type Pass_Start_time")
-        panel.addstr(0, 1, "Upcoming Pass Schedule")
-        panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
+        stdscreen.addstr(0, (width+1)//2 - len("Upcoming Pass Schedule(Ordered By AOS ASC)")//2, "Upcoming Pass Schedule(Ordered By AOS ASC)")
+        info = "Arrow Keys: To Move, Backspace: Exit, F1: Accept, F2: Deny"
+        stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
+        stdscreen.addstr(2, 2, RequestHeader)
+        #panel.addstr(0, 1, "Upcoming Pass Schedule")
+        panel.refresh(schedule_index, 0, 2, 1, draw_height, width)
         stdscreen.refresh()
         time.sleep(0.1)
+
     #panel.endwin()
     stdscreen.refresh()
     stdscreen.scrollok(False)      # Enable window scroll
@@ -291,8 +295,8 @@ def print_archive(stdscreen):
                 panel.attroff(curses.color_pair(1))
 
         #panel.box()
-        stdscreen.addstr(0, (width+1)//2 - len("Archives")//2, "Archives")
-        info = "Arrow Keys: To Move, Backspace: Exit F1: Accept, F4: Deny"
+        stdscreen.addstr(0, (width+1)//2 - len("Archives(Ordered BY AOS DESC)")//2, "Archives(Oredred By AOS DESC)")
+        info = "Arrow Keys: To Move, Backspace: Exit"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info) 
         stdscreen.addstr(2, 2, RequestHeader) 
         panel.refresh(archive_index, 0, 2, 1, draw_height, width)
