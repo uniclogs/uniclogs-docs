@@ -80,7 +80,7 @@ def print_adrequest(stdscreen):
     #gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height - 2
+    draw_height = height - 3
     vheight, vwidth = stdscreen.getmaxyx()
 
     panel = curses.newpad(height, width)
@@ -162,7 +162,7 @@ def print_schedulepad(stdscreen):
     #gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height - 2
+    draw_height = height - 3
 
     panel = curses.newpad(height, width)
     schedule = query_upcomming_requests()
@@ -257,7 +257,7 @@ def print_archive(stdscreen):
     #gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height -2
+    draw_height = height - 3
 
     panel = curses.newpad(height, width)
     archive = query_archived_requests()
