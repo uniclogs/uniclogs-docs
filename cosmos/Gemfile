@@ -6,7 +6,7 @@ gem 'ruby-termios', '>= 0.9' if RbConfig::CONFIG['target_os'] !~ /mswin|mingw|cy
 if ENV['COSMOS_DEVEL']
   gem 'cosmos', :path => ENV['COSMOS_DEVEL']
 else
-  gem 'cosmos'
+  gem 'cosmos', ' >= 4.4.2'
 end
 
 # Uncomment this line to add DART dependencies to your main Gemfile

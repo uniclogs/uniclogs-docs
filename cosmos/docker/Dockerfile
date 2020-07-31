@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 
 ENV TIMEZONE America/Los_Angeles
 ENV COSMOS_REPO https://github.com/oresat/uniclogs-software
-ENV COSMOS_BRANCH capstone-dev
+ENV COSMOS_BRANCH cosi
 ENV COSMOS_VERSION 4.4.2
 ENV DART_HOST localhost
 ENV DART_PORT 5432
@@ -58,5 +58,5 @@ RUN mv /opt/cosmos /
 RUN rm -rf /opt/*
 RUN mv /cosmos /opt
 WORKDIR /opt/cosmos
-RUN bundle install --clean --deployment
-CMD ruby Launcher
+RUN bundle install
+CMD ruby tools/CmdTlmServer --no-gui
