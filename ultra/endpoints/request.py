@@ -131,7 +131,7 @@ class RequestEndpoint(Resource):
 
         return {
                 "message": "New request submitted.",
-                "request_id": new_request.pass_uid
+                "request_id": new_request.uid
                 }
 
 

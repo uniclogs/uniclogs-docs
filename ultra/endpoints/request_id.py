@@ -3,7 +3,7 @@ from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass, PassRequest
+from models import Request, Tle, Pass, PassRequest, UserTokens
 from loguru import logger
 
 import sys
@@ -26,19 +26,17 @@ class RequestIdEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location = "json") #request uid
 
         args = parser.parse_args()
 
-        # TODO user check user day count
         try:
             result = db.session.query(Pass)\
                            .join(Request, Pass.uid == Request.pass_uid)\
-                           .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
+                           .filter(Request.uid == request_id)\
                            .one()
         except Exception as e:
             logger.error(e)
-            logger.error("Error fetching token '{}'".format(args["user_token"]))
+            logger.error("Error fetching req id '{}'".format(request_id))
             return {"Error" : "No matching pass or wrong user token"}, 400
 
 
@@ -136,33 +134,50 @@ class RequestIdEndpoint(Resource):
             Request unique id.
         """
 
-        parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location="json")
-        args = parser.parse_args()
-
-        # TODO user check user day count
-
         try:
-            pass_result = db.session.query(Pass)\
-                    .filter(Pass.uid == request_id)\
-                    .one()
             request_result = db.session.query(Request)\
-                   .filter(Request.pass_uid == request_id and
-                           Request.user_token == args["user_token"])\
+                   .filter(Request.uid == request_id)\
                    .one()
+
             pass_request_result = db.session.query(PassRequest)\
-                   .filter(PassRequest.pass_id == request_id and
-                           PassRequest.req_token == args["user_token"])\
-                   .one()
-        except:
+                   .filter(PassRequest.req_token == request_result.user_token)\
+                   .all()
+
+            #db.session.delete(request_result)
+            #db.session.flush()
+            pass_list = []
+
+            for p in pass_request_result:
+                pass_list.append(p.pass_id)
+                db.session.delete(p)
+
+            db.session.flush()
+
+            user_tokens = db.session.query(UserTokens)\
+                    .filter(UserTokens.token == request_result.user_token)\
+                    .all()
+
+            for entry in user_tokens:
+                db.session.delete(entry)
+
+
+            db.session.flush()
+            db.session.delete(request_result) # NOTE or should flip a flag?
+            db.session.flush()
+
+            for p in pass_list:
+                obj = db.session.query(Pass).filter(Pass.uid == p).one()
+                if obj:
+                    db.session.delete(obj)
+
+            db.session.flush()
+            db.session.commit()
+
+        except Exception as e:
+            logger.error(e)
+            db.session.rollback()
             return {"Error" : "No matching pass or wrong user token"}, 400
 
-        db.session.delete(pass_request_result) # NOTE or should flip a flag?
-        db.session.flush()
-        db.session.delete(request_result) # NOTE or should flip a flag?
-        db.session.flush()
-        db.session.delete(pass_result) # NOTE or should flip a flag?
-        db.session.flush()
-        db.session.commit()
+
 
         return {"message": "Deleted request {}".format(request_id)}
