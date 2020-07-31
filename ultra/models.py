@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from database import db
 import datetime
+import random
+import string
 
 
 class Request(db.Model):
@@ -127,7 +129,7 @@ class UserTokens(db.Model):
         Reference to user uid token for each user.
     """
     __tablename__ = 'user_tokens'
-    token = db.Column(db.Text, db.ForeignKey('request.user_token'), primary_key=True) # reference to token uid
+    token = db.Column(db.Text, db.ForeignKey('requests.user_token'), primary_key=True) # reference to token uid
     user_id = db.Column(db.String(120), nullable=False, primary_key=True)
 
 def testPassModel():
@@ -151,6 +153,14 @@ def testTleModel():
     #We query the list of request stored in the database
     tle_list = Tle.query.all()
     print(tle_list)
+
+"""
+helper for generation of random string
+"""
+def get_random_string(length):
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
 
 def testRequestModel():
     new_request = Request(user_token='test_tokesn', is_approved=False, is_sent=False, pass_uid=None, created_date=None)
