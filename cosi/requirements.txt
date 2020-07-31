@@ -10,3 +10,4 @@ Flask-SQLAlchemy==2.4.3
 DateTime==4.3
 ballcosmos==0.1.2
 daemon==1.2
+numpy==1.19.1
