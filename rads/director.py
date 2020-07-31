@@ -114,7 +114,7 @@ def print_adrequest(stdscreen):
             stdscreen.getch()
 
 
-        if(len(adrequest) >= (height - 2)):
+        while(len(adrequest) >= (height - 2)):
             height = height*2
             panel.resize(height, width)
             panel.clear()
@@ -129,13 +129,12 @@ def print_adrequest(stdscreen):
                 panel.addstr(index + 1, 1, str(row))
                 panel.attroff(curses.color_pair(1))
 
-        panel.box()
+#        panel.box()
         stdscreen.addstr(0, (width+1)//2 - len("Accept Deny Requests(Ordered By Date Created)")//2, "Accept Deny Requests(Ordered By Date Created)")
         info = "Arrow Keys: To Move, Backspace: Exit, F1: Accept, F2: Deny"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
         stdscreen.addstr(3, 2, RequestHeader)
         stdscreen.addstr(2, 0, " ")
-        draw_height = height -2
         panel.refresh(ad_index, 0, 3, 1, draw_height, width)
         stdscreen.refresh()
         time.sleep(0.1)
@@ -201,9 +200,10 @@ def print_schedulepad(stdscreen):
         stdscreen.addstr(0, (width+1)//2 - len("Upcoming Pass Schedule(Ordered By AOS ASC)")//2, "Upcoming Pass Schedule(Ordered By AOS ASC)")
         info = "Arrow Keys: To Move, Backspace: Exit, F1: Accept, F2: Deny"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
-        stdscreen.addstr(2, 2, RequestHeader)
+        stdscreen.addstr(3, 2, RequestHeader)
+        stdscreen.addstr(2, 0, " ")
         #panel.addstr(0, 1, "Upcoming Pass Schedule")
-        panel.refresh(schedule_index, 0, 2, 1, draw_height, width)
+        panel.refresh(schedule_index, 0, 3, 1, draw_height, width)
         stdscreen.refresh()
         time.sleep(0.1)
 
@@ -282,7 +282,7 @@ def print_archive(stdscreen):
         if(len(archive) >= (height - 2)):
             height = height*2
             panel.resize(height, width)
-            panel.clear()
+            #panel.clear()
             #panel.refresh(schedule_index, 0, 2, 1, draw_height, width)
        # print_pad(panel, stdscreen, list1, schedule_index)
 
@@ -298,8 +298,9 @@ def print_archive(stdscreen):
         stdscreen.addstr(0, (width+1)//2 - len("Archives(Ordered BY AOS DESC)")//2, "Archives(Oredred By AOS DESC)")
         info = "Arrow Keys: To Move, Backspace: Exit"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info) 
-        stdscreen.addstr(2, 2, RequestHeader) 
-        panel.refresh(archive_index, 0, 2, 1, draw_height, width)
+        stdscreen.addstr(3, 2, RequestHeader) 
+        stdscreen.addstr(2, 0, " ")
+        panel.refresh(archive_index, 0, 3, 1, draw_height, width)
         stdscreen.refresh()
         time.sleep(0.1)
     #panel.endwin()
