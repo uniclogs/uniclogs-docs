@@ -86,7 +86,6 @@ def print_adrequest(stdscreen):
     panel = curses.newpad(height, width)
     adrequest = query_new_requests()
     #adrequest.insert(0, RequestHeader) #TODO fix this
-    time.sleep(0.1)
     #panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
     while loop == True:
