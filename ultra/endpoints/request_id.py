@@ -62,7 +62,6 @@ class RequestIdEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location="json")
         parser.add_argument("latitude", required=True, type=float, location="json")
         parser.add_argument("longitude", required=True, type=float, location="json")
         parser.add_argument("elevation_m", default=0.0, type=float)
@@ -71,13 +70,11 @@ class RequestIdEndpoint(Resource):
 
         args = parser.parse_args()
 
-        # TODO user check user day count
 
         try:
             result = db.session.query(Pass)\
                    .join(Request, Pass.uid == Request.pass_uid)\
-                   .filter(Pass.uid == request_id and
-                           Request.user_token == args["user_token"])\
+                   .filter(Request.uid == request_id)\
                    .one()
         except DbException:
             return {"Error" : "No matching pass or wrong user token"}, 400
@@ -110,7 +107,7 @@ class RequestIdEndpoint(Resource):
         if not pc.calculator.validate_pass(tle=tle, orbital_pass=input_orbital_pass):
             return {"Error": "Invalid pass."}, 401
 
-        #TODO check to see if other requested the same pass, if theya have make an new Pass for this user
+        #TODO check to see if other requested the same pass, if they have make an new Pass for this user
 
         # update entry
         result.latitude = input_orbital_pass.gs_latitude_deg,
