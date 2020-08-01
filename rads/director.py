@@ -120,14 +120,28 @@ def print_adrequest(stdscreen):
         for index, row in enumerate(adrequest):
             if adrequest[ad_index].is_approved is False:
               panel.attron(curses.color_pair(2))
-              panel.addstr(index + 1, 1, str(adrequest[index]))
+             # panel.addstr(index + 1, 1, str(adrequest[index]))
        # print_pad(panel, stdscreen, list1, schedule_index)
         if(len(adrequest) < (height - 2)):
         #enumerate loops over menu and creates a counter to know what part of the menu is selected
             for index, row in enumerate(adrequest):
                 if index == ad_index:
                     panel.attron(curses.color_pair(1))
-                panel.addstr(index + 1, 1, str(row))
+                if adrequest[ad_index].is_approved is None:
+                	panel.addstr(index + 1, 1, str(row))
+                if adrequest[index].is_approved is False:
+                    panel.attron(curses.color_pair(2))
+                    panel.addstr(index + 1, 1, str(row))
+                    panel.attroff(curses.color_pair(2))
+                elif adrequest[index].is_approved is True:
+                    panel.attron(curses.color_pair(3))
+                    panel.addstr(index + 1, 1, str(row))
+                    panel.attroff(curses.color_pair(3))
+                else:
+                    panel.addstr(index + 1, 1, str(row))
+                    panel.attroff(curses.color_pair(1))
+                #if adrequest[ad_index].is_approved is False:
+                 #   panel.attron(curses.color_pair(2))
                 panel.attroff(curses.color_pair(1))
 
         #panel.box()
@@ -293,6 +307,7 @@ def main():
     curses.start_color()
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
+    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN)
     #curses configuration
     curses.savetty() #save the terminal state
     curses.noecho() #disable user input echo
