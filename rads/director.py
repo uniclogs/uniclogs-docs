@@ -99,14 +99,14 @@ def print_adrequest(stdscreen):
         #upper bound case
         elif key == curses.KEY_DOWN and ad_index < len(adrequest)-1:
             ad_index += 1
-        elif(key == curses.KEY_BACKSPACE):
+        elif(key == curses.KEY_F12):
             loop = False
         elif key == curses.KEY_F1:
             adrequest[ad_index].is_approved = True
 		
 			#expensive to use might want to avoid?
             panel.clear()
-        elif key == curses.KEY_F4:
+        elif key == curses.KEY_F2:
             adrequest[ad_index].is_approved = False
 			#expensive to use might want to avoid?
             panel.clear()
@@ -195,7 +195,7 @@ def print_schedulepad(stdscreen):
         #upper bound case
         elif key == curses.KEY_DOWN and schedule_index < len(schedule)-1:
             schedule_index += 1
-        elif(key == curses.KEY_BACKSPACE):
+        elif(key == curses.KEY_F12):
             loop = False
 
         if(len(schedule) >= (height - 2)):
@@ -266,7 +266,7 @@ def print_archive(stdscreen):
         #upper bound case
         elif key == curses.KEY_DOWN and archive_index < len(archive)-1:
             archive_index += 1
-        elif(key == curses.KEY_BACKSPACE):
+        elif(key == curses.KEY_F12):
             loop = False
 
         if(len(archive) >= (height - 2)):
