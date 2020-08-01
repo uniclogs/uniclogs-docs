@@ -102,24 +102,26 @@ def print_adrequest(stdscreen):
         elif(key == curses.KEY_BACKSPACE):
             loop = False
         elif key == curses.KEY_F1:
-            stdscreen.clear()
-            stdscreen.addstr(0, 0, "You have pressed the F1 key!")
-            stdscreen.refresh()
-            stdscreen.getch()
+            adrequest[ad_index].is_approved = True
+		
+			#expensive to use might want to avoid?
+            panel.clear()
         elif key == curses.KEY_F4:
-            stdscreen.clear()
-            stdscreen.addstr(0, 0, "You have pressed the F4 key!")
-            stdscreen.refresh()
-            stdscreen.getch()
+            adrequest[ad_index].is_approved = False
+			#expensive to use might want to avoid?
+            panel.clear()
 
 
         while(len(adrequest) >= (height - 2)):
             height = height*2
             panel.resize(height, width)
-            panel.clear()
+            #panel.clear()
 
+        for index, row in enumerate(adrequest):
+            if adrequest[ad_index].is_approved is False:
+              panel.attron(curses.color_pair(2))
+              panel.addstr(index + 1, 1, str(adrequest[index]))
        # print_pad(panel, stdscreen, list1, schedule_index)
-
         if(len(adrequest) < (height - 2)):
         #enumerate loops over menu and creates a counter to know what part of the menu is selected
             for index, row in enumerate(adrequest):
@@ -128,7 +130,7 @@ def print_adrequest(stdscreen):
                 panel.addstr(index + 1, 1, str(row))
                 panel.attroff(curses.color_pair(1))
 
-#        panel.box()
+        #panel.box()
         stdscreen.addstr(0, (width+1)//2 - len("Accept Deny Requests(Ordered By Date Created)")//2, "Accept Deny Requests(Ordered By Date Created)")
         info = "Arrow Keys: To Move, Backspace: Exit, F1: Accept, F2: Deny"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
@@ -211,31 +213,6 @@ def print_schedulepad(stdscreen):
     stdscreen.scrollok(False)      # Enable window scroll
     stdscreen.nodelay(False)
 
-#function to print schedule of upcoming requests
-def schedule(stdscreen):
-    """Prints main menu and updates the display to current row/option selected.
-
-    Parameters
-    stdscreen : window object
-        A windows object initialized by curses.initscr() from the curses library.
-    ----------
-    Returns
-    -------
-    None
-    """
-    schedule_index = 0
-    stdscreen.clear()
-    #test list
-   # list1 = ['op1','op2','op3','op4','op5','op6','op7','op8','op9','op10']
-#    schedule = list(scheduleSelect())
-    #print_menu(stdscreen, schedule, 0)
-    #print(schedule)
-#    vheight, vwidth = stdscreen.getmaxyx()
-    #width -= 1
-    #draw_height = height -2
-#    panel = curses.newpad(vheight, vwidth)
-    print_schedulepad(stdscreen)
-
 #function to print accepted/denied requests
 def print_archive(stdscreen):
     """Prints main menu and updates the display to current row/option selected.
@@ -315,6 +292,7 @@ def main():
     curses.curs_set(0)
     curses.start_color()
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
     #curses configuration
     curses.savetty() #save the terminal state
     curses.noecho() #disable user input echo
@@ -354,7 +332,7 @@ def main():
                 print_adrequest(stdscreen)
             #check schedule
             if current_row_index == 1:
-                schedule(stdscreen)
+                print_schedulepad(stdscreen)
             if current_row_index == 2:
                 print_archive(stdscreen)
             #code that terminates the program after selecting exit
