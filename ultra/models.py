@@ -124,7 +124,7 @@ class UserTokens(db.Model):
     __tablename__ : str
         The raw postgresql table name.
     token : str
-        Reference to unique token for each request.
+        Reference to an unique token for each request.
     user_id : str
         Reference to user uid token for each user.
     """
@@ -133,6 +133,10 @@ class UserTokens(db.Model):
     user_id = db.Column(db.String(120), nullable=False, primary_key=True)
 
 def testPassModel():
+    """
+    Used to create a new Pass record and insert it into the database
+    The second query list all requests stored in the database
+    """
     new_pass = Pass(latitude=11.0, longtitude=11.01, azimuth=3)
     db.session.add(new_pass)
     db.session.commit()
@@ -142,6 +146,10 @@ def testPassModel():
     print(pass_list)
 
 def testTleModel():
+    """
+    Used to create a new TLE record and insert it into the database
+    The second query list all TLEs stored in the database
+    """
     new_tle = Tle(
             header_text="ISS (ZARYA)",
             first_line="1 25544U 98067A   20199.71986111 -.00000291  00000-0  28484-5 0  9999",
@@ -154,15 +162,21 @@ def testTleModel():
     tle_list = Tle.query.all()
     print(tle_list)
 
-"""
-helper for generation of random string
-"""
+
 def get_random_string(length):
+    """
+    Helper for generation of random string
+    """
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
 
 def testRequestModel():
+    """
+    Used to create a new Request record and insert it into the database
+    The second query list all Requests stored in the database
+    The third query list all Requests that have been sent before
+    """
     new_request = Request(user_token='test_tokesn', is_approved=False, is_sent=False, pass_uid=None, created_date=None)
     db.session.add(new_request)
     #When adding/updating/deleting a new record, we make sure the transaction had been commited
