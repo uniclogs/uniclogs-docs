@@ -4,26 +4,29 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from os import getenv
 import datetime
-
+import sys
 
 PSQL_USERNAME = getenv('DART_USERNAME')
 PSQL_PASSWORD = getenv('DART_PASSWORD')
 PSQL_HOST = getenv('DART_HOST')
 PSQL_PORT = getenv('DART_PORT')
 PSQL_DB = getenv('DART_DB')
+if None in [PSQL_USERNAME, PSQL_PASSWORD, PSQL_HOST, PSQL_PORT, PSQL_DB]:
+    print("Environment variables not found.")
+    sys.exit(0)
 
-Base = declarative_base()
-
-DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'
-DATABASE_URI = DATABASE_URI.format(
+DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
     PSQL_USERNAME,
     PSQL_PASSWORD,
     PSQL_HOST,
     PSQL_PORT,
     PSQL_DB
     )
+
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)  # factory of sessions
+
+Base = declarative_base()
 
 
 class Tle(Base):

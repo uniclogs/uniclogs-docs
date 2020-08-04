@@ -14,9 +14,13 @@ def init(name):
 
     now = datetime.now()
     filename = "logs/{0}_{1}.log".format(name, now.strftime("%m_%d_%y"))
+    logger.remove()  # remove stderr messages (so it doesn't mess up ncruses)
     # New file is created each day at noon
-    logger.add(filename, rotation="00:00", format="<green>{time}</green> <level>{message}</level>")
-    logger.warning("Logs will saved in logs/{0}_{1}.log".format(name, now.strftime("%m_%d_%y")))
+    logger.add(
+            filename,
+            rotation="00:00",
+            format="<green>{time}</green> <level>{message}</level>"
+            )
 
 
 def enableRetention():

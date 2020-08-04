@@ -65,13 +65,17 @@ def query_new_requests():
 
     session = Session()
 
-    result = session.query(Request)\
-        .with_lockmode('read')\
-        .join(Pass, Pass.uid == Request.pass_uid)\
-        .filter(Pass.start_time > datetime.utcnow(),
-                Request.is_approved.is_(None))\
-        .order_by(Request.created_date.asc())\
-        .all()
+    try:
+        result = session.query(Request)\
+            .with_lockmode('read')\
+            .join(Pass, Pass.uid == Request.pass_uid)\
+            .filter(Pass.start_time > datetime.utcnow(),
+                    Request.is_approved.is_(None))\
+            .order_by(Request.created_date.asc())\
+            .all()
+    except Exception as e:
+        logger.critical("Database query failed {}".format(e))
+        return []
 
     ret = _fill_request_data(result)
 
@@ -92,13 +96,18 @@ def query_upcomming_requests():
 
     session = Session()
 
-    result = session.query(Request)\
-        .with_lockmode('read')\
-        .join(Pass, Pass.uid == Request.pass_uid)\
-        .filter(Pass.start_time > datetime.utcnow(),
-                Request.is_approved.is_(True))\
-        .order_by(Pass.start_time.asc())\
-        .all()
+    try:
+        result = session.query(Request)\
+            .with_lockmode('read')\
+            .join(Pass, Pass.uid == Request.pass_uid)\
+            .filter(Pass.start_time > datetime.utcnow(),
+                    Request.is_approved.is_(True))\
+            .order_by(Pass.start_time.asc())\
+            .all()
+    except Exception as e:
+        logger.critical("Database query failed {}".format(e))
+        session.close()
+        return []
 
     ret = _fill_request_data(result)
 
@@ -119,12 +128,17 @@ def query_archived_requests():
 
     session = Session()
 
-    result = session.query(Request)\
-        .with_lockmode('read')\
-        .join(Pass, Pass.uid == Request.pass_uid)\
-        .filter(Pass.start_time <= datetime.utcnow())\
-        .order_by(Pass.start_time.desc())\
-        .all()
+    try:
+        result = session.query(Request)\
+            .with_lockmode('read')\
+            .join(Pass, Pass.uid == Request.pass_uid)\
+            .filter(Pass.start_time <= datetime.utcnow())\
+            .order_by(Pass.start_time.desc())\
+            .all()
+    except Exception as e:
+        logger.critical("Database query failed {}".format(e))
+        session.close()
+        return []
 
     ret = _fill_request_data(result)
 
@@ -144,15 +158,20 @@ def query_tle():
     """
     session = Session()
 
-    latest_tle_time = session.query(func.max(Tle.time_added))\
-        .with_lockmode('read')\
-        .one()
-    latest_tle = session.query(Tle)\
-        .with_lockmode('read')\
-        .filter(Tle.time_added == latest_tle_time)\
-        .one()
+    try:
+        latest_tle_time = session.query(func.max(Tle.time_added))\
+            .with_lockmode('read')\
+            .one()
+        latest_tle = session.query(Tle)\
+            .with_lockmode('read')\
+            .filter(Tle.time_added == latest_tle_time)\
+            .one()
 
-    tle = [latest_tle.first_line, latest_tle.second_line]
+        tle = [latest_tle.first_line, latest_tle.second_line]
+    except Exception as e:
+        logger.critical("Database query failed {}".format(e))
+        session.close()
+        return []
 
     session.close()
 
