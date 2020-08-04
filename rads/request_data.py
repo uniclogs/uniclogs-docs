@@ -6,8 +6,9 @@ from pass_calculator.orbitalpass import OrbitalPass
 
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
-_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:7} |{:19} | {:19} | {:9.5f} | {:10.5f} | {:7.2f}"
-RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:7} | {:19} | {:19} | {:9} | {:10} | {:7}".format("ID", "Status", "Type", "Created", "Pass ID", "AOS", "LOS", "Latitude", "Longitude", "Elevation (m)")
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9.5f} | {:10.5f} | {:7.2f}"
+RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9} | {:10} | {:7}".format(
+        "ID", "Status", "Type", "Created", "Pass ID", "AOS", "LOS", "City", "State", "Latitude", "Longitude", "Elevation (m)")
 
 
 class RequestData():
@@ -20,6 +21,7 @@ class RequestData():
     _created_dt = None
     _observation_type = None
     _data_updated = False
+    geo = None  # doesn't need to be a property
 
     def __init__(
             self,
@@ -71,6 +73,8 @@ class RequestData():
                 self._pass_id,
                 self._pass_data.aos_utc.strftime(_DT_STR_FORMAT),
                 self._pass_data.los_utc.strftime(_DT_STR_FORMAT),
+                self.geo["name"][:25],
+                self.geo["admin1"],
                 self._pass_data.gs_latitude_deg,
                 self._pass_data.gs_longitude_deg,
                 self._pass_data.gs_elevation_m

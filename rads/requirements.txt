@@ -4,3 +4,4 @@ sqlalchemy>=1.3.18
 skyfield
 psycopg2-binary
 psycopg2
+reverse_geocoder

@@ -3,15 +3,16 @@ from request_data import RequestData
 from datetime import datetime
 from sqlalchemy import func, exc
 from loguru import logger
+import reverse_geocoder as rg
 
 
-def _fill_request_data(result):
+def _fill_request_data(results):
     """
     Make a RequestData object for a Pass and Request models join.
 
     Parameters
     ----------
-    result
+    requests
         A list of Request models joined with Pass models
 
     Returns
@@ -21,8 +22,9 @@ def _fill_request_data(result):
     """
 
     requests = []
+    coordinates = []
 
-    for r in result:
+    for r in results:
         rd = RequestData(
                 r.uid,
                 r.user_token,
@@ -38,6 +40,15 @@ def _fill_request_data(result):
                 r.pass_data.end_time
                 )
         requests.append(rd)
+
+    for r in requests:
+        coor = (r.pass_data.gs_latitude_deg,  r.pass_data.gs_longitude_deg)
+        coordinates.append(coor)
+
+    loc = rg.search(coordinates, verbose=False)
+
+    for i in range(len(requests)):
+        requests[i].geo = loc[i]
 
     return requests
 

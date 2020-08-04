@@ -7,6 +7,9 @@ from db_interface import query_new_requests, query_archived_requests,\
 from request_data import RequestHeader
 
 
+WAIT_TIME = 0.01
+
+
 def print_menu(stdscreen, menu, current_row_index):
     """Prints main menu and updates the display to current row/option selected.
 
@@ -140,7 +143,7 @@ def print_adrequest(stdscreen):
         stdscreen.addstr(2, 0, " ")
         panel.refresh(ad_index, 0, 3, 1, draw_height, width)
         stdscreen.refresh()
-        time.sleep(0.1)
+        time.sleep(WAIT_TIME)
 
     stdscreen.refresh()
     stdscreen.scrollok(False)      # Enable window scroll
@@ -211,7 +214,7 @@ def print_schedulepad(stdscreen):
         # panel.addstr(0, 1, "Upcoming Pass Schedule")
         panel.refresh(schedule_index, 0, 3, 1, draw_height, width)
         stdscreen.refresh()
-        time.sleep(0.1)
+        time.sleep(WAIT_TIME)
 
     # panel.endwin()
     stdscreen.refresh()
@@ -286,7 +289,8 @@ def print_archive(stdscreen):
         stdscreen.addstr(2, 0, " ")
         panel.refresh(archive_index, 0, 3, 1, draw_height, width)
         stdscreen.refresh()
-        time.sleep(0.1)
+        time.sleep(WAIT_TIME)
+
     # panel.endwin()
     stdscreen.refresh()
     stdscreen.scrollok(False)      # Enable window scroll
