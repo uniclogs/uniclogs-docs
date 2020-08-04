@@ -34,7 +34,6 @@ class Schedule_Pass:
          
             Note: only the pass_uid, latitude, longitude, start_time will be 
             sent to the satellite
-request = ('user_token', 0293,'pass_uid', 93.402, -3.494,'is_approved', True)
         numberOfRequests : number of passes to be scheduled or canceled
         """
         self.passRequestList = request
