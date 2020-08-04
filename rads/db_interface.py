@@ -2,6 +2,7 @@ from models import Request, Pass, Tle, Session
 from request_data import RequestData
 from datetime import datetime
 from sqlalchemy import func, exc
+from loguru import logger
 
 
 def _fill_request_data(result):
@@ -53,9 +54,8 @@ def query_new_requests():
 
     session = Session()
 
-    # TODO get lock
-
     result = session.query(Request)\
+        .with_lockmode('read')\
         .join(Pass, Pass.uid == Request.pass_uid)\
         .filter(Pass.start_time > datetime.utcnow(),
                 Request.is_approved.is_(None))\
@@ -63,8 +63,6 @@ def query_new_requests():
         .all()
 
     ret = _fill_request_data(result)
-
-    # TODO release lock
 
     session.close()
 
@@ -83,9 +81,8 @@ def query_upcomming_requests():
 
     session = Session()
 
-    # TODO get lock
-
     result = session.query(Request)\
+        .with_lockmode('read')\
         .join(Pass, Pass.uid == Request.pass_uid)\
         .filter(Pass.start_time > datetime.utcnow(),
                 Request.is_approved.is_(True))\
@@ -93,8 +90,6 @@ def query_upcomming_requests():
         .all()
 
     ret = _fill_request_data(result)
-
-    # TODO release lock
 
     session.close()
 
@@ -113,9 +108,8 @@ def query_archived_requests():
 
     session = Session()
 
-    # TODO get lock
-
     result = session.query(Request)\
+        .with_lockmode('read')\
         .join(Pass, Pass.uid == Request.pass_uid)\
         .filter(Pass.start_time <= datetime.utcnow())\
         .order_by(Pass.start_time.desc())\
@@ -123,51 +117,9 @@ def query_archived_requests():
 
     ret = _fill_request_data(result)
 
-    # TODO release lock
-
     session.close()
 
     return ret
-
-
-def update_approve_deny(request_list):
-    """
-    Update request in th db to be approved or denied.
-
-    Parameter
-    ---------
-    request_list: RequestData
-        A list of requests to update
-    """
-
-    session = Session()
-
-    # TODO get lock
-
-    for r in request_list:
-        if r.updated is False:
-            continue
-
-        try:
-            # find the matching reuqest
-            result = session.query(Request)\
-                .join(Pass, Pass.uid == Request.pass_uid)\
-                .filter(Request.user_token == r.user_token and
-                        r.pass_id == Pass.uid)\
-                .one()
-        except exc.SQLAlchemyError:
-            continue  # TODO log
-
-        # make sure request/pass data has not changed
-        if result.pass_data.start_time == r.pass_data.aos_utc and \
-                result.pass_data.end_time == r.pass_data.los_utc:
-            result.is_approved = r.is_approved
-
-    session.commit()
-
-    # TODO release lock
-
-    session.close()
 
 
 def query_tle():
@@ -181,17 +133,62 @@ def query_tle():
     """
     session = Session()
 
-    # TODO get lock
-
-    latest_tle_time = session.query(func.max(Tle.time_added)).one()
+    latest_tle_time = session.query(func.max(Tle.time_added))\
+        .with_lockmode('read')\
+        .one()
     latest_tle = session.query(Tle)\
+        .with_lockmode('read')\
         .filter(Tle.time_added == latest_tle_time)\
         .one()
 
     tle = [latest_tle.first_line, latest_tle.second_line]
 
-    # TODO release lock
-
     session.close()
 
     return tle
+
+
+def update_approve_deny(request_list):
+    """
+    Update request in th db to be approved or denied.
+
+    Parameter
+    ---------
+    request_list: RequestData
+        A list of requests to update
+
+    Returns
+    -------
+    int
+        number of requests that failed to updated.
+    """
+
+    ret = 0
+    session = Session()
+
+    for r in request_list:
+        if r.updated is False:
+            continue
+
+        try:
+            # find the matching reuqest
+            session.query(Request)\
+                .with_lockmode('update')\
+                .join(Pass, Pass.uid == Request.pass_uid)\
+                .filter(Request.user_token == r.user_token and
+                        Request.pass_data.start_time == r.pass_data.aos_utc and
+                        Request.pass_data.end_time == r.pass_data.los_utc and
+                        Request.uid == r.id)\
+                .update({Request.is_approved: r.is_approved})
+        except exc.SQLAlchemyError:
+            logger.critical(
+                    "approved status update failed for request {}"
+                    .format(r.uid)
+                    )
+            ret += 1
+            continue
+
+    session.commit()
+    session.close()
+
+    return ret
