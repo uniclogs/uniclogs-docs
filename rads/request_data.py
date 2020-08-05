@@ -124,6 +124,10 @@ class RequestData():
         return self._created_dt
 
     @property
+    def updated_dt(self):
+        return self._updated_dt
+
+    @property
     def observation_type(self):
         return self._observation_type
 
