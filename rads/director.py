@@ -7,6 +7,7 @@ from db_interface import query_new_requests, query_archived_requests,\
 from request_data import RequestHeader
 
 
+#To prevent screen flickering
 WAIT_TIME = 0.1
 
 
