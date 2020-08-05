@@ -6,9 +6,9 @@ from pass_calculator.orbitalpass import OrbitalPass
 
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
-_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:^5} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9.5f} | {:10.5f} | {:7.2f}"
-RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:5} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9} | {:10} | {:7}".format(
-        "ID", "Status", "Type", "Created", "Sent", "Pass ID", "AOS", "LOS", "City", "State", "Latitude", "Longitude", "Elevation (m)")
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:^5} | {:7} | {:19} | {:19} | {:30} | {:9.5f} | {:10.5f} | {:7.2f}"
+RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:5} | {:7} | {:19} | {:19} | {:30} | {:9} | {:10} | {:7}".format(
+        "ID", "Status", "Type", "Created", "Sent", "Pass ID", "AOS", "LOS", "City, State", "Latitude", "Longitude", "Elevation (m)")
 
 
 class RequestData():
@@ -73,6 +73,7 @@ class RequestData():
         else:
             sent_status = " "
 
+        loc = self.geo["name"] + ", " + self.geo["admin1"]
         return _STR_FORMAT.format(
                 self._id,
                 ad_status,
@@ -82,8 +83,7 @@ class RequestData():
                 self._pass_id,
                 self._pass_data.aos_utc.strftime(_DT_STR_FORMAT),
                 self._pass_data.los_utc.strftime(_DT_STR_FORMAT),
-                self.geo["name"][:25],
-                self.geo["admin1"],
+                loc,
                 self._pass_data.gs_latitude_deg,
                 self._pass_data.gs_longitude_deg,
                 self._pass_data.gs_elevation_m
@@ -114,9 +114,6 @@ class RequestData():
         if self.pass_data.aos_utc > datetime.utcnow():
             self._is_approved = value
             self._data_updated = True
-            print("aproved")
-        else:
-            print("aproved failed")
 
     @property
     def is_sent(self):
