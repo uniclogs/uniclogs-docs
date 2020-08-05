@@ -6,9 +6,9 @@ from pass_calculator.orbitalpass import OrbitalPass
 
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
-_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9.5f} | {:10.5f} | {:7.2f}"
-RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9} | {:10} | {:7}".format(
-        "ID", "Status", "Type", "Created", "Pass ID", "AOS", "LOS", "City", "State", "Latitude", "Longitude", "Elevation (m)")
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:5} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9.5f} | {:10.5f} | {:7.2f}"
+RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:5} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9} | {:10} | {:7}".format(
+        "ID", "Status", "Type", "Created", "Sent", "Pass ID", "AOS", "LOS", "City", "State", "Latitude", "Longitude", "Elevation (m)")
 
 
 class RequestData():
@@ -65,11 +65,17 @@ class RequestData():
         else:
             ad_status = " "
 
+        if self._is_sent is True:
+            sent_status = "true"
+        else:
+            sent_status = "false"
+
         return _STR_FORMAT.format(
                 self._id,
                 ad_status,
                 obs_type,
                 self._created_dt.strftime(_DT_STR_FORMAT),
+                sent_status,
                 self._pass_id,
                 self._pass_data.aos_utc.strftime(_DT_STR_FORMAT),
                 self._pass_data.los_utc.strftime(_DT_STR_FORMAT),
