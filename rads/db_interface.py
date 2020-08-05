@@ -201,19 +201,25 @@ def update_approve_deny(request_list):
             continue
 
         try:
-            # find the matching reuqest
+            # find the matching reuqest and check if pass data are the same
+            session.query(Request)\
+                .with_lockmode('read')\
+                .join(Pass, Pass.uid == Request.pass_uid)\
+                .filter(Request.user_token == r.user_token,
+                        Pass.start_time == r.pass_data.aos_utc,
+                        Pass.end_time == r.pass_data.los_utc,
+                        Request.uid == r.id)\
+                .one()
+
+            # update value
             session.query(Request)\
                 .with_lockmode('update')\
-                .join(Pass, Pass.uid == Request.pass_uid)\
-                .filter(Request.user_token == r.user_token and
-                        Request.pass_data.start_time == r.pass_data.aos_utc and
-                        Request.pass_data.end_time == r.pass_data.los_utc and
-                        Request.pass_uid == r.pass_uid)\
+                .filter(Request.uid == r.id)\
                 .update({Request.is_approved: r.is_approved})
-        except exc.SQLAlchemyError:
+        except exc.SQLAlchemyError as e:
             logger.critical(
-                    "approved status update failed for request {}"
-                    .format(r.pass_uid)
+                    "approved status update failed for request {} with {}"
+                    .format(r.id, e)
                     )
             ret += 1
             continue

@@ -81,6 +81,10 @@ class RequestData():
                 )
 
     @property
+    def id(self):
+        return self._id
+
+    @property
     def user_token(self):
         return self._user_token
 
