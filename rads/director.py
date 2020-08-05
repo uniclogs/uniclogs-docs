@@ -96,12 +96,21 @@ def print_adrequest(stdscreen):
             loop = False
 
        # elif key == curses.KEY_F1:
-        elif key == 97: #a = 97
+        elif key == 97: #a = 97 Approve
             adrequest[ad_index].is_approved = True
+            for index, row in enumerate(adrequest):
+                if adrequest[index].pass_id == adrequest[ad_index].pass_id and index != ad_index:
+                    adrequest[index].is_approved = False
+            # expensive to use might want to avoid?
+            panel.clear() 
+        elif key == 100: #d = 100 Deny
+            adrequest[ad_index].is_approved = False
             # expensive to use might want to avoid?
             panel.clear()
-        elif key == 100: #d = 100
-            adrequest[ad_index].is_approved = False
+        elif key == 119: #w = 100 Set all Requests with the same pass to pending (Used to Undo Accept)            
+            for index, row in enumerate(adrequest):
+                if adrequest[index].pass_id == adrequest[ad_index].pass_id:
+                    adrequest[index].is_approved = None
             # expensive to use might want to avoid?
             panel.clear()
 
@@ -126,6 +135,7 @@ def print_adrequest(stdscreen):
                     panel.attron(curses.color_pair(1))
                 if adrequest[ad_index].is_approved is None:
                     panel.addstr(index + 1, 1, str(row))
+      
                 if adrequest[index].is_approved is False:
                     panel.attron(curses.color_pair(2))
                     panel.addstr(index + 1, 1, str(row))
@@ -134,16 +144,19 @@ def print_adrequest(stdscreen):
                     panel.attron(curses.color_pair(3))
                     panel.addstr(index + 1, 1, str(row))
                     panel.attroff(curses.color_pair(3))
+                elif adrequest[index].pass_id == adrequest[ad_index].pass_id and index != ad_index:
+                    panel.attron(curses.color_pair(4))
+                    panel.addstr(index + 1, 1, str(row))
+                    panel.attroff(curses.color_pair(4))
                 else:
                     panel.addstr(index + 1, 1, str(row))
                     panel.attroff(curses.color_pair(1))
-                # if adrequest[ad_index].is_approved is False:
-                #   panel.attron(curses.color_pair(2))
                 panel.attroff(curses.color_pair(1))
 
         # panel.box()
-        stdscreen.addstr(0, (width+1)//2 - len("Accept Deny Requests(Ordered By Date Created)")//2, "Accept Deny Requests(Ordered By Date Created)")
-        info = "Arrow Keys: To Move, Backspace: Exit, F1: Accept, F2: Deny"
+        description = "Accept Deny Requests(Ordered By Date Created)"
+        stdscreen.addstr(0, (width+1)//2 - len(description)//2, description)
+        info = "Arrow Keys: To Move, a: Accept, d: Deny, w:Reset to Pending  c: Exit, s: Save and Exit"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
         stdscreen.addstr(3, 2, RequestHeader)
         stdscreen.addstr(2, 0, " ")
@@ -192,8 +205,20 @@ def print_schedulepad(stdscreen):
         # upper bound case
         elif key == curses.KEY_DOWN and schedule_index < len(schedule)-1:
             schedule_index += 1
-        elif(key == curses.KEY_F12):
+        elif(key == 99): #c = 99 Exit without Saving
             loop = False
+        elif(key == 115): #s = 115 Exit without Saving
+            update_approve_deny(schedule)
+            loop = False
+
+        elif key == 97: #a = 97
+            adrequest[schedule_index].is_approved = True
+            # expensive to use might want to avoid?
+            panel.clear()
+        elif key == 100: #d = 100
+            adrequest[schedule_index].is_approved = False
+            # expensive to use might want to avoid?
+            panel.clear()
 
         if(len(schedule) >= (height - 2)):
             height = height*2
@@ -212,8 +237,9 @@ def print_schedulepad(stdscreen):
 
         # panel.box()
         # panel.addstr(0, 1, "User_Token Is_Approved Is_Sent Pass_ID Created_Date Last_Modified Observation_Type Pass_Start_time")
-        stdscreen.addstr(0, (width+1)//2 - len("Upcoming Pass Schedule(Ordered By AOS ASC)")//2, "Upcoming Pass Schedule(Ordered By AOS ASC)")
-        info = "Arrow Keys: To Move, Backspace: Exit, F1: Accept, F2: Deny"
+        description = "Upcoming Pass Schedule(Ordered By AOS ASC)"
+        stdscreen.addstr(0, (width+1)//2 - len(description)//2, description)
+        info = "Arrow Keys: To Move, a: Accept, d: Deny, c: Exit, s: Save and Exit"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
         stdscreen.addstr(3, 2, RequestHeader)
         stdscreen.addstr(2, 0, " ")
@@ -252,7 +278,6 @@ def print_archive(stdscreen):
     panel = curses.newpad(height, width)
     archive = query_archived_requests()
     # archive.insert(0, RequestHeader) # TODO fix this
-    time.sleep(0.1)
     # panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
     # panel.box()
     while loop is True:
@@ -266,7 +291,7 @@ def print_archive(stdscreen):
         # upper bound case
         elif key == curses.KEY_DOWN and archive_index < len(archive)-1:
             archive_index += 1
-        elif(key == curses.KEY_F12):
+        elif(key == 99 or key == 115): #c = 99 s = 115 Exit
             loop = False
 
         if(len(archive) >= (height - 2)):
@@ -289,7 +314,7 @@ def print_archive(stdscreen):
 
         # panel.box()
         stdscreen.addstr(0, (width+1)//2 - len("Archives(Ordered BY AOS DESC)")//2, "Archives(Oredred By AOS DESC)")
-        info = "Arrow Keys: To Move, Backspace: Exit"
+        info = "Arrow Keys: To Move, c or s: Exit"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
         stdscreen.addstr(3, 2, RequestHeader)
         stdscreen.addstr(2, 0, " ")
@@ -313,6 +338,7 @@ def main():
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN)
+    curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_BLUE)
     # curses configuration
     curses.savetty()  # save the terminal state
     curses.noecho()  # disable user input echo
@@ -340,11 +366,7 @@ def main():
         # upper bound case
         elif key == curses.KEY_DOWN and current_row_index < len(menu)-1:
             current_row_index += 1
-        elif key == curses.KEY_F1:
-            stdscreen.clear()
-            stdscreen.addstr(0, 0, "You have pressed the F1 key!")
-            stdscreen.refresh()
-            stdscreen.getch()
+
         # all possible values that enter key might be depending on keyboard
         elif key == curses.KEY_ENTER or key in [10, 13]:
             """
