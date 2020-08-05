@@ -3,11 +3,11 @@ import time
 from loguru import logger
 import log_interface
 from db_interface import query_new_requests, query_archived_requests,\
-        query_upcomming_requests
+        query_upcomming_requests, update_approve_deny
 from request_data import RequestHeader
 
 
-WAIT_TIME = 0.01
+WAIT_TIME = 0.1
 
 
 def print_menu(stdscreen, menu, current_row_index):
@@ -69,7 +69,7 @@ def print_adrequest(stdscreen):
     # gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height - 3
+    draw_height = height - 2 
     vheight, vwidth = stdscreen.getmaxyx()
 
     panel = curses.newpad(height, width)
@@ -88,13 +88,18 @@ def print_adrequest(stdscreen):
         # upper bound case
         elif key == curses.KEY_DOWN and ad_index < len(adrequest)-1:
             ad_index += 1
-        elif(key == curses.KEY_F12):
+        elif(key == 99): #c = 99 Exit without Saving
             loop = False
-        elif key == curses.KEY_F1:
+        elif(key == 115): #s = 115 Exit without Saving
+            update_approve_deny(adrequest)
+            loop = False
+
+       # elif key == curses.KEY_F1:
+        elif key == 97: #a = 97
             adrequest[ad_index].is_approved = True
             # expensive to use might want to avoid?
             panel.clear()
-        elif key == curses.KEY_F2:
+        elif key == 100: #d = 100
             adrequest[ad_index].is_approved = False
             # expensive to use might want to avoid?
             panel.clear()
@@ -168,7 +173,7 @@ def print_schedulepad(stdscreen):
     # gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height - 3
+    draw_height = height - 2
 
     panel = curses.newpad(height, width)
     schedule = query_upcomming_requests()
@@ -241,7 +246,7 @@ def print_archive(stdscreen):
     # gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height - 3
+    draw_height = height - 2
 
     panel = curses.newpad(height, width)
     archive = query_archived_requests()

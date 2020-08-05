@@ -208,12 +208,12 @@ def update_approve_deny(request_list):
                 .filter(Request.user_token == r.user_token and
                         Request.pass_data.start_time == r.pass_data.aos_utc and
                         Request.pass_data.end_time == r.pass_data.los_utc and
-                        Request.uid == r.id)\
+                        Request.pass_uid == r.pass_uid)\
                 .update({Request.is_approved: r.is_approved})
         except exc.SQLAlchemyError:
             logger.critical(
                     "approved status update failed for request {}"
-                    .format(r.uid)
+                    .format(r.pass_uid)
                     )
             ret += 1
             continue
