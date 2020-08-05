@@ -141,6 +141,11 @@ class Request(Base):
             nullable=False,
             default=datetime.datetime.utcnow()
             )
+    updated_date = Column(
+            DateTime(timezone=False),
+            nullable=False,
+            default=datetime.datetime.utcnow()
+            )
     pass_data = relationship("Pass", foreign_keys=[pass_uid])
 
     def __repr__(self):

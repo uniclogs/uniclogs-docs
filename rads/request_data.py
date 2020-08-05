@@ -6,7 +6,7 @@ from pass_calculator.orbitalpass import OrbitalPass
 
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
-_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:5} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9.5f} | {:10.5f} | {:7.2f}"
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:^5} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9.5f} | {:10.5f} | {:7.2f}"
 RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:5} | {:7} | {:19} | {:19} | {:25} | {:15} | {:9} | {:10} | {:7}".format(
         "ID", "Status", "Type", "Created", "Sent", "Pass ID", "AOS", "LOS", "City", "State", "Latitude", "Longitude", "Elevation (m)")
 
@@ -19,6 +19,7 @@ class RequestData():
     _is_approved = False
     _is_sent = False
     _created_dt = None
+    _updated_dt = None
     _observation_type = None
     _data_updated = False
     geo = None  # doesn't need to be a property
@@ -31,6 +32,7 @@ class RequestData():
             is_approved: bool,
             is_sent: bool,
             created_dt: datetime,
+            updated_dt: datetime,
             observation_type: str,
             latitude: float,
             longitude: float,
@@ -51,6 +53,7 @@ class RequestData():
         self._is_approved = is_approved
         self._is_sent = is_sent
         self._created_dt = created_dt
+        self._updated_dt = updated_dt
         self._observation_type = observation_type
 
     def __str__(self):
@@ -66,9 +69,9 @@ class RequestData():
             ad_status = " "
 
         if self._is_sent is True:
-            sent_status = "true"
+            sent_status = "x"
         else:
-            sent_status = "false"
+            sent_status = " "
 
         return _STR_FORMAT.format(
                 self._id,

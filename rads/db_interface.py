@@ -32,6 +32,7 @@ def _fill_request_data(results):
                 r.is_approved,
                 r.is_sent,
                 r.created_date,
+                r.updated_date,
                 r.observation_type,
                 r.pass_data.latitude,
                 r.pass_data.longitude,
@@ -212,6 +213,7 @@ def update_approve_deny(request_list):
                 .filter(Request.user_token == r.user_token,
                         Pass.start_time == r.pass_data.aos_utc,
                         Pass.end_time == r.pass_data.los_utc,
+                        Request.updated_date == r.updated_dt,
                         Request.uid == r.id)\
                 .one()
 
@@ -219,7 +221,8 @@ def update_approve_deny(request_list):
             session.query(Request)\
                 .with_lockmode('update')\
                 .filter(Request.uid == r.id)\
-                .update({Request.is_approved: r.is_approved})
+                .update({Request.is_approved: r.is_approved,
+                        Request.updated_date: datetime.utcnow()})
         except exc.SQLAlchemyError as e:
             logger.critical(
                     "approved status update failed for request {} with {}"
