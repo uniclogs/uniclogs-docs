@@ -41,14 +41,18 @@ def _fill_request_data(results):
                 )
         requests.append(rd)
 
-    for r in requests:
-        coor = (r.pass_data.gs_latitude_deg,  r.pass_data.gs_longitude_deg)
-        coordinates.append(coor)
+    if requests:
+        # find nearest city, county, state, country info for anything in list
 
-    loc = rg.search(coordinates, verbose=False)
+        for r in requests:
+            coor = (r.pass_data.gs_latitude_deg,  r.pass_data.gs_longitude_deg)
+            coordinates.append(coor)
 
-    for i in range(len(requests)):
-        requests[i].geo = loc[i]
+        # NOTE this is way faster to do all at once, then one at a time.
+        loc = rg.search(coordinates, verbose=False)
+
+        for i in range(len(requests)):
+            requests[i].geo = loc[i]
 
     return requests
 
