@@ -34,7 +34,7 @@ def _fill_request_data(results):
                 r.created_date,
                 r.observation_type,
                 r.pass_data.latitude,
-                r.pass_data.longtitude,
+                r.pass_data.longitude,
                 r.pass_data.elevation,
                 r.pass_data.start_time,
                 r.pass_data.end_time
@@ -188,7 +188,7 @@ def update_approve_deny(request_list):
 
     Parameter
     ---------
-    request_list: RequestData
+   request_list: RequestData
         A list of requests to update
 
     Returns

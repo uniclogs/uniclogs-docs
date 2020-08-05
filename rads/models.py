@@ -73,8 +73,8 @@ class Pass(Base):
         Unique id for a pass.
     latitude : float
         Ground station's latitude for pass.
-    longtitude : float
-        Ground station's longtitude for pass.
+    longitude : float
+        Ground station's longitude for pass.
     start_time : datetime
         UTC datetime when pass starts for observer.
     end_time : datetime
@@ -85,7 +85,7 @@ class Pass(Base):
     __tablename__ = 'pass'
     uid = Column(Integer, Sequence('pass_uid_seq'), primary_key=True)
     latitude = Column(Float, nullable=False)
-    longtitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
     start_time = Column(DateTime(
         timezone=False),
         nullable=False,
@@ -102,7 +102,7 @@ class Pass(Base):
         return '<Pass {}, {}, {}>'.format(
                 self.uid,
                 self.latitude,
-                self.longtitude
+                self.longitude
                 )
 
 
@@ -145,28 +145,6 @@ class Request(Base):
 
     def __repr__(self):
         return '<Ticket {}>'.format(self.user_token)
-
-
-class PassRequest(Base):
-    """
-    Used to model PassRequest table in database.
-
-    Attributes
-    ----------
-    __tablename__ : str
-        The raw postgresql table name.
-    pass_uid : int
-        Reference to a pass uid.
-    req_token : str
-        Reference to a unique token for each user.
-    """
-    __tablename__ = 'pass_requests'
-    pass_id = Column(Integer, ForeignKey('pass.uid'), primary_key=True)
-    req_token = Column(
-            Text,
-            ForeignKey('requests.user_token'),
-            primary_key=True
-            )
 
 
 class UserTokens(Base):

@@ -3,7 +3,7 @@ import random
 import string
 import getopt
 sys.path.insert(0, '..')
-from models import Request, Pass, Tle, Session, PassRequest
+from models import Request, Pass, Tle, Session
 from datetime import datetime, timezone, timedelta
 sys.path.insert(0, '../..')
 import pass_calculator.calculator as pc
@@ -71,14 +71,14 @@ def insert_into_db(generated_passes, random_status=False):
         result = session.query(Pass)\
             .filter(Pass.start_time == p.aos_utc,
                     Pass.latitude == p.gs_latitude_deg,
-                    Pass.longtitude == p.gs_longitude_deg)\
+                    Pass.longitude == p.gs_longitude_deg)\
             .first()
 
         if result is None:
             # pass not in db, add it
             new_pass = Pass(
                 latitude=p.gs_latitude_deg,
-                longtitude=p.gs_longitude_deg,
+                longitude=p.gs_longitude_deg,
                 elevation=p.gs_elevation_m,
                 start_time=p.aos_utc,
                 end_time=p.los_utc
@@ -120,25 +120,12 @@ def insert_into_db(generated_passes, random_status=False):
         session.add(new_request)
         session.flush()
 
-        new_pass_request = PassRequest(
-                pass_id=pass_uid,
-                req_token=new_request.user_token
-                )
-
-        session.add(new_pass_request)
-        session.flush()
-
     session.commit()
     session.close()
 
 
 def clear_db():
     session = Session()
-
-    result = session.query(PassRequest).all()
-
-    for r in result:
-        session.delete(r)
 
     result = session.query(Request).all()
 
