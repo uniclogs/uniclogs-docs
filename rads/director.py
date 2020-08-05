@@ -212,11 +212,11 @@ def print_schedulepad(stdscreen):
             loop = False
 
         elif key == 97: #a = 97
-            adrequest[schedule_index].is_approved = True
+            schedule[schedule_index].is_approved = True
             # expensive to use might want to avoid?
             panel.clear()
         elif key == 100: #d = 100
-            adrequest[schedule_index].is_approved = False
+            schedule[schedule_index].is_approved = False
             # expensive to use might want to avoid?
             panel.clear()
 
@@ -234,6 +234,15 @@ def print_schedulepad(stdscreen):
                     panel.attron(curses.color_pair(1))
                 panel.addstr(index + 1, 1, str(row))
                 panel.attroff(curses.color_pair(1))
+                if schedule[index].is_approved is False:
+                    panel.attron(curses.color_pair(2))
+                    panel.addstr(index + 1, 1, str(row))
+                    panel.attroff(curses.color_pair(2))
+#
+#                elif schedule[index].is_approved is True:
+#                    panel.attron(curses.color_pair(3))
+#                    panel.addstr(index + 1, 1, str(row))
+#                    panel.attroff(curses.color_pair(3))
 
         # panel.box()
         # panel.addstr(0, 1, "User_Token Is_Approved Is_Sent Pass_ID Created_Date Last_Modified Observation_Type Pass_Start_time")

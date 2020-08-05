@@ -66,12 +66,12 @@ class RequestData():
         elif self.is_approved is False:
             ad_status = "denied"
         else:
-            ad_status = " "
+            ad_status = "pending"
 
         if self._is_sent is True:
-            sent_status = "x"
+            sent_status = "Y"
         else:
-            sent_status = " "
+            sent_status = "N"
 
         loc = self.geo["name"] + ", " + self.geo["admin1"]
         return _STR_FORMAT.format(
