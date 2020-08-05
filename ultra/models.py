@@ -78,7 +78,7 @@ class Pass(db.Model):
     latitude : float
         Ground station's latitude for pass.
     longtitude : float
-        Ground station's longtitude for pass.
+        Ground station's longitude for pass.
     start_time : datetime
         UTC datetime when pass starts for observer.
     end_time : datetime
@@ -89,7 +89,7 @@ class Pass(db.Model):
     __tablename__ = 'pass'
     uid        = db.Column(db.Integer, db.Sequence('pass_uid_seq'), primary_key=True) # reference to pass uid
     latitude   = db.Column(db.Float, nullable=False)
-    longtitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
     start_time = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
     end_time   = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
     elevation  = db.Column(db.Float)
@@ -137,7 +137,7 @@ def testPassModel():
     Used to create a new Pass record and insert it into the database
     The second query list all requests stored in the database
     """
-    new_pass = Pass(latitude=11.0, longtitude=11.01, azimuth=3)
+    new_pass = Pass(latitude=11.0, longitude=11.01, azimuth=3)
     db.session.add(new_pass)
     db.session.commit()
 

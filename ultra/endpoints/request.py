@@ -76,7 +76,7 @@ class RequestEndpoint(Resource):
         try:
             pass_check = db.session.query(Pass).filter(
                     Pass.latitude == args["latitude"],
-                    Pass.longtitude == args["longitude"],
+                    Pass.longitude == args["longitude"],
                     Pass.start_time == aos_utc
                     ).all()
             if len(pass_check) != 0:
@@ -170,7 +170,7 @@ class RequestEndpoint(Resource):
         for u, p in result:
             pass_data = pc.orbitalpass.OrbitalPass(
                     gs_latitude_deg = p.latitude,
-                    gs_longitude_deg = p.longtitude,
+                    gs_longitude_deg = p.longitude,
                     gs_elevation_m =  p.elevation,
                     aos_utc = p.start_time,
                     los_utc = p.end_time,

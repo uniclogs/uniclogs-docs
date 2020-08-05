@@ -42,7 +42,7 @@ class RequestIdEndpoint(Resource):
 
         pass_data = pc.orbitalpass.OrbitalPass(
                 gs_latitude_deg = result.latitude,
-                gs_longitude_deg = result.longtitude,
+                gs_longitude_deg = result.longitude,
                 gs_elevation_m =  result.elevation,
                 aos_utc = result.start_time,
                 los_utc = result.end_time,
