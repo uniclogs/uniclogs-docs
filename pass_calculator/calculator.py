@@ -40,7 +40,7 @@ def pass_overlap(new_pass: OrbitalPass,
         """
         if (new_pass.aos_utc <= ap.aos_utc
             and new_pass.los_utc > ap.aos_utc) \
-            or (new_pass.aos_utc < ap.los_utc
+            and (new_pass.aos_utc < ap.los_utc
                 and new_pass.los_utc <= ap.los_utc):
             available = True  # pass overlap with an approved pass
             break  # no reason to check against any other approved passes
