@@ -171,7 +171,6 @@ def print_adrequest(stdscreen):
         if len(adrequest[ad_index].db_approved_overlap) == 0:
             stdscreen.addstr(2, 0, blank)
         else:
-            overlap_list = str(adrequest[ad_index].db_approved_overlap)
             stdscreen.addstr(2, 7, schedule_overlap)
         description = "Accept Deny Requests(Ordered By Date Created)"
         stdscreen.addstr(0, (width+1)//2 - len(description)//2, description)
