@@ -2,16 +2,16 @@ name: CoSI Unit Tests
 
 on:
   push:
-    branches: [ capstone-dev, cosi ]
+    branches: [ master, capstone-dev ]
   pull_request:
-    branches: [ capstone-dev, cosi ]
+    branches: [ master, capstone-dev ]
 
 jobs:
   build:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.8]
 
     runs-on: ${{ matrix.os }}
 
