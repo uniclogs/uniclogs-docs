@@ -5,7 +5,7 @@ from sqlalchemy import func, exc
 from loguru import logger
 import reverse_geocoder as rg
 import sys
-sys.path.insert(0, '..')
+sys.path.insert(0, '../..')
 from pass_calculator.calculator import pass_overlap
 
 
