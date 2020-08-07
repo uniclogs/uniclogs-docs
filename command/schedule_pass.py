@@ -113,7 +113,7 @@ class Schedule_Pass:
 
 
     def cancel_all(self):
-        """ Iterates through list to send ancels all pass requests staged in satellite
+        """ Iterates through list to cancel all pass requests staged in satellite
 
         Attributes
         ----------
