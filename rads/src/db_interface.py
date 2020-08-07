@@ -92,7 +92,6 @@ def query_new_requests():
     # find all overlap for approved request in db
     approved_req = query_upcomming_requests()
     for r in ret:
-        r.db_approved_overlap = []
         for a in approved_req:
             if pass_overlap(r.pass_data, [a.pass_data]) is True:
                 r.db_approved_overlap.append(a.id)
