@@ -2,16 +2,16 @@ name: Pass Calculator Unit Tests
 
 on:
   push:
-    branches: [ capstone-dev, pass-calculator ]
+    branches: [ master, capstone-dev ]
   pull_request:
-    branches: [ capstone-dev, pass-calculator ]
+    branches: [ master, capstone-dev ]
 
 jobs:
   build:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.8]
 
     runs-on: ${{ matrix.os }}
 
@@ -33,13 +33,3 @@ jobs:
 
     - name: Run unit tests
       run: pytest pass_calculator/tests/*
-      env:
-        SATNOGS_TOKEN: ${{ secrets.SATNOGS_TOKEN }}
-
-        SPACETRACK_USERNAME: ${{ secrets.SPACETRACK_USERNAME }}
-        SPACETRACK_PASSWORD: ${{ secrets.SPACETRACK_PASSWORD }}
-
-        DART_HOST: ${{ secrets.DART_HOST }}
-        DART_DB: ${{ secrets.DART_DB }}
-        DART_USERNAME: ${{ secrets.DART_USERNAME }}
-        DART_PASSWORD: ${{ secrets.DART_PASSWORD }}
