@@ -9,17 +9,13 @@ COMMAND ENGR_LINK ABORT BIG_ENDIAN "Aborts a collect"
 <% end %>
 
 COMMAND ENGR_LINK PASS_SCHEDULE BIG_ENDIAN "Schedule an Oresat Live Pass"
-  <%= render "_ccsds_cmd.txt", locals: {id: 1} %>
-  APPEND_ID_PARAMETER PKT_ID    16   UINT   MIN MAX 10   "Packet id"
-  APPEND_PARAMETER    PASS_ID   16   UINT   MIN MAX 1    "Pass id"
-  APPEND_PARAMETER    LATITUDE  64   FLOAT  41.990853   46.211947   1  "Latitude"
-  APPEND_PARAMETER    LONGITUDE 64   FLOAT  -116.926326 -124.001521 1  "Longitude"
-  APPEND_PARAMETER    AOS       256  STRING              "Acquisition of Signal"
-  <% Oregon Lat/Long coordinates as a box %>
-
+  APPEND_ID_PARAMETER PKT_ID    16   UINT   MIN MAX 10 "Packet id"
+  APPEND_PARAMETER    PASS_ID   16   UINT   MIN MAX 1  "Pass id"
+  APPEND_PARAMETER    LATITUDE  64   FLOAT  MIN MAX 1  "Latitude"
+  APPEND_PARAMETER    LONGITUDE 64   FLOAT  MIN MAX 1  "Longitude"
+  APPEND_PARAMETER    AOS       2048 STRING            "Acquisition of Signal"
 <%# TODO fill in other parameters so Oresat has all the info it needs about the pass %>
 
 COMMAND ENGR_LINK PASS_CANCEL BIG_ENDIAN "Cancel a scheduled Oresat Live Pass"
   APPEND_ID_PARAMETER PKT_ID  16 UINT MIN MAX 20 "Packet id"
   APPEND_PARAMETER    PASS_ID 16 UINT MIN MAX 1  "Pass id"
-

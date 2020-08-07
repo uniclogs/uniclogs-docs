@@ -1,10 +1,10 @@
-name: CoSI Unit Tests
+name: ULTRA Unit Tests
 
 on:
   push:
-    branches: [ capstone-dev, cosi ]
+    branches: [ capstone-dev, ultra ]
   pull_request:
-    branches: [ capstone-dev, cosi ]
+    branches: [ capstone-dev, ultra ]
 
 jobs:
   build:
@@ -26,13 +26,13 @@ jobs:
     - run: pip install flake8 pytest
 
     - name: Install dependencies
-      run: pip install -r cosi/requirements.txt
+      run: pip install -r ultra/requirements.txt
 
     - name: Lint code
-      run: flake8 ./cosi --count --select=E9,F63,F7,F82 --show-source --statistics
+      run: flake8 ./ultra --count --select=E9,F63,F7,F82 --show-source --statistics
 
     - name: Run unit tests
-      run: pytest cosi/tests/*
+      run: pytest ultra/tests/*
       env:
         SATNOGS_TOKEN: ${{ secrets.SATNOGS_TOKEN }}
 
@@ -41,5 +41,5 @@ jobs:
 
         DART_HOST: ${{ secrets.DART_HOST }}
         DART_DB: ${{ secrets.DART_DB }}
-        DART_USERNAME: ${{ secrets.COSI_USER_NAME }}
-        DART_PASSWORD: ${{ secrets.COSI_PASSWORD }}
+        DART_USERNAME: ${{ secrets.ULTRA_USER_NAME }}
+        DART_PASSWORD: ${{ secrets.ULTRA_PASSWORD }}
