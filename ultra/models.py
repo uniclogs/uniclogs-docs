@@ -95,24 +95,7 @@ class Pass(db.Model):
     elevation  = db.Column(db.Float)
 
     def __repr__(self):
-        return '<Pass {}, {}, {}>'.format(self.uid, self.latitude, self.longtitude)
-
-class PassRequest(db.Model):
-    """
-    Used to model PassRequest table in database.
-    This models a many-to-1 relationship from Pass to Request
-    Attributes
-    ----------
-    __tablename__ : str
-        The raw postgresql table name.
-    pass_uid : int
-        Reference to a pass uid.
-    req_token : str
-        Reference to unique token for each user.
-    """
-    __tablename__ = 'pass_requests'
-    pass_id       = db.Column(db.Integer, db.ForeignKey('pass.uid', ondelete="CASCADE"), primary_key=True)           # reference to pass uid
-    req_token     = db.Column(db.Text   , db.ForeignKey('requests.user_token', ondelete="CASCADE"), primary_key=True) # reference to token uid
+        return '<Pass {}, {}, {}>'.format(self.uid, self.latitude, self.longitude)
 
 
 class UserTokens(db.Model):

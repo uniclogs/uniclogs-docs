@@ -3,7 +3,7 @@ from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass, PassRequest, UserTokens, get_random_string
+from models import Request, Tle, Pass, UserTokens, get_random_string
 from loguru import logger
 
 import sys
@@ -84,51 +84,43 @@ class RequestEndpoint(Resource):
         except:
             return {"Error" : "internal TLE error"}, 400
 
-        new_pass = Pass(
-                latitude = args["latitude"],
-                longtitude = args["longitude"],
-                elevation = args["elevation_m"],
-                start_time = aos_utc,
-                end_time = los_utc
-                )
+        try:
+            new_pass = Pass(
+                    latitude = args["latitude"],
+                    longitude = args["longitude"],
+                    elevation = args["elevation_m"],
+                    start_time = aos_utc,
+                    end_time = los_utc
+                    )
 
-        db.session.add(new_pass)
-        db.session.flush()
+            db.session.add(new_pass)
+            db.session.flush()
 
-        user_token = get_random_string(4) + args["user_uid"] + get_random_string(4)
+            user_token = get_random_string(4) + args["user_uid"] + get_random_string(4)
 
-        new_request = Request(
-                user_token = user_token,
-                is_approved = False,
-                is_sent = False,
-                pass_uid = new_pass.uid
-        )
+            new_request = Request(
+                    user_token = user_token,
+                    is_approved = False,
+                    is_sent = False,
+                    pass_uid = new_pass.uid
+            )
 
-        db.session.add(new_request)
-        db.session.flush()
+            db.session.add(new_request)
+            db.session.flush()
 
-        new_user_token = UserTokens(
-                token = new_request.user_token,
-                user_id = args["user_uid"]
-        )
+            new_user_token = UserTokens(
+                    token = new_request.user_token,
+                    user_id = args["user_uid"]
+            )
 
-        db.session.add(new_user_token)
-        db.session.flush()
-
-
-
+            db.session.add(new_user_token)
+            db.session.flush()
 
 
-        new_pass_request = PassRequest(
-                pass_id = new_pass.uid,
-                req_token = new_request.user_token
-                )
+            db.session.commit()
 
-        db.session.add(new_pass_request)
-        db.session.flush()
-
-        db.session.commit()
-
+        except:
+            db.session.rollback() 
         return {
                 "message": "New request submitted.",
                 "request_id": new_request.uid

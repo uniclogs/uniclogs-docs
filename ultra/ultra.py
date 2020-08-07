@@ -1,5 +1,5 @@
 import log_interface
-from endpoints import PassesEndpoint, RequestEndpoint, RequestIdEndpoint
+from endpoints import PassesEndpoint, RequestEndpoint, RequestIdEndpoint, UserTokenEndpoint
 from flask import Flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
@@ -32,6 +32,7 @@ app.config["RESTFUL_JSON"] = {
 api.add_resource(PassesEndpoint, '/passes')
 api.add_resource(RequestEndpoint, '/request')
 api.add_resource(RequestIdEndpoint, '/request/<int:request_id>')
+api.add_resource(UserTokenEndpoint, '/user_token')
 
 
 def run():

@@ -3,7 +3,7 @@ from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass, PassRequest, UserTokens
+from models import Request, Tle, Pass, UserTokens
 from loguru import logger
 
 import sys
@@ -31,6 +31,7 @@ class RequestIdEndpoint(Resource):
 
         try:
             result = db.session.query(Pass)\
+                           .with_lockmode('read') \
                            .join(Request, Pass.uid == Request.pass_uid)\
                            .filter(Request.uid == request_id)\
                            .one()
@@ -70,19 +71,33 @@ class RequestIdEndpoint(Resource):
 
         args = parser.parse_args()
 
+        request = None
+        try:
+            request = db.session.query(Request)\
+                    .with_lockmode('read') \
+                   .filter(Request.uid == request_id)\
+                   .one()
+        except Exception as e:
+            logger.error(e)
+            return {"Error" : "No matching pass or wrong user token"}, 400
+
+        if request is None or request.is_approved:
+                return {"Error" : "Request doesn't exist or is already approved"}, 400
 
         try:
             result = db.session.query(Pass)\
-                   .join(Request, Pass.uid == Request.pass_uid)\
-                   .filter(Request.uid == request_id)\
+                   .with_lockmode('update') \
+                   .filter(Pass.uid == request.pass_uid)\
                    .one()
-        except DbException:
-            return {"Error" : "No matching pass or wrong user token"}, 400
+        except Exception as e:
+            logger.error(e)
+            return {"Error" : "No matching pass or wrong assigned pass_uid"}, 400
 
         try:
             latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
             latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
-        except:
+        except Exception as e:
+            logger.error(e)
             return {"Error" : "internal TLE error"}, 400
 
         tle = [latest_tle.first_line, latest_tle.second_line]
@@ -91,7 +106,8 @@ class RequestIdEndpoint(Resource):
         try:
             aos_utc = inputs.datetime_from_iso8601(args["aos_utc"])
             los_utc = inputs.datetime_from_iso8601(args["los_utc"])
-        except:
+        except Exception as e:
+            logger.error(e)
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
         input_orbital_pass = pc.orbitalpass.OrbitalPass(
@@ -111,7 +127,7 @@ class RequestIdEndpoint(Resource):
 
         # update entry
         result.latitude = input_orbital_pass.gs_latitude_deg,
-        result.longtitude = input_orbital_pass.gs_longitude_deg,
+        result.longitude = input_orbital_pass.gs_longitude_deg,
         result.elevation = input_orbital_pass.gs_elevation_m,
         result.horizon_deg = input_orbital_pass.horizon_deg,
         result.start_time = input_orbital_pass.aos_utc,
@@ -136,19 +152,10 @@ class RequestIdEndpoint(Resource):
                    .filter(Request.uid == request_id)\
                    .one()
 
-            pass_request_result = db.session.query(PassRequest)\
-                   .filter(PassRequest.req_token == request_result.user_token)\
-                   .all()
-
             #db.session.delete(request_result)
             #db.session.flush()
-            pass_list = []
+            pass_id = request_result.pass_uid
 
-            for p in pass_request_result:
-                pass_list.append(p.pass_id)
-                db.session.delete(p)
-
-            db.session.flush()
 
             user_tokens = db.session.query(UserTokens)\
                     .filter(UserTokens.token == request_result.user_token)\
@@ -162,13 +169,15 @@ class RequestIdEndpoint(Resource):
             db.session.delete(request_result) # NOTE or should flip a flag?
             db.session.flush()
 
-            for p in pass_list:
-                obj = db.session.query(Pass).filter(Pass.uid == p).one()
-                if obj:
-                    db.session.delete(obj)
 
-            db.session.flush()
+            obj = db.session.query(Pass).filter(Pass.uid == pass_id).one()
+            if obj:
+                db.session.delete(obj)
+                db.session.flush()
+
             db.session.commit()
+
+
 
         except Exception as e:
             logger.error(e)
