@@ -100,7 +100,7 @@ def print_adrequest(stdscreen):
 
        # elif key == curses.KEY_F1:
         elif key == 97: #a = 97 Approve
-            if adrequest[ad_index].db_approved_overlap == 0:
+            if len(adrequest[ad_index].db_approved_overlap) == 0:
               adrequest[ad_index].is_approved = True
             for index, row in enumerate(adrequest):
                 if adrequest[index].id in adrequest[ad_index].new_overlap:
