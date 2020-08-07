@@ -4,6 +4,9 @@ from datetime import datetime
 from sqlalchemy import func, exc
 from loguru import logger
 import reverse_geocoder as rg
+import sys
+sys.path.insert(0, '..')
+from pass_calculator.calculator import pass_overlap
 
 
 def _fill_request_data(results):
@@ -69,6 +72,7 @@ def query_new_requests():
     """
 
     ret = []
+    approved_req = []
     session = Session()
 
     try:
@@ -84,6 +88,20 @@ def query_new_requests():
     finally:
         ret = _fill_request_data(result)
         session.close()
+
+    # find all overlap for approved request in db
+    approved_req = query_upcomming_requests()
+    for r in ret:
+        for a in approved_req:
+            if pass_overlap(r.pass_data, [a.pass_data]) is True:
+                r.db_approved_overlap.append(a.id)
+
+    # find all overlap for new request
+    for i in range(len(ret)):
+        for j in range(i):
+            if pass_overlap(ret[i].pass_data, [ret[j].pass_data]) is True:
+                ret[i].new_overlap.append(ret[j].id)
+                ret[j].new_overlap.append(ret[i].id)
 
     return ret
 
