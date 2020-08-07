@@ -1,24 +1,41 @@
 AUTHOR="Dmitri McGuckin"
 DESCRIPTION="A modification of the cosmos docker image customized for oresat mission server."
-IMAGE_NAME=ms-cosmos
-CONTAINER_NAME=cosmos
-REMOTE_CONTAINER_NAME=dmitrimcguuckin/$(IMAGE_NAME):latest
+CONTAINER=cosmos
+LOCAL_IMAGE=ms-cosmos
+REMOTE_IMAGE=dmitrimcguuckin/$(LOCAL_IMAGE):latest
+
+IMAGE=$(REMOTE_IMAGE)
+USE_LOCAL_BUILD=1
+START_INTERACTIVE_MODE=0
 
 build:
-	docker build --compress --network=host --build-arg DART_DB=$(DART_TEST_DB) --build-arg DART_USERNAME=$(DART_USERNAME) --build-arg DART_PASSWORD=$(DART_PASSWORD) --force-rm --tag $(IMAGE_NAME) .
+	docker build --compress --network=host --build-arg DART_DB=$(DART_DB) --build-arg DART_USERNAME=$(DART_USERNAME) --build-arg DART_PASSWORD=$(DART_PASSWORD) --force-rm --tag $(LOCAL_IMAGE) .
 
 run:
-	docker run --tty --interactive --detach --name $(CONTAINER_NAME) --network=host --ipc=host --env DART_DB=$(DART_TEST_DB) --env DART_USERNAME=$(DART_USERNAME) --env DART_PASSWORD=$(DART_PASSWORD) --env DISPLAY=$(DISPLAY) --volume $(XAUTH):/root/.Xauthority --volume /var/run/postgresql/.s.PGSQL.5432:/var/run/postgresql/.s.PGSQL.5432 $(IMAGE_NAME)
+ifeq ($(USE_LOCAL_BUILD), 1)
+	$(info Prioritizing local build)
+	$(eval IMAGE=$(LOCAL_IMAGE))
+endif
+
+ifeq ($(START_INTERACTIVE_MODE), 1)
+	$(info Interactive mode enabled)
+	$(eval FLAGS=--interactive)
+endif
+
+	docker run --tty $(FLAGS) --detach --name $(CONTAINER) --network=host --ipc=host --env DART_DB=$(DART_DB) --env DART_USERNAME=$(DART_USERNAME) --env DART_PASSWORD=$(DART_PASSWORD) --env DISPLAY=$(DISPLAY) --volume $(XAUTH):/root/.Xauthority --volume /var/run/postgresql/.s.PGSQL.5432:/var/run/postgresql/.s.PGSQL.5432 $(IMAGE)
 
 deploy:
-	docker commit -a $(AUTHOR) -m $(DESCRIPTION) $(CONTAINER_NAME) $(REMOTE_CONTAINER_NAME)
-	docker push $(REMOTE_CONTAINER_NAME)
+	docker commit -a $(AUTHOR) -m $(DESCRIPTION) $(CONTAINER) $(REMOTE_IMAGE)
+	docker push $(REMOTE_IMAGE)
+
+kill:
+	docker container kill $(CONTAINER)
 
 clean:
 	docker container prune -f
 
 start:
-	docker start --attach --interactive $(CONTAINER_NAME)
+	docker start --attach --interactive $(CONTAINER)
 
 attach:
-	docker attach $(CONTAINER_NAME)
+	docker attach $(CONTAINER)

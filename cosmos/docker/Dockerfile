@@ -59,4 +59,4 @@ RUN rm -rf /opt/*
 RUN mv /cosmos /opt
 WORKDIR /opt/cosmos
 RUN bundle install
-CMD ruby tools/CmdTlmServer --no-gui
+CMD ruby tools/Dart && ruby tools/CmdTlmServer --no-gui
