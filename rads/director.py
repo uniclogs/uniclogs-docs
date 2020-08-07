@@ -5,10 +5,10 @@ import log_interface
 from db_interface import query_new_requests, query_archived_requests,\
         query_upcomming_requests, update_approve_deny
 from request_data import RequestHeader
-
+from pass_calculator.calculator import pass_overlap
 
 #To prevent screen flickering
-WAIT_TIME = 0.1
+WAIT_TIME = 0.07
 
 
 def print_menu(stdscreen, menu, current_row_index):
@@ -86,20 +86,23 @@ def print_adrequest(stdscreen):
         # lower bound case
         if key == curses.KEY_UP and ad_index > 0:
             ad_index -= 1
+            panel.refresh(ad_index, 0, 3, 1, draw_height, width)
         # upper bound case
         elif key == curses.KEY_DOWN and ad_index < len(adrequest)-1:
             ad_index += 1
+            panel.refresh(ad_index, 0, 3, 1, draw_height, width)
         elif(key == 99): #c = 99 Exit without Saving
             loop = False
-        elif(key == 115): #s = 115 Exit without Saving
+        elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(adrequest)
+            #TODO Update COSMOS
             loop = False
 
        # elif key == curses.KEY_F1:
         elif key == 97: #a = 97 Approve
             adrequest[ad_index].is_approved = True
             for index, row in enumerate(adrequest):
-                if adrequest[index].pass_id == adrequest[ad_index].pass_id and index != ad_index:
+                if adrequest[index].id in adrequest[ad_index].new_overlap:
                     adrequest[index].is_approved = False
             # expensive to use might want to avoid?
             panel.clear() 
@@ -109,8 +112,9 @@ def print_adrequest(stdscreen):
             panel.clear()
         elif key == 119: #w = 100 Set all Requests with the same pass to pending (Used to Undo Accept)            
             for index, row in enumerate(adrequest):
-                if adrequest[index].pass_id == adrequest[ad_index].pass_id:
+                if adrequest[index].id in adrequest[ad_index].new_overlap:
                     adrequest[index].is_approved = None
+            adrequest[ad_index].is_approved = None
             # expensive to use might want to avoid?
             panel.clear()
 
@@ -144,7 +148,7 @@ def print_adrequest(stdscreen):
                     panel.attron(curses.color_pair(3))
                     panel.addstr(index + 1, 1, str(row))
                     panel.attroff(curses.color_pair(3))
-                elif adrequest[index].pass_id == adrequest[ad_index].pass_id and index != ad_index:
+                elif adrequest[index].id in adrequest[ad_index].new_overlap:
                     panel.attron(curses.color_pair(4))
                     panel.addstr(index + 1, 1, str(row))
                     panel.attroff(curses.color_pair(4))
@@ -207,9 +211,11 @@ def print_schedulepad(stdscreen):
             schedule_index += 1
         elif(key == 99): #c = 99 Exit without Saving
             loop = False
-        elif(key == 115): #s = 115 Exit without Saving
+        elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(schedule)
+            #TODO UPDATE COSMO
             loop = False
+           
 
         elif key == 97: #a = 97
             schedule[schedule_index].is_approved = True
