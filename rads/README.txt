@@ -1,1 +1,3 @@
-To run RADS program, use python3 director.py
+To run RADS program,
+pip3 install -r requirements.txt
+use python3 director.py

@@ -22,7 +22,6 @@ class RequestData():
     _updated_dt = None
     _observation_type = None
     _data_updated = False
-    geo = None  # doesn't need to be a property
 
     def __init__(
             self,
@@ -55,6 +54,13 @@ class RequestData():
         self._created_dt = created_dt
         self._updated_dt = updated_dt
         self._observation_type = observation_type
+
+        # dont need to be properties
+        # also are faster to handle with a list of RequestData objects
+        # make sure these are differnt for every obj
+        self.geo = None
+        self.db_approved_overlap = []
+        self.new_overlap = []
 
     def __str__(self):
         obs_type = self._observation_type

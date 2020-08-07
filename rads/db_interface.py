@@ -4,6 +4,9 @@ from datetime import datetime
 from sqlalchemy import func, exc
 from loguru import logger
 import reverse_geocoder as rg
+import sys
+sys.path.insert(0, '..')
+from pass_calculator.calculator import pass_overlap
 
 
 def _fill_request_data(results):
@@ -68,6 +71,8 @@ def query_new_requests():
         A list of all new pass requests in acending created datetime order.
     """
 
+    ret = []
+    approved_req = []
     session = Session()
 
     try:
@@ -78,13 +83,25 @@ def query_new_requests():
                     Request.is_approved.is_(None))\
             .order_by(Request.created_date.asc())\
             .all()
-    except Exception as e:
+    except exc.SQLAlchemyError as e:
         logger.critical("Database query failed {}".format(e))
-        return []
+    finally:
+        ret = _fill_request_data(result)
+        session.close()
 
-    ret = _fill_request_data(result)
+    # find all overlap for approved request in db
+    approved_req = query_upcomming_requests()
+    for r in ret:
+        for a in approved_req:
+            if pass_overlap(r.pass_data, [a.pass_data]) is True:
+                r.db_approved_overlap.append(a.id)
 
-    session.close()
+    # find all overlap for new request
+    for i in range(len(ret)):
+        for j in range(i):
+            if pass_overlap(ret[i].pass_data, [ret[j].pass_data]) is True:
+                ret[i].new_overlap.append(ret[j].id)
+                ret[j].new_overlap.append(ret[i].id)
 
     return ret
 
@@ -99,6 +116,7 @@ def query_upcomming_requests():
         A list of upcomming approved pass requests in acending AOS order.
     """
 
+    ret = []
     session = Session()
 
     try:
@@ -109,14 +127,11 @@ def query_upcomming_requests():
                     Request.is_approved.is_(True))\
             .order_by(Pass.start_time.asc())\
             .all()
-    except Exception as e:
+    except exc.SQLAlchemyError as e:
         logger.critical("Database query failed {}".format(e))
+    finally:
+        ret = _fill_request_data(result)
         session.close()
-        return []
-
-    ret = _fill_request_data(result)
-
-    session.close()
 
     return ret
 
@@ -131,6 +146,7 @@ def query_archived_requests():
         A list of archive pass requests in descending AOS order.
     """
 
+    ret = []
     session = Session()
 
     try:
@@ -140,14 +156,11 @@ def query_archived_requests():
             .filter(Pass.start_time <= datetime.utcnow())\
             .order_by(Pass.start_time.desc())\
             .all()
-    except Exception as e:
+    except exc.SQLAlchemyError as e:
         logger.critical("Database query failed {}".format(e))
+    finally:
+        ret = _fill_request_data(result)
         session.close()
-        return []
-
-    ret = _fill_request_data(result)
-
-    session.close()
 
     return ret
 
@@ -161,6 +174,7 @@ def query_tle():
     [str]
         TLE data in the format of [tle_line1, tle_line2]
     """
+    tle = []
     session = Session()
 
     try:
@@ -173,12 +187,10 @@ def query_tle():
             .one()
 
         tle = [latest_tle.first_line, latest_tle.second_line]
-    except Exception as e:
+    except exc.SQLAlchemyError as e:
         logger.critical("Database query failed {}".format(e))
+    finally:
         session.close()
-        return []
-
-    session.close()
 
     return tle
 
@@ -199,11 +211,13 @@ def update_approve_deny(request_list):
     """
 
     ret = 0
-    session = Session()
 
     for r in request_list:
         if r.updated is False:
             continue
+
+        session = Session(autocommit=True)
+        session.begin()
 
         try:
             # find the matching reuqest and check if pass data are the same
@@ -223,15 +237,17 @@ def update_approve_deny(request_list):
                 .filter(Request.uid == r.id)\
                 .update({Request.is_approved: r.is_approved,
                         Request.updated_date: datetime.utcnow()})
+
+            session.commit()
         except exc.SQLAlchemyError as e:
+            session.rollback()
             logger.critical(
                     "approved status update failed for request {} with {}"
                     .format(r.id, e)
                     )
             ret += 1
             continue
-
-    session.commit()
-    session.close()
+        finally:
+            session.close()
 
     return ret
