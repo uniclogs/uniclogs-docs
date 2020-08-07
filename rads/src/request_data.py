@@ -1,13 +1,14 @@
 from datetime import datetime
 
 import sys
-sys.path.insert(0, '..')
+sys.path.insert(0, '../..')
 from pass_calculator.orbitalpass import OrbitalPass
 
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
-_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:7} |{:19} | {:19} | {:9.5f} | {:10.5f} | {:7.2f}"
-RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:7} | {:19} | {:19} | {:9} | {:10} | {:7}".format("ID", "Status", "Type", "Created", "Pass ID", "AOS", "LOS", "Latitude", "Longitude", "Elevation (m)")
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:19} | {:^5} | {:7} | {:19} | {:19} | {:30} | {:9.5f} | {:10.5f} | {:7.2f}"
+RequestHeader = "{:>7} | {:8} | {:15} | {:19} | {:5} | {:7} | {:19} | {:19} | {:30} | {:9} | {:10} | {:7}".format(
+        "ID", "Status", "Type", "Created", "Sent", "Pass ID", "AOS", "LOS", "City, State", "Latitude", "Longitude", "Elevation (m)")
 
 
 class RequestData():
@@ -18,6 +19,7 @@ class RequestData():
     _is_approved = False
     _is_sent = False
     _created_dt = None
+    _updated_dt = None
     _observation_type = None
     _data_updated = False
 
@@ -29,6 +31,7 @@ class RequestData():
             is_approved: bool,
             is_sent: bool,
             created_dt: datetime,
+            updated_dt: datetime,
             observation_type: str,
             latitude: float,
             longitude: float,
@@ -49,7 +52,15 @@ class RequestData():
         self._is_approved = is_approved
         self._is_sent = is_sent
         self._created_dt = created_dt
+        self._updated_dt = updated_dt
         self._observation_type = observation_type
+
+        # dont need to be properties
+        # also are faster to handle with a list of RequestData objects
+        # make sure these are differnt for every obj
+        self.geo = None
+        self.db_approved_overlap = []
+        self.new_overlap = []
 
     def __str__(self):
         obs_type = self._observation_type
@@ -61,20 +72,32 @@ class RequestData():
         elif self.is_approved is False:
             ad_status = "denied"
         else:
-            ad_status = " "
+            ad_status = "pending"
 
+        if self._is_sent is True:
+            sent_status = "Y"
+        else:
+            sent_status = "N"
+
+        loc = self.geo["name"] + ", " + self.geo["admin1"]
         return _STR_FORMAT.format(
                 self._id,
                 ad_status,
                 obs_type,
                 self._created_dt.strftime(_DT_STR_FORMAT),
+                sent_status,
                 self._pass_id,
                 self._pass_data.aos_utc.strftime(_DT_STR_FORMAT),
                 self._pass_data.los_utc.strftime(_DT_STR_FORMAT),
+                loc,
                 self._pass_data.gs_latitude_deg,
                 self._pass_data.gs_longitude_deg,
                 self._pass_data.gs_elevation_m
                 )
+
+    @property
+    def id(self):
+        return self._id
 
     @property
     def user_token(self):
@@ -97,9 +120,6 @@ class RequestData():
         if self.pass_data.aos_utc > datetime.utcnow():
             self._is_approved = value
             self._data_updated = True
-            print("aproved")
-        else:
-            print("aproved failed")
 
     @property
     def is_sent(self):
@@ -108,6 +128,10 @@ class RequestData():
     @property
     def created_dt(self):
         return self._created_dt
+
+    @property
+    def updated_dt(self):
+        return self._updated_dt
 
     @property
     def observation_type(self):

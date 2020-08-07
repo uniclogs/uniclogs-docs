@@ -4,26 +4,29 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from os import getenv
 import datetime
+import sys
 
-
-PSQL_USERNAME = getenv('RADS_USER_NAME')
-PSQL_PASSWORD = getenv('RADS_PASSWORD')
+PSQL_USERNAME = getenv('DART_USERNAME')
+PSQL_PASSWORD = getenv('DART_PASSWORD')
 PSQL_HOST = getenv('DART_HOST')
 PSQL_PORT = getenv('DART_PORT')
 PSQL_DB = getenv('DART_DB')
+if None in [PSQL_USERNAME, PSQL_PASSWORD, PSQL_HOST, PSQL_PORT, PSQL_DB]:
+    print("Environment variables not found.")
+    sys.exit(0)
 
-Base = declarative_base()
-
-DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'
-DATABASE_URI = DATABASE_URI.format(
+DATABASE_URI = 'postgresql://{}:{}@{}:{}/{}'.format(
     PSQL_USERNAME,
     PSQL_PASSWORD,
     PSQL_HOST,
     PSQL_PORT,
     PSQL_DB
     )
+
 engine = create_engine(DATABASE_URI)
 Session = sessionmaker(bind=engine)  # factory of sessions
+
+Base = declarative_base()
 
 
 class Tle(Base):
@@ -70,8 +73,8 @@ class Pass(Base):
         Unique id for a pass.
     latitude : float
         Ground station's latitude for pass.
-    longtitude : float
-        Ground station's longtitude for pass.
+    longitude : float
+        Ground station's longitude for pass.
     start_time : datetime
         UTC datetime when pass starts for observer.
     end_time : datetime
@@ -82,7 +85,7 @@ class Pass(Base):
     __tablename__ = 'pass'
     uid = Column(Integer, Sequence('pass_uid_seq'), primary_key=True)
     latitude = Column(Float, nullable=False)
-    longtitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
     start_time = Column(DateTime(
         timezone=False),
         nullable=False,
@@ -99,7 +102,7 @@ class Pass(Base):
         return '<Pass {}, {}, {}>'.format(
                 self.uid,
                 self.latitude,
-                self.longtitude
+                self.longitude
                 )
 
 
@@ -138,32 +141,15 @@ class Request(Base):
             nullable=False,
             default=datetime.datetime.utcnow()
             )
+    updated_date = Column(
+            DateTime(timezone=False),
+            nullable=False,
+            default=datetime.datetime.utcnow()
+            )
     pass_data = relationship("Pass", foreign_keys=[pass_uid])
 
     def __repr__(self):
         return '<Ticket {}>'.format(self.user_token)
-
-
-class PassRequest(Base):
-    """
-    Used to model PassRequest table in database.
-
-    Attributes
-    ----------
-    __tablename__ : str
-        The raw postgresql table name.
-    pass_uid : int
-        Reference to a pass uid.
-    req_token : str
-        Reference to a unique token for each user.
-    """
-    __tablename__ = 'pass_requests'
-    pass_id = Column(Integer, ForeignKey('pass.uid'), primary_key=True)
-    req_token = Column(
-            Text,
-            ForeignKey('requests.user_token'),
-            primary_key=True
-            )
 
 
 class UserTokens(Base):
