@@ -2,7 +2,7 @@ import sys
 import random
 import string
 import getopt
-sys.path.insert(0, '..')
+sys.path.insert(0, '../src')
 from models import Request, Pass, Tle, Session
 from datetime import datetime, timezone, timedelta
 sys.path.insert(0, '../..')
