@@ -20,7 +20,6 @@ COMMAND ENGR_LINK PASS_SCHEDULE BIG_ENDIAN "Schedule an Oresat Live Pass"
 <%# TODO fill in other parameters so Oresat has all the info it needs about the pass %>
 
 COMMAND ENGR_LINK PASS_CANCEL BIG_ENDIAN "Cancel a scheduled Oresat Live Pass"
-  <%= render "_ccsds_cmd.txt", locals: {id: 2} %>
   APPEND_ID_PARAMETER PKT_ID  16 UINT MIN MAX 20 "Packet id"
   APPEND_PARAMETER    PASS_ID 16 UINT MIN MAX 1  "Pass id"
 
