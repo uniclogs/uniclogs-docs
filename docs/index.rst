@@ -12,22 +12,40 @@ Glossary
     glossary
 
 
-Public API
-==========
+ULTRA
+=====
 
 .. toctree::
     :maxdepth: 2
 
-    public_api/index
+    ultra/index
 
 
-Internal
-========
+RADS
+====
 
 .. toctree::
     :maxdepth: 2
 
-    internal/index
+    rads/rads
+
+
+CoSI
+====
+
+.. toctree::
+    :maxdepth: 2
+
+    cosi/cosi
+
+
+Pass Calculator
+===============
+
+.. toctree::
+    :maxdepth: 2
+
+    pass_calculator/pass_calculator
 
 
 Indices and tables
