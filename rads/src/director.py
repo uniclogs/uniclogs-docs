@@ -6,6 +6,9 @@ from db_interface import query_new_requests, query_archived_requests,\
         query_upcomming_requests, update_approve_deny
 from request_data import RequestHeader
 from pass_calculator.calculator import pass_overlap
+import sys
+sys.path.append('../../command')
+from schedule_pass import *  
 
 #To prevent screen flickering
 WAIT_TIME = 0.07
@@ -95,7 +98,8 @@ def print_adrequest(stdscreen):
             loop = False
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(adrequest)
-            #TODO Update COSMOS
+            ### Update added to connect to COSMOS ###
+            Schedule_Pass.schedule_all(adrequest)
             loop = False
 
        # elif key == curses.KEY_F1:
@@ -226,7 +230,8 @@ def print_schedulepad(stdscreen):
             loop = False
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(schedule)
-            #TODO UPDATE COSMO
+            ### UPDATE to connect to COSMOS
+            Schedule_Pass.schedule_all(schedule)
             loop = False
            
 
