@@ -36,7 +36,7 @@ class PassesEndpoint(Resource):
         parser.add_argument("elevation_m", type=float)
         args = parser.parse_args()
 
-        # get latest LTE from DB
+        # get latest TLE from DB
         try:
             latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
             latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()

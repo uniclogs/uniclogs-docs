@@ -49,3 +49,37 @@ class UserTokenEndpoint(Resource):
             return {"Error" : "No user token or invalid request token "}, 400
 
         return json.dumps(requests, cls=UserTokenJsonEncoder)
+
+    def post(self):
+        # type: () -> str, int
+        """
+        Makes a new request token for a user.
+
+        Returns
+        -------
+        str
+            New UserToken data as a JSON or a error message.
+        int
+            error code
+        """
+
+        parser = reqparse.RequestParser()
+        parser.add_argument("request_token", type=inputs.regex('^\w{1,25}$'), required=True, location="json")
+        parser.add_argument("user_id", type=inputs.regex('^\w{1,35}$'), required=True, location="json")
+        args = parser.parse_args()
+
+        try:
+            new_user_token = UserTokens(
+                    token = args["request_token"],
+                    user_id = args["user_id"]
+            )
+
+            db.session.add(new_user_token)
+            db.session.commit()
+
+        except:
+            db.session.rollback()
+        return {
+                "message": "New UserToken submitted.",
+                "user_id": args["user_id"]
+                }

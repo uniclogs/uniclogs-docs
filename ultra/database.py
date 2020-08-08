@@ -3,6 +3,7 @@ from os import getenv
 
 db = SQLAlchemy()
 
+
 def init_db(app):
     """
     This function seting the postgresql DBlink to the datbase

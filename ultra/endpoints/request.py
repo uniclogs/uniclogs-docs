@@ -100,7 +100,7 @@ class RequestEndpoint(Resource):
 
             new_request = Request(
                     user_token = user_token,
-                    is_approved = False,
+                    is_approved = None,
                     is_sent = False,
                     pass_uid = new_pass.uid
             )
@@ -120,7 +120,7 @@ class RequestEndpoint(Resource):
             db.session.commit()
 
         except:
-            db.session.rollback() 
+            db.session.rollback()
         return {
                 "message": "New request submitted.",
                 "request_id": new_request.uid

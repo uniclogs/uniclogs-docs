@@ -1,4 +1,7 @@
-import sys, os, getopt
+#!/usr/bin/env python3
+import sys
+import os
+import getopt
 import ultra
 
 

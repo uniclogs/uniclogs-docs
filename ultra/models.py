@@ -1,5 +1,3 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from database import db
 import datetime
 import random
@@ -36,10 +34,11 @@ class Request(db.Model):
     pass_uid      = db.Column(db.Integer, db.ForeignKey('pass.uid', ondelete="CASCADE"), nullable=False) # reference to pass uid
     created_date  = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
     updated_date  = db.Column(db.DateTime(timezone=False), nullable=False, default=datetime.datetime.utcnow())
-    observation_type = db.Column(db.String(120), nullable=True) #String {“uniclogs”, “oresat live”, “CFC”}
+    observation_type = db.Column(db.String(120)) #String {“uniclogs”, “oresat live”, “CFC”}
 
     def __repr__(self):
         return '<Ticket {}>'.format(self.user_token)
+
 
 class Tle(db.Model):
     """
@@ -65,6 +64,7 @@ class Tle(db.Model):
 
     def __repr__(self):
         return '<TLE {}, {}>'.format(self.header_text, self.time_added)
+
 
 class Pass(db.Model):
     """
@@ -115,6 +115,66 @@ class UserTokens(db.Model):
     token = db.Column(db.Text, db.ForeignKey('requests.user_token', ondelete="CASCADE"), primary_key=True) # reference to token uid
     user_id = db.Column(db.String(120), nullable=False, primary_key=True)
 
+
+class Items(db.Model):
+    """
+    Used to model the items table in database.
+    """
+    __tablename__ = 'items'
+    id = db.Column(db.BigInteger, nullable=False, primary_key=True)
+    name = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=False), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=False), nullable=False)
+    packet_id = db.Column(db.Integer)
+
+
+class ItemToDecomTableMappings(db.Model):
+    """
+    Used to model the item_to_decom_table_mappings table in database.
+    """
+    __tablename__ = 'item_to_decom_table_mappings'
+    id = db.Column(db.BigInteger, nullable=False, primary_key=True)
+    item_id = db.Column(db.Integer, nullable=False)
+    packet_config_id = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime(timezone=False), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=False), nullable=False)
+    value_type = db.Column(db.Integer)
+    item_index = db.Column(db.Integer)
+    table_index = db.Column(db.Integer)
+    reduced = db.Column(db.Boolean)
+
+
+class T2_0(db.Model):
+    """
+    Used to model the t2_0 table in database.
+    This models a many-to-many relationship between Request and User
+    Attributes
+    ----------
+    __tablename__ : `str` The raw postgresql table name.
+    """
+    __tablename__ = 't2_0'
+    id = db.Column(db.BigInteger, nullable=False, primary_key=True)
+    time = db.Column(db.DateTime(timezone=False))
+    ple_id = db.Column(db.BigInteger)
+    meta_id = db.Column(db.BigInteger)
+    reduced_id = db.Column(db.BigInteger)
+    packet_log_id = db.Column(db.Integer,
+                              db.ForeignKey('packet_logs.id',
+                                            ondelete="CASCADE"))
+    reduced_state = db.Column(db.Integer, default=0)
+    i0 = db.Column(db.Float(precision=2))
+    i1 = db.Column(db.Text)
+    i2 = db.Column(db.Float(precision=2))
+    i3 = db.Column(db.Text)
+    i4 = db.Column(db.Integer)
+    i5 = db.Column(db.Integer)
+    i6 = db.Column(db.Integer)
+    i7 = db.Column(db.Integer)
+    i8 = db.Column(db.Integer)
+    i9 = db.Column(db.Integer)
+    i10 = db.Column(db.Integer)
+
+
 def testPassModel():
     """
     Used to create a new Pass record and insert it into the database
@@ -124,9 +184,10 @@ def testPassModel():
     db.session.add(new_pass)
     db.session.commit()
 
-    #We query the list of request stored in the database
+    # We query the list of request stored in the database
     pass_list = Pass.query.all()
     print(pass_list)
+
 
 def testTleModel():
     """
@@ -141,7 +202,7 @@ def testTleModel():
     db.session.add(new_tle)
     db.session.commit()
 
-    #We query the list of request stored in the database
+    # We query the list of request stored in the database
     tle_list = Tle.query.all()
     print(tle_list)
 
@@ -153,6 +214,7 @@ def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
+
 
 def testRequestModel():
     """
