@@ -1,10 +1,6 @@
 import requests
 import json
-from .common import SPACETRACK_LOGIN, \
-                    SPACETRACK_USERNAME, \
-                    SPACETRACK_PASSWORD, \
-                    SPACETRACK_TLE, \
-                    EnvironmentVariableNotDefined
+import cosi
 
 
 class TLERequestFailed(Exception):
@@ -15,8 +11,8 @@ class TLERequestFailed(Exception):
 
     Attributes
     ---------
-    args : Error details
-        In-length details about what broke.
+    reason: `str` In-length details about what broke.
+    response: `dict` The HTTP response body from spacetrack
     """
 
     def __init___(self, reason: str, response: dict):
@@ -25,38 +21,57 @@ class TLERequestFailed(Exception):
         self.response = response
 
 
-def request_tle(norad_id):
-    """Makes a request to space-track.org for the latest TLE of a satellite specified by Norad ID.
+def request_tle(norad_id: int) -> dict:
+    """Makes a request to space-track.org for the latest TLE of a satellite
+    specified by Norad ID.
 
     Parameters
     ----------
-    norad_id : Satellite Norad ID
-        A unique satellite identifier.
+    norad_id: `int` A unique satellite identifier
 
     Returns
     -------
-    list :
-        dict :
-            -- TLE_LINE0 : TLE header
-            -- TLE_LINE1 : TLE first line or entry
-            -- TLE_LINE2 : TLE second line or entry
-    """
-    if(SPACETRACK_USERNAME is None):
-        raise EnvironmentVariableNotDefined("SPACETRACK_USERNAME")
-    if(SPACETRACK_PASSWORD is None):
-        raise EnvironmentVariableNotDefined("SPACETRACK_PASSWORD")
+    dict:
+    * "TLE_LINE0": `str` TLE header
+    * "TLE_LINE1": `str` TLE first line or entry
+    * "TLE_LINE2": `str` TLE second line or entry
 
-    credentials = {'identity': SPACETRACK_USERNAME,
-                   'password': SPACETRACK_PASSWORD}
+    Raises
+    ------
+    `EnvironmentError`: Raises this if one or more of of the following
+    environment variables are not defined
+    * `SPACETRACK_USERNAME`
+    * `SPACETRACK_PASSWORD`
+
+    `TLERequestFailed`: Raises this if any non-200 resonse was recieved
+    from spacetrack
+    * Bad credentials
+    * Bad request header
+    * No TLEs found for requested satellite
+    """
+    if(cosi.SPACETRACK_USERNAME is None):
+        raise EnvironmentError("Enviromnemt Variable {} is not defined!"
+                               .format('SPACETRACK_USERNAME'))
+    if(cosi.SPACETRACK_PASSWORD is None):
+        raise EnvironmentError("Enviromnemt Variable {} is not defined!"
+                               .format('SPACETRACK_PASSWORD'))
+
+    credentials = {'identity': cosi.SPACETRACK_USERNAME,
+                   'password': cosi.SPACETRACK_PASSWORD}
     data = []
 
     with requests.Session() as session:
-        res = session.post(SPACETRACK_LOGIN, data=credentials)
+        res = session.post(cosi.SPACETRACK_LOGIN, data=credentials)
         if res.status_code != 200:
             raise TLERequestFailed("Bad credentials!", res)
 
-        res = session.get(SPACETRACK_TLE.format(norad_id))
+        res = session.get(cosi.SPACETRACK_TLE.format(norad_id))
         if res.status_code != 200:
             raise TLERequestFailed("Bad request!", res)
-        data = json.loads(res.text)[0]
+        data = json.loads(res.text)
+        if(len(data) > 0):
+            data = data[0]
+        else:
+            raise TLERequestFailed('No TLEs found for satellite: ({}: {})'
+                                   .format(norad_id, data))
     return data

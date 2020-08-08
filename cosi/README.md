@@ -6,10 +6,11 @@ Cosmos Satnogs/SpaceTrack Interface
 
 # Prerequisite Services:
 
-These services are expected to be running before `cosid.py` can run.
+These services are expected to be running before `cosi-runner` can start.
 
 * Mock OreSat
-* COSMOS Command and Telemetry Server
+* COSMOS Command and Telemetry Server *(managed via Docker image)*
+* COSMOS DART Service *(managed via Docker image)*
 * PostgreSQL Daemon
 
 
@@ -25,11 +26,11 @@ A mock of OreSat has been provided to stand in place of the actual satellite whe
 
 A docker image has been provided to make the development experience more seamless while allowing COSMOS to operate in the environment it needs. This docker image is based off the official [BallAerospace COSMOS Image](https://hub.docker.com/r/ballaerospace/cosmos) but has been modified to include configurations and settings needed for UniClOGS.
 
-**Install and Run`ms-cosmos` from DockerHub:**
+**Install and run `ms-cosmos` from DockerHub:**
 
 `$` `docker pull dmitrimcguuckin/ms-cosmos`
 
-`$` `docker run --tty --interactive --detach --name cosmos --network=host --ipc=host --env DART_DB=$DART_TEST_DB --env DART_USERNAME=$DART_USERNAME --env DART_PASSWORD=$DART_PASSWORD --env DISPLAY=$DISPLAY --volume $XAUTH:/root/.Xauthority --volume /var/run/postgresql/.s.PGSQL.5432:/var/run/postgresql/.s.PGSQL.5432 dmitrimcguuckin/ms-cosmos`
+`$` `docker run --tty --interactive --detach --name cosmos --network=host --ipc=host --env DART_DB=$DART_DB --env DART_USERNAME=$COSI_USERNAME --env DART_PASSWORD=$COSI_PASSWORD --env DISPLAY=$DISPLAY --volume $XAUTH:/root/.Xauthority --volume /var/run/postgresql/.s.PGSQL.5432:/var/run/postgresql/.s.PGSQL.5432 dmitrimcguuckin/ms-cosmos`
 
 `$` `docker attach cosmos`
 
@@ -39,23 +40,54 @@ A docker image has been provided to make the development experience more seamles
 
 Visit the [official PostgreSQL website](https://www.postgresql.org/download/) for instructions on how best to install on your system.
 
-## CoSI Daemon
 
-This daemon runs cycles on a preconfigured schedule and polls SpaceTrack for latest Two-Line-Element information and SatnogsDB for latest telemetry information.
+## CoSI Runner
 
-**Note:** *Currently, telemetry information is only inserted into the COSMOS packet system and not yet forwarded to the PostgreSQL database.*
+#### Installation
 
-**Start the Daemon:**
+`$` `pip install -r requirements.txt`
 
-`$` `cosi/cosid.py start`
+#### Development Dependencies Installation
 
-**Restart the Daemon:**
+`$` `pip install -r dev-requirements.txt`
 
-`$` `cosi/cosid.py restart`
+#### Unit Tests
 
-**Stop the Daemon:**
+`$` `pytest tests/*`
 
-`$` `cosi/cosid.py stop`
+#### Usage
+
+```
+usage: cosi-runner [-h] [--latest-tle (NORAD ID|SATELLITE NAME)] [-n NORAD_ID] [--no-satellite] [--no-telemetry]
+[--no-tle] [-p POLL_INTERVAL] [-v]
+
+Daemon for CoSI.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --latest-tle (NORAD ID|SATELLITE NAME)
+    [Default: 43793 (CSim)] Displays the latest TLE stored in DART DB either by Norad ID or by
+satellite name
+  -n NORAD_ID, --norad-id NORAD_ID
+    [Default: 43793 (CSim)] Norad Satellite ID to use when fetching TLE and Telemetry
+  --no-satellite        Disables fetching the latest satellite info from https://db.satnogs.org
+  --no-telemetry        Disables fetching the latest telemetry from https://db.satnogs.org
+  --no-tle              Disables fetching the latest Two Line Element (TLE) from https://space-track.org
+  -p POLL_INTERVAL, --poll-interval POLL_INTERVAL
+    [Default: 30m] Time interval at which CoSI polls spacetrack and satnogs for data
+  -v, --verbose         Enable additional debug information
+```
+
+#### Example Commands
+
+**Run CoSI with the Norad ID 965 every 10 minutes**
+
+`$` `./cosi-runner --norad-id 965 -p 10m`
+
+
+**Run CoSI every hour skipping fetching satellite info**
+
+`$` `./cosi-runner -p 1h --no-satellite`
 
 **Useful Links:**
 

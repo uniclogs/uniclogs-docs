@@ -64,7 +64,6 @@ autodoc_mock_imports = [
         "kaitaistruct",
         "pkginfo",
         "skyfield",
-        "psycopg2",
         "requests",
         "pytz",
         "ballcosmos",
@@ -73,7 +72,4 @@ autodoc_mock_imports = [
         "flask_restful",
         "Flask-Cors",
         "flask-sqlalchemy",
-        "psycopg2"
         ]
-
-
