@@ -65,4 +65,3 @@ class PassesEndpoint(Resource):
                 )
 
         return orbital_passes, 200
-

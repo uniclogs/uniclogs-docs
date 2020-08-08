@@ -1,4 +1,4 @@
-name: CoSI Unit Tests
+name: Pass Calculator Unit Tests
 
 on:
   push:
@@ -26,20 +26,10 @@ jobs:
     - run: pip install flake8 pytest
 
     - name: Install dependencies
-      run: pip install -r cosi/requirements.txt
+      run: pip install -r pass_calculator/requirements.txt
 
     - name: Lint code
-      run: flake8 ./cosi --count --select=E9,F63,F7,F82 --show-source --statistics
+      run: flake8 ./pass_calculator --count --select=E9,F63,F7,F82 --show-source --statistics
 
     - name: Run unit tests
-      run: pytest cosi/tests/*
-      env:
-        SATNOGS_TOKEN: ${{ secrets.SATNOGS_TOKEN }}
-
-        SPACETRACK_USERNAME: ${{ secrets.SPACETRACK_USERNAME }}
-        SPACETRACK_PASSWORD: ${{ secrets.SPACETRACK_PASSWORD }}
-
-        DART_HOST: ${{ secrets.DART_HOST }}
-        DART_DB: ${{ secrets.DART_DB }}
-        DART_USERNAME: ${{ secrets.COSI_USER_NAME }}
-        DART_PASSWORD: ${{ secrets.COSI_PASSWORD }}
+      run: pytest pass_calculator/tests/*

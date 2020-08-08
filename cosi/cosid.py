@@ -38,24 +38,25 @@ def cycle():
         # Decode telemetry
         decoded_telemetry = satnogs.decode_telemetry_frame(encoded_telemetry)
 
-        if(decoded_telemetry is not None):
-            # Send data to dart
-            magentometer_telemetry = {
-                'INVALID_COUNT': decoded_telemetry.mag_invalid_count,
-                'SENSOR_USED': decoded_telemetry.mag_sensor_used,
-                'VECTOR_BODY1': decoded_telemetry.mag_vector_body1,
-                'VECTOR_BODY2': decoded_telemetry.mag_vector_body2,
-                'VECTOR_BODY3': decoded_telemetry.mag_vector_body3,
-                'VECTOR_VALID': decoded_telemetry.mag_vector_valid
-            }
-            try:
-                print('\n\nInjecting telemetry into DART: {}'.format(magentometer_telemetry))
-                bcs.inject_tlm('ENGR_LINK', 'MAGNETOMETER', item_hash=magentometer_telemetry)
-                print('Succesfully injected!')
-            except Exception:
-                print('Failed to inject telemetry frame into DART: {}'.format(magentometer_telemetry))
-        else:
-            print('Error: Could not find BeaconLong telemetry payload!')
+        # Get data from DART
+        packet = bcs.get_tlm_packet('ENGR_LINK', 'MAGNETOMETER')
+        print('\n\nGot magentometer packets from DART: {}'.format(packet))
+
+        # Send data to dart
+        magentometer_telemetry = {
+            'INVALID_COUNT': decoded_telemetry.mag_invalid_count,
+            'SENSOR_USED': decoded_telemetry.mag_sensor_used,
+            'VECTOR_BODY1': decoded_telemetry.mag_vector_body1,
+            'VECTOR_BODY2': decoded_telemetry.mag_vector_body2,
+            'VECTOR_BODY3': decoded_telemetry.mag_vector_body3,
+            'VECTOR_VALID': decoded_telemetry.mag_vector_valid
+        }
+        try:
+            print('\n\nInjecting telemetry into DART: {}'.format(magentometer_telemetry))
+            bcs.inject_tlm('ENGR_LINK', 'MAGNETOMETER', item_hash=magentometer_telemetry)
+            print('Succesfully injected!')
+        except Exception:
+            print('Failed to inject telemetry frame into DART: {}'.format(magentometer_telemetry))
 
 
 def daemonize(stdout,

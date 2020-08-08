@@ -3,7 +3,8 @@ from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass, PassRequest
+from models import Request, Tle, Pass, UserTokens, get_random_string
+from loguru import logger
 
 import sys
 sys.path.insert(0, '..')
@@ -11,6 +12,8 @@ import pass_calculator as pc
 
 
 class RequestEndpoint(Resource):
+
+
     """
     request endpoint for ULTRA to handle requesting oresat passes.
     """
@@ -29,7 +32,7 @@ class RequestEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location="json")
+        parser.add_argument("user_uid", required=True, type=inputs.regex('^\w{1,25}$'), location="json")
         parser.add_argument("latitude", required=True, type=float, location="json")
         parser.add_argument("longitude", required=True, type=float, location="json")
         parser.add_argument("elevation_m", default=0.0, type=float)
@@ -37,14 +40,15 @@ class RequestEndpoint(Resource):
         parser.add_argument("los_utc", required=True, type=str, location="json")
         args = parser.parse_args()
 
-        # TODO validate user token
-        # TODO user check user day count
+        # TODO validate user token (Whenever user table is created)
+        # TODO user check user day count (limit 10 req/day)
 
         # make datetime object from datetime str arg
         try:
             aos_utc = inputs.datetime_from_iso8601(args["aos_utc"])
             los_utc = inputs.datetime_from_iso8601(args["los_utc"])
-        except:
+        except Exception as e:
+            logger.error(e)
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
         # validate pass
@@ -72,7 +76,7 @@ class RequestEndpoint(Resource):
         try:
             pass_check = db.session.query(Pass).filter(
                     Pass.latitude == args["latitude"],
-                    Pass.longtitude == args["longitude"],
+                    Pass.longitude == args["longitude"],
                     Pass.start_time == aos_utc
                     ).all()
             if len(pass_check) != 0:
@@ -80,40 +84,46 @@ class RequestEndpoint(Resource):
         except:
             return {"Error" : "internal TLE error"}, 400
 
-        new_pass = Pass(
-                latitude = args["latitude"],
-                longtitude = args["longitude"],
-                elevation = args["elevation_m"],
-                start_time = aos_utc,
-                end_time = los_utc
-                )
+        try:
+            new_pass = Pass(
+                    latitude = args["latitude"],
+                    longitude = args["longitude"],
+                    elevation = args["elevation_m"],
+                    start_time = aos_utc,
+                    end_time = los_utc
+                    )
 
-        db.session.add(new_pass)
-        db.session.flush()
+            db.session.add(new_pass)
+            db.session.flush()
 
-        new_request = Request(
-                user_token = args["user_token"],
-                is_approved = False,
-                is_sent = False,
-                pass_uid = new_pass.uid
-                )
+            user_token = get_random_string(4) + args["user_uid"] + get_random_string(4)
 
-        db.session.add(new_request)
-        db.session.flush()
+            new_request = Request(
+                    user_token = user_token,
+                    is_approved = False,
+                    is_sent = False,
+                    pass_uid = new_pass.uid
+            )
 
-        new_pass_request = PassRequest(
-                pass_id = new_pass.uid,
-                req_token = new_request.user_token
-                )
+            db.session.add(new_request)
+            db.session.flush()
 
-        db.session.add(new_pass_request)
-        db.session.flush()
+            new_user_token = UserTokens(
+                    token = new_request.user_token,
+                    user_id = args["user_uid"]
+            )
 
-        db.session.commit()
+            db.session.add(new_user_token)
+            db.session.flush()
 
+
+            db.session.commit()
+
+        except:
+            db.session.rollback() 
         return {
                 "message": "New request submitted.",
-                "request_id": new_request.pass_uid
+                "request_id": new_request.uid
                 }
 
 
@@ -133,31 +143,32 @@ class RequestEndpoint(Resource):
         user_request_list = [] # list of user request to return
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location="json")
+        parser.add_argument("user_uid", type=inputs.regex('^\w{1,25}$'), required=True, location="json") #length(user_uid) shouldn't > 25 chars
         args = parser.parse_args()
 
-        # TODO validate user token
         # TODO user check user day count
-
         try:
-            result = db.session.query(Pass)\
-                           .join(Request, Pass.uid == Request.pass_uid)\
-                           .all()
-                           #.filter(Request.user_token == args["user_token"])\ TODO readd this when primary key is fixed
-        except:
-            return {"Error" : "No requests or invalid user token"}, 400
+            result = db.session.query(UserTokens, Pass)\
+                            .join(Request, UserTokens.token == Request.user_token)\
+                            .join(Pass, Pass.uid == Request.pass_uid)\
+                            .filter(UserTokens.user_id == args["user_uid"])\
+                            .all()
+        except Exception as e:
+            logger.error(e)
+            logger.error("Error fetching token '{}'".format(args["user_uid"]))
+            return {"Error" : "No requests or invalid user uid"}, 400
 
         # make a nice list of dictionaries for easy conversion to JSON string
-        for r in result:
+        for u, p in result:
             pass_data = pc.orbitalpass.OrbitalPass(
-                    gs_latitude_deg = r.latitude,
-                    gs_longitude_deg = r.longtitude,
-                    gs_elevation_m =  r.elevation,
-                    aos_utc = r.start_time,
-                    los_utc = r.end_time,
+                    gs_latitude_deg = p.latitude,
+                    gs_longitude_deg = p.longitude,
+                    gs_elevation_m =  p.elevation,
+                    aos_utc = p.start_time,
+                    los_utc = p.end_time,
                     horizon_deg = 0.0
                     )
 
-            user_request_list.append({"request_id": r.uid, "pass_data": pass_data})
+            user_request_list.append({"request_token": u.token, "pass_data": pass_data})
 
         return user_request_list

@@ -3,7 +3,8 @@ from flask_restful import reqparse, abort, Api, Resource, inputs
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from database import db
-from models import Request, Tle, Pass, PassRequest
+from models import Request, Tle, Pass, UserTokens
+from loguru import logger
 
 import sys
 sys.path.insert(0, "..")
@@ -25,24 +26,24 @@ class RequestIdEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location = "json")
 
         args = parser.parse_args()
 
-        # TODO user check user day count
-
         try:
             result = db.session.query(Pass)\
+                           .with_lockmode('read') \
                            .join(Request, Pass.uid == Request.pass_uid)\
-                           .filter(Pass.uid == request_id and Request.user_token == args["user_token"])\
+                           .filter(Request.uid == request_id)\
                            .one()
-        except:
+        except Exception as e:
+            logger.error(e)
+            logger.error("Error fetching req id '{}'".format(request_id))
             return {"Error" : "No matching pass or wrong user token"}, 400
 
 
         pass_data = pc.orbitalpass.OrbitalPass(
                 gs_latitude_deg = result.latitude,
-                gs_longitude_deg = result.longtitude,
+                gs_longitude_deg = result.longitude,
                 gs_elevation_m =  result.elevation,
                 aos_utc = result.start_time,
                 los_utc = result.end_time,
@@ -62,7 +63,6 @@ class RequestIdEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location="json")
         parser.add_argument("latitude", required=True, type=float, location="json")
         parser.add_argument("longitude", required=True, type=float, location="json")
         parser.add_argument("elevation_m", default=0.0, type=float)
@@ -71,21 +71,33 @@ class RequestIdEndpoint(Resource):
 
         args = parser.parse_args()
 
-        # TODO user check user day count
+        request = None
+        try:
+            request = db.session.query(Request)\
+                    .with_lockmode('read') \
+                   .filter(Request.uid == request_id)\
+                   .one()
+        except Exception as e:
+            logger.error(e)
+            return {"Error" : "No matching pass or wrong user token"}, 400
+
+        if request is None or request.is_approved:
+                return {"Error" : "Request doesn't exist or is already approved"}, 400
 
         try:
             result = db.session.query(Pass)\
-                   .join(Request, Pass.uid == Request.pass_uid)\
-                   .filter(Pass.uid == request_id and
-                           Request.user_token == args["user_token"])\
+                   .with_lockmode('update') \
+                   .filter(Pass.uid == request.pass_uid)\
                    .one()
-        except DbException:
-            return {"Error" : "No matching pass or wrong user token"}, 400
+        except Exception as e:
+            logger.error(e)
+            return {"Error" : "No matching pass or wrong assigned pass_uid"}, 400
 
         try:
             latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
             latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
-        except:
+        except Exception as e:
+            logger.error(e)
             return {"Error" : "internal TLE error"}, 400
 
         tle = [latest_tle.first_line, latest_tle.second_line]
@@ -94,7 +106,8 @@ class RequestIdEndpoint(Resource):
         try:
             aos_utc = inputs.datetime_from_iso8601(args["aos_utc"])
             los_utc = inputs.datetime_from_iso8601(args["los_utc"])
-        except:
+        except Exception as e:
+            logger.error(e)
             return {"Error": "Invalid format for aos_utc or los_utc."}, 401
 
         input_orbital_pass = pc.orbitalpass.OrbitalPass(
@@ -110,11 +123,11 @@ class RequestIdEndpoint(Resource):
         if not pc.calculator.validate_pass(tle=tle, orbital_pass=input_orbital_pass):
             return {"Error": "Invalid pass."}, 401
 
-        #TODO check to see if other requested the same pass, if theya have make an new Pass for this user
+        #TODO check to see if other requested the same pass, if they have make an new Pass for this user
 
         # update entry
         result.latitude = input_orbital_pass.gs_latitude_deg,
-        result.longtitude = input_orbital_pass.gs_longitude_deg,
+        result.longitude = input_orbital_pass.gs_longitude_deg,
         result.elevation = input_orbital_pass.gs_elevation_m,
         result.horizon_deg = input_orbital_pass.horizon_deg,
         result.start_time = input_orbital_pass.aos_utc,
@@ -134,34 +147,43 @@ class RequestIdEndpoint(Resource):
             Request unique id.
         """
 
-        parser = reqparse.RequestParser()
-        parser.add_argument("user_token", required=True, type=str, location="json")
-        args = parser.parse_args()
-
-        # TODO user check user day count
-
         try:
-            pass_result = db.session.query(Pass)\
-                    .filter(Pass.uid == request_id)\
-                    .one()
             request_result = db.session.query(Request)\
-                   .filter(Request.pass_uid == request_id and
-                           Request.user_token == args["user_token"])\
+                   .filter(Request.uid == request_id)\
                    .one()
-            pass_request_result = db.session.query(PassRequest)\
-                   .filter(PassRequest.pass_id == request_id and
-                           PassRequest.req_token == args["user_token"])\
-                   .one()
-        except:
+
+            #db.session.delete(request_result)
+            #db.session.flush()
+            pass_id = request_result.pass_uid
+
+
+            user_tokens = db.session.query(UserTokens)\
+                    .filter(UserTokens.token == request_result.user_token)\
+                    .all()
+
+            for entry in user_tokens:
+                db.session.delete(entry)
+
+
+            db.session.flush()
+            db.session.delete(request_result) # NOTE or should flip a flag?
+            db.session.flush()
+
+
+            obj = db.session.query(Pass).filter(Pass.uid == pass_id).one()
+            if obj:
+                db.session.delete(obj)
+                db.session.flush()
+
+            db.session.commit()
+
+
+
+        except Exception as e:
+            logger.error(e)
+            db.session.rollback()
             return {"Error" : "No matching pass or wrong user token"}, 400
 
-        db.session.delete(pass_request_result) # NOTE or should flip a flag?
-        db.session.flush()
-        db.session.delete(request_result) # NOTE or should flip a flag?
-        db.session.flush()
-        db.session.delete(pass_result) # NOTE or should flip a flag?
-        db.session.flush()
-        db.session.commit()
+
 
         return {"message": "Deleted request {}".format(request_id)}
-
