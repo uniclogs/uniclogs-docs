@@ -8,9 +8,7 @@ from skyfield.api import Topos, \
 VALIDATE_TIME_TOLERENCE_S = 5.0
 
 
-def pass_overlap(new_pass: OrbitalPass,
-                 approved_passes: [OrbitalPass]):
-    # type: (OrbitalPass, [OrbitalPass]) -> bool
+def pass_overlap(new_pass: OrbitalPass, approved_passes: [OrbitalPass]):
     """Checks to see if the possible pass will overlap with an existing
     approved pass.
 
@@ -24,7 +22,8 @@ def pass_overlap(new_pass: OrbitalPass,
     Returns
     -------
     bool
-        True if pass overlaps with an existing approved pass or False if no overlap
+        True if pass overlaps with an existing approved pass or False if no
+        overlap
     """
 
     available = False
@@ -38,10 +37,10 @@ def pass_overlap(new_pass: OrbitalPass,
         the approved pass and also check to if the start of the possible pass
         overlaps with end of the approved pass
         """
-        if (new_pass.aos_utc <= ap.aos_utc
-            and new_pass.los_utc > ap.aos_utc) \
-            and (new_pass.aos_utc < ap.los_utc
-                and new_pass.los_utc <= ap.los_utc):
+        if (new_pass.aos_utc <= ap.aos_utc and
+                ap.aos_utc <= new_pass.los_utc) or \
+                (new_pass.aos_utc < ap.los_utc and
+                    ap.los_utc <= new_pass.los_utc):
             available = True  # pass overlap with an approved pass
             break  # no reason to check against any other approved passes
 
@@ -57,7 +56,6 @@ def get_all_passes(tle: [str],
                    elev_m: float = 0.0,
                    horizon_deg: float = 0.0,
                    min_duration_s: int = 0):
-    # type: ([str], float, float, datetime, datetime, [OrbitalPass], float, float, int) -> [OrbitalPass]
     """
     Get a list of all passes for a satellite and location for a time span.
 
@@ -139,9 +137,7 @@ def get_all_passes(tle: [str],
     return pass_list
 
 
-def validate_pass(tle: [str],
-                  orbital_pass: OrbitalPass):
-    # type: ([str], OrbitalPass) -> bool
+def validate_pass(tle: [str], orbital_pass: OrbitalPass):
     """
     Checks to see if all data in the OrbitalPass args is valid pass.
 
