@@ -5,6 +5,7 @@ from sqlalchemy import func
 from database import db
 from models import Request, Tle, Pass, UserTokens
 from loguru import logger
+mport ballcosmos.script as b
 
 import sys
 sys.path.insert(0, "..")
@@ -149,41 +150,21 @@ class RequestIdEndpoint(Resource):
 
         try:
             request_result = db.session.query(Request)\
+                   .with_lockmode('update') \
                    .filter(Request.uid == request_id)\
                    .one()
 
-            #db.session.delete(request_result)
-            #db.session.flush()
-            pass_id = request_result.pass_uid
-
-
-            user_tokens = db.session.query(UserTokens)\
-                    .filter(UserTokens.token == request_result.user_token)\
-                    .all()
-
-            for entry in user_tokens:
-                db.session.delete(entry)
-
-
-            db.session.flush()
-            db.session.delete(request_result) # NOTE or should flip a flag?
-            db.session.flush()
-
-
-            obj = db.session.query(Pass).filter(Pass.uid == pass_id).one()
-            if obj:
-                db.session.delete(obj)
-                db.session.flush()
+            if request_result.is_approved and request_result.is_sent:
+                b.cmd('ENGR_LINK PASS_CANCEL with TYPE NORMAL, PASS_ID {}'.format(request_id))
+            else:
+                request_result.is_approved = False
 
             db.session.commit()
-
 
 
         except Exception as e:
             logger.error(e)
             db.session.rollback()
             return {"Error" : "No matching pass or wrong user token"}, 400
-
-
 
         return {"message": "Deleted request {}".format(request_id)}
