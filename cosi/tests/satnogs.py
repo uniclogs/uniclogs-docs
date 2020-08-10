@@ -54,4 +54,3 @@ def test_decode_telemetry_is_not_none():
     frame = bytearray.fromhex(telemetry.get('frame'))
     decoded_telemetry = satnogs.decode_telemetry_frame(frame)
     assert decoded_telemetry is not None
-    assert isinstance(decoded_telemetry, structs.csim.Csim.BeaconLong)

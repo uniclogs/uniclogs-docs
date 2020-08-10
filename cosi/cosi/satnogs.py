@@ -126,20 +126,9 @@ def decode_telemetry_frame(telemetry_frame: bytes) -> csim.Csim.BeaconLong:
     `csim.Csim.BeaconLong`: The decoder object with all of the aptly decoded\
     telemetry, *(only returns a `csim.Csim.BeaconLong` since it's the only\
     supportable decoder right now)*
-
-    Raises
-    ------
-    `ValueError`: Raises this when the telemetry frame is not a Beacon Long\
-    Object as is currently expected from CSim, *(See the auto-generated\
-    `cosi/structs/csim.py` for objects and attributes)*
     """
     payload = csim.Csim.from_bytes(telemetry_frame) \
                        .ax25_frame \
                        .payload \
                        .ax25_info
-
-    if(isinstance(payload, csim.Csim.BeaconLong)):
-        return payload
-    else:
-        raise ValueError('Decoded telemetry does not contain a\
-                          Beacon Long object!')
+    return payload
