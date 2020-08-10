@@ -1,6 +1,6 @@
 # Pass Calculator
 A common python module for calculating orbital passes used by ULTRA and RADS.
-Mostly a somple wrapper ontop of [skyfeild].
+Mostly a simple wrapper ontop of [skyfeild].
 
 ## Dependencies
 `$ pip install -r requirements.txt`
@@ -10,5 +10,7 @@ Mostly a somple wrapper ontop of [skyfeild].
 
 ## Installation
 `$ python -m pip install dist/pass_calculator-*-py3-none-any.whl` 
+or
+`$ sudo python -m pip install dist/pass_calculator-*-py3-none-any.whl` 
 
 [skyfeild]:https://rhodesmill.org/skyfield/
