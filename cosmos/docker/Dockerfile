@@ -1,5 +1,6 @@
 FROM ubuntu:18.04
 
+# Import all the build arguments and environment variables
 ENV TIMEZONE America/Los_Angeles
 ENV COSMOS_REPO https://github.com/oresat/uniclogs-software
 ENV COSMOS_BRANCH cosmos
@@ -10,10 +11,12 @@ ARG DART_DB
 ARG DART_USERNAME
 ARG DART_PASSWORD
 
+# Set the timezone, do a system update, then save the timezone config
 RUN ln -fs /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 RUN apt-get update && apt-get install -y tzdata
 RUN dpkg-reconfigure --frontend noninteractive tzdata
 
+# Install Ubuntu-based dependencies
 RUN apt-get install -qqy \
   cmake \
   curl \
@@ -48,9 +51,12 @@ RUN apt-get install -qqy \
   x11-apps \
   zlib1g-dev
 
+# Install Rake and Bundler
 RUN gem install rake --no-document
 RUN gem install bundle --no-document
 
+# Pull down the repo and switch to the designated branch (non-master)
+#   Then extract the COSMOS configs and remove everything else
 RUN git clone ${COSMOS_REPO} /opt/
 WORKDIR /opt
 RUN git checkout ${COSMOS_BRANCH}
@@ -58,5 +64,10 @@ RUN mv /opt/cosmos /
 RUN rm -rf /opt/*
 RUN mv /cosmos /opt
 WORKDIR /opt/cosmos
+
+# Install COSMOS dependencies and copy the DB populate script into the container
 RUN bundle install
-CMD ruby tools/Dart && ruby tools/CmdTlmServer --no-gui
+COPY ./start.sh ./start.sh
+
+# Entry services
+CMD bash /opt/cosmos/start.sh

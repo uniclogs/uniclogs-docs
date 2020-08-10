@@ -9,6 +9,7 @@ USE_LOCAL_BUILD=1
 START_INTERACTIVE_MODE=0
 
 build:
+	$(info Using Arguments: ($(DART_DB), $(DART_USERNAME), $(DART_PASSWORD), $(LOCAL_IMAGE)))
 	docker build --compress --network=host --build-arg DART_DB=$(DART_DB) --build-arg DART_USERNAME=$(DART_USERNAME) --build-arg DART_PASSWORD=$(DART_PASSWORD) --force-rm --tag $(LOCAL_IMAGE) .
 
 run:
