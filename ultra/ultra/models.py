@@ -1,4 +1,6 @@
 import datetime
+import string
+import random
 from ultra.database import db
 
 
@@ -188,3 +190,12 @@ class T2_0(db.Model):
     i8 = db.Column(db.Integer)
     i9 = db.Column(db.Integer)
     i10 = db.Column(db.Integer)
+
+
+def get_random_string(length):
+    """
+    Helper for generation of random string
+    """
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
