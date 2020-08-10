@@ -9,7 +9,7 @@ import ultra.server
 def daemonize(pid_file):
     # Check for a pidfile to see if the daemon is already running
     try:
-        with open(pid_file,'r') as pf:
+        with open(pid_file, 'r') as pf:
 
             pid = int(pf.read().strip())
     except IOError:

@@ -1,6 +1,4 @@
 import datetime
-import random
-import string
 from ultra.database import db
 
 
@@ -190,64 +188,3 @@ class T2_0(db.Model):
     i8 = db.Column(db.Integer)
     i9 = db.Column(db.Integer)
     i10 = db.Column(db.Integer)
-
-
-def testPassModel():
-    """
-    Used to create a new Pass record and insert it into the database
-    The second query list all requests stored in the database
-    """
-    new_pass = Pass(latitude=11.0, longitude=11.01, azimuth=3)
-    db.session.add(new_pass)
-    db.session.commit()
-
-    # We query the list of request stored in the database
-    pass_list = Pass.query.all()
-    print(pass_list)
-
-
-def testTleModel():
-    """
-    Used to create a new TLE record and insert it into the database
-    The second query list all TLEs stored in the database
-    """
-    new_tle = Tle(
-            header_text="ISS (ZARYA)",
-            first_line="1 25544U 98067A   20199.71986111 -.00000291  00000-0  28484-5 0  9999",
-            second_line="2 25544  51.6429 197.3485 0001350 125.7534 225.4894 15.49513771236741"
-            )
-    db.session.add(new_tle)
-    db.session.commit()
-
-    # We query the list of request stored in the database
-    tle_list = Tle.query.all()
-    print(tle_list)
-
-
-def get_random_string(length):
-    """
-    Helper for generation of random string
-    """
-    letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for i in range(length))
-    return result_str
-
-
-def testRequestModel():
-    """
-    Used to create a new Request record and insert it into the database
-    The second query list all Requests stored in the database
-    The third query list all Requests that have been sent before
-    """
-    new_request = Request(user_token='test_tokesn', is_approved=False, is_sent=False, pass_uid=None, created_date=None)
-    db.session.add(new_request)
-    #When adding/updating/deleting a new record, we make sure the transaction had been commited
-    db.session.commit()
-
-    #We query the list of request stored in the database
-    request_list = Request.query.all()
-    print(request_list)
-
-    #We query the list of sent request stored in the database
-    request_sent = Request.query.filter(Request.is_sent == True).all()
-    print(request_sent)
