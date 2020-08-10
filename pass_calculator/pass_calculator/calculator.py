@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from .orbitalpass import OrbitalPass
 from skyfield.api import Topos, \
-                         load, \
+                         Loader, \
                          EarthSatellite
 
 
@@ -123,6 +123,7 @@ def get_all_passes(tle: [str],
 
     pass_list = []
 
+    load = Loader('/tmp', verbose=False)
     ts = load.timescale()
     t0 = ts.utc(start_datetime_utc.replace(tzinfo=timezone.utc))
     t1 = ts.utc(end_datetime_utc.replace(tzinfo=timezone.utc))
