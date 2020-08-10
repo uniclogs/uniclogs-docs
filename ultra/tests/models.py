@@ -1,5 +1,4 @@
 import pytest
-import flask
 import ultra.database as database
 import ultra.models as models
 
