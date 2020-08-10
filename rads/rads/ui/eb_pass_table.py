@@ -1,8 +1,6 @@
 from datetime import datetime, timedelta
-from db_interface import query_tle
-from insert import insert_new_request
-import sys
-sys.path.append('../..')
+from rads.database.db_interface import query_tle
+from rads.database.insert import insert_new_request
 from pass_calculator.calculator import get_all_passes
 from pass_calculator.orbitalpass import OrbitalPass
 

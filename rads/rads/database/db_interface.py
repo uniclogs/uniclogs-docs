@@ -1,11 +1,9 @@
-from models import Request, Pass, Tle, Session
-from request_data import RequestData
+from .models import Request, Pass, Tle, Session
+from .request_data import RequestData
 from datetime import datetime
 from sqlalchemy import func, exc
 from loguru import logger
 import reverse_geocoder as rg
-import sys
-sys.path.append('../..')
 from pass_calculator.calculator import pass_overlap
 
 

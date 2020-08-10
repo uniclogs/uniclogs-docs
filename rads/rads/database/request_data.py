@@ -1,7 +1,4 @@
 from datetime import datetime
-
-import sys
-sys.path.append('../..')
 from pass_calculator.orbitalpass import OrbitalPass
 
 

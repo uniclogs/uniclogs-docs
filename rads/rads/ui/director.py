@@ -1,15 +1,13 @@
 import curses
 import time
 from loguru import logger
-import log_interface
-from db_interface import query_new_requests,\
+from rads.log_interface import init
+from rads.database.db_interface import query_new_requests,\
         query_archived_requests, query_upcomming_requests,\
         update_approve_deny
-from request_data import RequestHeader
-from eb_request import print_eb_passes
-import sys
-sys.path.append('../../command')
-from schedule_pass import *  
+from rads.database.request_data import RequestHeader
+from .eb_request import print_eb_passes
+from rads.command.schedule_pass import *  
 
 #To prevent screen flickering
 WAIT_TIME = 0.07
@@ -366,7 +364,7 @@ def print_archive(stdscreen):
 
 def main():
 
-    log_interface.init('rads')
+    init('rads')
     logger.info('Starting director')
     stdscreen = curses.initscr()
     curses.curs_set(0)
@@ -441,13 +439,3 @@ def main():
     # stdscreen.nodelay(False)
     curses.endwin()         # Destroy virtual screen
 
-
-try:
-    main()
-except KeyboardInterrupt:
-    # Restore default
-    curses.echo()           # Enable user input echo
-    curses.nocbreak()       # Enable line buffering
-    curses.curs_set(True)   # Enable the cursor display
-    curses.resetty()        # Restore terminal state
-    curses.endwin()         # Destroy virtual screen

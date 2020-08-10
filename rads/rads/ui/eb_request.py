@@ -1,9 +1,7 @@
 import curses
 from time import sleep
-from request_table import RequestTable
-from eb_pass_table import EBPassTable
-import sys
-sys.path.append('../..')
+from .request_table import RequestTable
+from .eb_pass_table import EBPassTable
 from pass_calculator.calculator import overlap
 
 # To prevent screen flickering

@@ -1,4 +1,4 @@
-from models import Request, Pass, Session
+from .models import Request, Pass, Session
 import string
 import random
 

@@ -1,5 +1,6 @@
-from db_interface import query_upcomming_requests, update_approve_deny
-from request_data import RequestData
+from rads.database.db_interface import query_upcomming_requests,\
+        update_approve_deny
+from rads.database.request_data import RequestData
 import reverse_geocoder as rg
 
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
