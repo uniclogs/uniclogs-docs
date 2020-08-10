@@ -1,10 +1,8 @@
-from flask import Flask
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import reqparse, Resource
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
-from database import db
-from models import Tle
-
+from ultra.database import db
+from ultra.models import Tle
 import sys
 sys.path.insert(0, '..')
 import pass_calculator.calculator as pc
@@ -28,27 +26,31 @@ class PassesEndpoint(Resource):
             error code
 
         """
-        orbital_passes_dict = []
-
         parser = reqparse.RequestParser()
-        parser.add_argument("latitude", required=True, type=float, location = "json")
-        parser.add_argument("longitude", required=True, type=float, location = "json")
+        parser.add_argument("latitude",
+                            required=True,
+                            type=float,
+                            location="json")
+        parser.add_argument("longitude",
+                            required=True,
+                            type=float,
+                            location="json")
         parser.add_argument("elevation_m", type=float)
         args = parser.parse_args()
 
-        # get latest TLE from DB
+        # Get latest TLE from DB
         try:
             latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
             latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
-        except:
+        except Exception:
             return "internal TLE error", 400
         tle = [
                 latest_tle.first_line,
                 latest_tle.second_line
                 ]
 
-        # get latest LTE and approved passes list from DB
-        approved_passes = [] # TODO get from DB
+        # Get latest TLE and approved passes list from the DB
+        approved_passes = []  # TODO get from DB
 
         # call pass calculator
         now = datetime.now()

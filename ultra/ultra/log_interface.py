@@ -1,7 +1,5 @@
-import sys
 from loguru import logger
 from datetime import datetime
-
 
 
 def init(name):

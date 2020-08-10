@@ -1,8 +1,9 @@
 from flask_restful import Resource
-from database import db
-from models import T2_0, \
-                   Items, \
-                   ItemToDecomTableMappings
+from loguru import logger
+from ultra.database import db
+from ultra.models import T2_0, \
+                         Items, \
+                         ItemToDecomTableMappings
 
 
 class TelemetryEndpoint(Resource):
@@ -23,7 +24,6 @@ class TelemetryEndpoint(Resource):
                                  .filter(ItemToDecomTableMappings.packet_config_id == 2) \
                                  .all()
 
-            #print(telemetry_labels)
             for telemetry in telemetries:
                 tresponse = {}
                 for label in telemetry_labels:
