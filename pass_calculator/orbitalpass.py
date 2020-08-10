@@ -1,6 +1,7 @@
 from datetime import timezone
 import json
 
+
 class OrbitalPass(object):
     """POD class for holding all info realated to a pass.
 
@@ -34,13 +35,12 @@ class OrbitalPass(object):
             }
 
     def __init__(self,
-                 gs_latitude_deg,
-                 gs_longitude_deg,
-                 aos_utc,
-                 los_utc,
+                 gs_latitude_deg: float,
+                 gs_longitude_deg: float,
+                 aos_utc: float,
+                 los_utc: float,
                  gs_elevation_m=0.0,
                  horizon_deg=0.0):
-        # type: (float, float, datetime, datetime, float, float) -> ()
 
         # Location data for the ground station
         self.gs_latitude_deg = gs_latitude_deg
@@ -51,6 +51,24 @@ class OrbitalPass(object):
         # datetimes
         self.aos_utc = aos_utc
         self.los_utc = los_utc
+
+    def __eq__(self, other):
+        ret = True
+
+        if self.gs_latitude_deg != other.gs_latitude_deg:
+            ret = False
+        elif self.gs_longitude_deg != other.gs_longitude_deg:
+            ret = False
+        elif self.gs_elevation_m != other.gs_elevation_m:
+            ret = False
+        elif self.horizon_deg != other.horizon_deg:
+            ret = False
+        elif self.aos_utc != other.aos_utc:
+            ret = False
+        elif self.los_utc != other.los_utc:
+            ret = False
+
+        return ret
 
 
 class OrbitalPassJsonEncoder(json.JSONEncoder):

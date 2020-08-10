@@ -1,129 +1,157 @@
 import curses
-import time
+from time import sleep
+from request_table import RequestTable
+from eb_pass_table import EBPassTable
 import sys
-from loguru import logger
-from datetime import datetime, timezone, timedelta
-from db_interface import query_upcomming_requests
-sys.path.insert(0, '../..')
-from pass_calculator.calculator import get_all_passes, pass_overlap
+sys.path.append('../..')
+from pass_calculator.calculator import overlap
 
-
-#To prevent screen flickering
-WAIT_TIME = 0.07
-TEST_TLE_HEADER = "ISS (ZARYA)"
-TEST_TLE_LINE_1 = "1 25544U 98067A   20199.71986111 -.00000291  00000-0  28484-5 0  9999"
-TEST_TLE_LINE_2 = "2 25544  51.6429 197.3485 0001350 125.7534 225.4894 15.49513771236741"
+# To prevent screen flickering
 PSU_LAT = 45.512778
 PSU_LONG = -122.685278
 PSU_ELEV = 47.0
+
 _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
+_STR_FORMAT = "{:7} | {:8} | {:15} | {:^5} | {:7} | {:19} | {:19} | {:30}"
+REQUEST_HEADER = "{:>7} | {:8} | {:15} | {:5} | {:7} | {:19} | {:19} | {:30}".format(
+        "ID", "Status", "Type", "Sent", "Pass ID", "AOS", "LOS", "City, State")
+
+
+def max_list_len(data):
+    length = 0
+
+    for d in data:
+        temp = len(d)
+        if temp > length:
+            length = temp
+
+    return length
 
 
 def print_eb_passes(stdscreen):
-    """Prints main menu and updates the display to current row/option selected.
-
-    function to print accepted/denied requests
-
-    Parameters
-    ----------
-    stdscreen : window object
-        A windows object initialized by curses.initscr() from the curses
-        library.
-    """
-    archive_index = 0
     stdscreen.nodelay(True)
     stdscreen.scrollok(True)      # Enable window scroll
     stdscreen.refresh()
-    loop = True
-    # gets the max height and width
-    height, width = stdscreen.getmaxyx()
-    width -= 1
-    draw_height = height - 2
 
-    panel = curses.newpad(height, width)
-    # tle = query_tle()
-    tle = [TEST_TLE_LINE_1, TEST_TLE_LINE_2]
-    now = datetime.utcnow()
-    now = now.replace(tzinfo=timezone.utc)
-    future = datetime.now() + timedelta(days=7)
-    future = future.replace(tzinfo=timezone.utc)
-    passes = get_all_passes(
-            tle,
-            PSU_LAT,
-            PSU_LONG,
-            now,
-            future
-            )
+    screen_height, screen_width = stdscreen.getmaxyx()
 
-    approved_req = query_upcomming_requests()
+    # to turn these from size to index
+    screen_width -= 1
+    screen_height -= 1
 
-    archive = []
-    for p in passes:
-        overlap = ""
-        for a in approved_req:
-            a.pass_data.aos_utc = a.pass_data.aos_utc.replace(tzinfo=timezone.utc)
-            a.pass_data.los_utc = a.pass_data.los_utc.replace(tzinfo=timezone.utc)
-            if pass_overlap(p, [a.pass_data]) is True:
-                print("overlap")
-                overlap += str(a.id) + ", "
+    screen_title_heigth = 2
+    boarder_x = 1
+    boarder_y = 1
+    panel_space_width = 5
+    pads_y0 = screen_title_heigth + boarder_y
+    pads_y1 = screen_height - boarder_y
 
-        pass_str = "{} | {} | {}".format(
-                p.aos_utc.strftime(_DT_STR_FORMAT),
-                p.los_utc.strftime(_DT_STR_FORMAT),
-                overlap
-                )
-        archive.append(pass_str)
+    # pass pad location on window (left panel)
+    pass_win_x0 = boarder_x
+    pass_win_x1 = pass_win_x0 + 50
 
-    # archive.insert(0, RequestHeader) # TODO fix this
-    # panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
-    # panel.box()
-    while loop is True:
-        # interprets arrow key strokes
+    # schedule pad location on window (right panel)
+    schedule_win_x0 = pass_win_x1 + 1 + panel_space_width
+    schedule_win_x1 = screen_width - boarder_x
+
+    eb_passes = EBPassTable()
+    pass_pad_height = len(eb_passes)
+    pass_pad_width = len(str(eb_passes[0]))
+    pass_pad = curses.newpad(pass_pad_height+1, pass_pad_width+1)
+
+    schedule = RequestTable()
+    schedule_pad_height = len(schedule)
+    schedule_pad_width = len(str(schedule[0]))
+    schedule_pad = curses.newpad(schedule_pad_height+1, schedule_pad_width+1)
+
+    focus = 0
+    pass_index = 0
+    schedule_index = 0
+
+    pass_pad.refresh(pass_index, 0, pads_y0, pass_win_x0, pads_y1, pass_win_x1)
+    schedule_pad.refresh(schedule_index, 0, pads_y0, schedule_win_x0, pads_y1, schedule_win_x1)
+
+    msg = "EB Pass Scheduler (lat {}, long {}, elev {} meters)".format(PSU_LAT, PSU_LONG, PSU_ELEV)
+    stdscreen.addstr(0, screen_width//2 - len(msg)//2, msg)
+    stdscreen.addstr(2, boarder_x, eb_passes.header)
+    stdscreen.addstr(2, pass_win_x1+panel_space_width, " "+schedule.header)
+
+    running = True
+    while(running is True):
         key = stdscreen.getch()
         curses.flushinp()
-        # menu navigation
-        # lower bound case
-        if key == curses.KEY_UP and archive_index > 0:
-            archive_index -= 1
-        # upper bound case
-        elif key == curses.KEY_DOWN and archive_index < len(archive)-1:
-            archive_index += 1
-        elif(key == 99 or key == 115):  # c = 99 s = 115 Exit
-            loop = False
 
-        if(len(archive) >= (height - 2)):
-            height = height*2
-            panel.resize(height, width)
-            # panel.clear()
-            # panel.refresh(schedule_index, 0, 2, 1, draw_height, width)
-        # print_pad(panel, stdscreen, list1, schedule_index)
+        if key == ord('f'):  # swap focus onto other pad
+            focus = (focus + 1) % 2
+        elif key == ord('c'):  # clear and quit
+            running = False
+        elif key == ord('s'):  # save and quit
+            running = False
+            eb_passes.save()
+            schedule.save()
 
-        if(len(archive) < (height - 2)):
-            """
-            enumerate loops over menu and creates a counter to know what part
-            of the menu is selected.
-            """
-            for index, row in enumerate(archive):
-                if index == archive_index:
-                    panel.attron(curses.color_pair(1))
-                panel.addstr(index + 1, 1, str(row))
-                panel.attroff(curses.color_pair(1))
+        if focus == 0:
+            if key == curses.KEY_UP and pass_index > 0:
+                pass_index -= 1
+            elif key == curses.KEY_DOWN and pass_index < pass_pad_height-1:
+                pass_index += 1
+            elif key == ord('a'):  # add new uniclogs pass
+                eb_passes[pass_index].add = True
+                for i in range(schedule_pad_height):
+                    if overlap(eb_passes[pass_index], schedule[i].pass_data) is True:
+                        schedule[i].deny()
+            elif key == ord('d'):  # remove new uniclogs pass
+                eb_passes[pass_index].add = False
+                for i in range(schedule_pad_height):
+                    if overlap(eb_passes[pass_index], schedule[i].pass_data) is True:
+                        schedule[i].undeny()
 
-        # panel.box()
-        msg = "PSU engineering building at lat {}, long {}, elev {} meters".format(PSU_LAT, PSU_LONG, PSU_LONG)
-        stdscreen.addstr(0, (width+1)//2 - len(msg)//2, msg)
-        info = "Arrow Keys: To Move, c or s: Exit"
-        stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
-        RequestHeader = "{:19} | {:19}".format("AOS", "LOS")
-        stdscreen.addstr(3, 2, RequestHeader)
-        stdscreen.addstr(2, 0, " ")
-        panel.refresh(archive_index, 0, 3, 1, draw_height, width)
-        stdscreen.refresh()
-        time.sleep(WAIT_TIME)
+            # rebuild display strings for eb_passes
+            for i in range(pass_index, pass_pad_height):
+                if i == pass_index:  # current index
+                    pass_pad.addstr(i, 0, str(eb_passes[i]), curses.color_pair(1))
+                elif eb_passes[i].add is True:  # added
+                    pass_pad.addstr(i, 0, str(eb_passes[i]), curses.color_pair(3))
+                else:
+                    pass_pad.addstr(i, 0, str(eb_passes[i]))
 
-    # panel.endwin()
+            # rebuild display strings for schedule
+            for i in range(schedule_index, schedule_pad_height):
+                if overlap(eb_passes[pass_index], schedule[i].pass_data) is True:
+                    schedule_pad.addstr(i, 0, str(schedule[i]), curses.color_pair(5))
+                elif schedule[i].is_approved is False:  # denied
+                    schedule_pad.addstr(i, 0, str(schedule[i]), curses.color_pair(2))
+                else:
+                    schedule_pad.addstr(i, 0, str(schedule[i]))
+        else:
+            if key == curses.KEY_UP and schedule_index > 0:
+                schedule_index -= 1
+            elif key == curses.KEY_DOWN and schedule_index < schedule_pad_height-1:
+                schedule_index += 1
+
+            # rebuild display strings for eb_passes
+            for i in range(pass_index, pass_pad_height):
+                if overlap(schedule[schedule_index].pass_data, eb_passes[i]) is True:
+                    pass_pad.addstr(i, 0, str(eb_passes[i]), curses.color_pair(4))
+                elif eb_passes[i].add is True:  # added
+                    pass_pad.addstr(i, 0, str(eb_passes[i]), curses.color_pair(3))
+                else:
+                    pass_pad.addstr(i, 0, str(eb_passes[i]))
+
+            # rebuild display strings for schedule
+            for i in range(schedule_index, schedule_pad_height):
+                if i == schedule_index:  # current index
+                    schedule_pad.addstr(i, 0, str(schedule[i]), curses.color_pair(1))
+                elif schedule[i].is_approved is False:  # denied
+                    schedule_pad.addstr(i, 0, str(schedule[i]), curses.color_pair(2))
+                else:
+                    schedule_pad.addstr(i, 0, str(schedule[i]))
+
+        pass_pad.refresh(pass_index, 0, pads_y0, pass_win_x0, pads_y1, pass_win_x1)
+        schedule_pad.refresh(schedule_index, 0, pads_y0, schedule_win_x0, pads_y1, schedule_win_x1)
+
+        sleep(0.01)
+
     stdscreen.refresh()
     stdscreen.scrollok(False)      # Enable window scroll
     stdscreen.nodelay(False)
-
-

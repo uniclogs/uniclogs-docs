@@ -5,7 +5,7 @@ from sqlalchemy import func, exc
 from loguru import logger
 import reverse_geocoder as rg
 import sys
-sys.path.insert(0, '../..')
+sys.path.append('../..')
 from pass_calculator.calculator import pass_overlap
 
 
@@ -178,9 +178,10 @@ def query_tle():
     session = Session()
 
     try:
+        # NOTE locking this will error and doesn't need to be atomic
         latest_tle_time = session.query(func.max(Tle.time_added))\
-            .with_lockmode('read')\
             .one()
+
         latest_tle = session.query(Tle)\
             .with_lockmode('read')\
             .filter(Tle.time_added == latest_tle_time)\

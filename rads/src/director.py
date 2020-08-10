@@ -2,10 +2,11 @@ import curses
 import time
 from loguru import logger
 import log_interface
-from db_interface import query_new_requests, query_archived_requests,\
-        query_upcomming_requests, update_approve_deny
+from db_interface import query_new_requests,\
+        query_archived_requests, query_upcomming_requests,\
+        update_approve_deny
 from request_data import RequestHeader
-from pass_calculator.calculator import pass_overlap
+from eb_request import print_eb_passes
 
 #To prevent screen flickering
 WAIT_TIME = 0.07
@@ -354,6 +355,7 @@ def main():
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_BLUE)
+    curses.init_pair(5, curses.COLOR_BLACK, curses.COLOR_YELLOW)
     # curses configuration
     curses.savetty()  # save the terminal state
     curses.noecho()  # disable user input echo
@@ -364,7 +366,7 @@ def main():
 
     # menu options
     # menu = ['Approve/Deny Request', 'Create Request', 'Check Schedule', 'Archive', 'Exit']
-    menu = ['Approve/Deny Request', 'Check Schedule', 'Archive', 'Exit']
+    menu = ['Approve/Deny Request', 'Check Schedule', 'Archive', 'EB passes', 'Exit']
     current_row_index = 0
     print_menu(stdscreen, menu, current_row_index)
 
@@ -390,11 +392,12 @@ def main():
             """
             if current_row_index == 0:
                 print_adrequest(stdscreen)
-            # check schedule
-            if current_row_index == 1:
+            elif current_row_index == 1:
                 print_schedulepad(stdscreen)
-            if current_row_index == 2:
+            elif current_row_index == 2:
                 print_archive(stdscreen)
+            elif current_row_index == 3:
+                print_eb_passes(stdscreen)
             # code that terminates the program after selecting exit
             if current_row_index == len(menu)-1:
                 stdscreen.addstr(0, 0, "Program successfully closed!")
@@ -419,13 +422,12 @@ def main():
     curses.endwin()         # Destroy virtual screen
 
 
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        # Restore default
-        curses.echo()           # Enable user input echo
-        curses.nocbreak()       # Enable line buffering
-        curses.curs_set(True)   # Enable the cursor display
-        curses.resetty()        # Restore terminal state
-        curses.endwin()         # Destroy virtual screen
+try:
+    main()
+except KeyboardInterrupt:
+    # Restore default
+    curses.echo()           # Enable user input echo
+    curses.nocbreak()       # Enable line buffering
+    curses.curs_set(True)   # Enable the cursor display
+    curses.resetty()        # Restore terminal state
+    curses.endwin()         # Destroy virtual screen

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from .orbitalpass import OrbitalPass
 from skyfield.api import Topos, \
                          load, \
@@ -6,6 +6,33 @@ from skyfield.api import Topos, \
 
 
 VALIDATE_TIME_TOLERENCE_S = 5.0
+
+
+def overlap(pass_b, pass_a):
+    """
+    Check to see if two passes overlap.
+
+    Parameters
+    ----------
+    pass_a : OrbitalPass
+        A OrbitalPass objects to check.
+    pass_b : OrbitalPass
+        A OrbitalPass objects to check.
+
+    Returns
+    -------
+    bool
+        True if passes overlaps or False if no overlap
+    """
+    ret = False
+
+    if (pass_a.aos_utc <= pass_b.aos_utc
+            and pass_a.los_utc >= pass_b.aos_utc)\
+            or (pass_a.aos_utc <= pass_b.los_utc
+                and pass_a.los_utc >= pass_b.los_utc):
+        ret = True
+
+    return ret
 
 
 def pass_overlap(new_pass: OrbitalPass,
@@ -38,10 +65,10 @@ def pass_overlap(new_pass: OrbitalPass,
         the approved pass and also check to if the start of the possible pass
         overlaps with end of the approved pass
         """
-        if (new_pass.aos_utc <= ap.aos_utc
-            and new_pass.los_utc > ap.aos_utc) \
-            and (new_pass.aos_utc < ap.los_utc
-                and new_pass.los_utc <= ap.los_utc):
+        if (new_pass.aos_utc <= ap.aos_utc and
+                new_pass.los_utc >= ap.aos_utc)\
+                or (new_pass.aos_utc <= ap.los_utc
+                    and new_pass.los_utc >= ap.los_utc):
             available = True  # pass overlap with an approved pass
             break  # no reason to check against any other approved passes
 
@@ -99,8 +126,8 @@ def get_all_passes(tle: [str],
     pass_list = []
 
     ts = load.timescale()
-    t0 = ts.utc(start_datetime_utc)
-    t1 = ts.utc(end_datetime_utc)
+    t0 = ts.utc(start_datetime_utc.replace(tzinfo=timezone.utc))
+    t1 = ts.utc(end_datetime_utc.replace(tzinfo=timezone.utc))
 
     # make topocentric object
     loc = Topos(lat_deg, long_deg, elev_m)
@@ -129,8 +156,8 @@ def get_all_passes(tle: [str],
 
             new_pass = OrbitalPass(gs_latitude_deg=lat_deg,
                                    gs_longitude_deg=long_deg,
-                                   aos_utc=aos_utc,
-                                   los_utc=los_utc,
+                                   aos_utc=aos_utc.replace(tzinfo=None),
+                                   los_utc=los_utc.replace(tzinfo=None),
                                    gs_elevation_m=elev_m,
                                    horizon_deg=horizon_deg)
 
