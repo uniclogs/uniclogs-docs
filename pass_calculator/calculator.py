@@ -35,9 +35,7 @@ def overlap(pass_b, pass_a):
     return ret
 
 
-def pass_overlap(new_pass: OrbitalPass,
-                 approved_passes: [OrbitalPass]):
-    # type: (OrbitalPass, [OrbitalPass]) -> bool
+def pass_overlap(new_pass: OrbitalPass, approved_passes: [OrbitalPass]):
     """Checks to see if the possible pass will overlap with an existing
     approved pass.
 
@@ -51,7 +49,8 @@ def pass_overlap(new_pass: OrbitalPass,
     Returns
     -------
     bool
-        True if pass overlaps with an existing approved pass or False if no overlap
+        True if pass overlaps with an existing approved pass or False if no
+        overlap
     """
 
     available = False
@@ -84,7 +83,6 @@ def get_all_passes(tle: [str],
                    elev_m: float = 0.0,
                    horizon_deg: float = 0.0,
                    min_duration_s: int = 0):
-    # type: ([str], float, float, datetime, datetime, [OrbitalPass], float, float, int) -> [OrbitalPass]
     """
     Get a list of all passes for a satellite and location for a time span.
 
@@ -166,9 +164,7 @@ def get_all_passes(tle: [str],
     return pass_list
 
 
-def validate_pass(tle: [str],
-                  orbital_pass: OrbitalPass):
-    # type: ([str], OrbitalPass) -> bool
+def validate_pass(tle: [str], orbital_pass: OrbitalPass):
     """
     Checks to see if all data in the OrbitalPass args is valid pass.
 

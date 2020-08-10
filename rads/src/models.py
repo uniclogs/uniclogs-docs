@@ -6,8 +6,8 @@ from os import getenv
 import datetime
 import sys
 
-PSQL_USERNAME = getenv('DART_USERNAME')
-PSQL_PASSWORD = getenv('DART_PASSWORD')
+PSQL_USERNAME = getenv('RADS_USERNAME')
+PSQL_PASSWORD = getenv('RADS_PASSWORD')
 PSQL_HOST = getenv('DART_HOST')
 PSQL_PORT = getenv('DART_PORT')
 PSQL_DB = getenv('DART_DB')

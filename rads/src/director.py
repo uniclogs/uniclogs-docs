@@ -7,6 +7,9 @@ from db_interface import query_new_requests,\
         update_approve_deny
 from request_data import RequestHeader
 from eb_request import print_eb_passes
+import sys
+sys.path.append('../../command')
+from schedule_pass import *  
 
 #To prevent screen flickering
 WAIT_TIME = 0.07
@@ -96,28 +99,33 @@ def print_adrequest(stdscreen):
             loop = False
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(adrequest)
-            #TODO Update COSMOS
+            ### Update added to connect to COSMOS ###
+            Schedule_Pass.schedule_all(adrequest)
             loop = False
 
        # elif key == curses.KEY_F1:
         elif key == 97: #a = 97 Approve
-            adrequest[ad_index].is_approved = True
+            if len(adrequest[ad_index].db_approved_overlap) == 0:
+              adrequest[ad_index].is_approved = True
             for index, row in enumerate(adrequest):
                 if adrequest[index].id in adrequest[ad_index].new_overlap:
                     adrequest[index].is_approved = False
             # expensive to use might want to avoid?
-            panel.clear() 
+        #    panel.clear() 
+            panel.touchwin()
         elif key == 100: #d = 100 Deny
             adrequest[ad_index].is_approved = False
             # expensive to use might want to avoid?
-            panel.clear()
+            #panel.clear()
+            panel.touchwin()
         elif key == 119: #w = 100 Set all Requests with the same pass to pending (Used to Undo Accept)            
             for index, row in enumerate(adrequest):
                 if adrequest[index].id in adrequest[ad_index].new_overlap:
                     adrequest[index].is_approved = None
             adrequest[ad_index].is_approved = None
             # expensive to use might want to avoid?
-            panel.clear()
+            #panel.clear()
+            panel.touchwin()
 
         while(len(adrequest) >= (height - 2)):
             height = height*2
@@ -153,18 +161,27 @@ def print_adrequest(stdscreen):
                     panel.attron(curses.color_pair(4))
                     panel.addstr(index + 1, 1, str(row))
                     panel.attroff(curses.color_pair(4))
+                elif len(adrequest[index].db_approved_overlap) > 0:
+                    panel.attron(curses.color_pair(5))
+                    panel.addstr(index + 1, 1, str(row))
+                    panel.attroff(curses.color_pair(5))
                 else:
                     panel.addstr(index + 1, 1, str(row))
                     panel.attroff(curses.color_pair(1))
                 panel.attroff(curses.color_pair(1))
 
         # panel.box()
+        schedule_overlap = "Overlaps with approved Request ID: " + str(adrequest[ad_index].db_approved_overlap)
+        blank = " " * width 
+        if len(adrequest[ad_index].db_approved_overlap) == 0:
+            stdscreen.addstr(2, 0, blank)
+        else:
+            stdscreen.addstr(2, 7, schedule_overlap)
         description = "Accept Deny Requests(Ordered By Date Created)"
         stdscreen.addstr(0, (width+1)//2 - len(description)//2, description)
         info = "Arrow Keys: To Move, a: Accept, d: Deny, w:Reset to Pending  c: Exit, s: Save and Exit"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
         stdscreen.addstr(3, 2, RequestHeader)
-        stdscreen.addstr(2, 0, " ")
         panel.refresh(ad_index, 0, 3, 1, draw_height, width)
         stdscreen.refresh()
         time.sleep(WAIT_TIME)
@@ -214,18 +231,23 @@ def print_schedulepad(stdscreen):
             loop = False
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(schedule)
-            #TODO UPDATE COSMO
+            ### UPDATE to connect to COSMOS
+            Schedule_Pass.schedule_all(schedule)
             loop = False
            
 
         elif key == 97: #a = 97
             schedule[schedule_index].is_approved = True
             # expensive to use might want to avoid?
-            panel.clear()
+            #panel.clear()
+            panel.touchwin()
+
         elif key == 100: #d = 100
             schedule[schedule_index].is_approved = False
             # expensive to use might want to avoid?
-            panel.clear()
+            #panel.clear()
+            panel.touchwin()
+
 
         if(len(schedule) >= (height - 2)):
             height = height*2
@@ -271,7 +293,7 @@ def print_schedulepad(stdscreen):
 
 
 def print_archive(stdscreen):
-    """Prints main menu and updates the display to current row/option selected.
+    """Prints archive menu and updates the display to current row/option selected.
 
     function to print accepted/denied requests
 
@@ -293,9 +315,7 @@ def print_archive(stdscreen):
 
     panel = curses.newpad(height, width)
     archive = query_archived_requests()
-    # archive.insert(0, RequestHeader) # TODO fix this
-    # panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
-    # panel.box()
+
     while loop is True:
         # interprets arrow key strokes
         key = stdscreen.getch()
@@ -328,8 +348,8 @@ def print_archive(stdscreen):
                 panel.addstr(index + 1, 1, str(row))
                 panel.attroff(curses.color_pair(1))
 
-        # panel.box()
-        stdscreen.addstr(0, (width+1)//2 - len("Archives(Ordered BY AOS DESC)")//2, "Archives(Oredred By AOS DESC)")
+        description = "Archives(Ordered BY AOS DESC)"
+        stdscreen.addstr(0, (width+1)//2 - len(description)//2, description)
         info = "Arrow Keys: To Move, c or s: Exit"
         stdscreen.addstr(1, (width+1)//2 - len(info)//2, info)
         stdscreen.addstr(3, 2, RequestHeader)

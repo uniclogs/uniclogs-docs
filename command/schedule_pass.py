@@ -14,24 +14,26 @@ class Schedule_Pass:
         Schedule_Pass data object is loaded with data 
         from Passes table retrieved through RADS
 
-        Attributes
+Attributes
         ----------
         passRequestList : a query/list received from RADS consisting of  
             request = (
-                [0] user_token,
-                [1] pass_uid,
-                [2] is_approved,
-                [3] is_sent,
-                [4] created_date,
-                [5] observation_type,
-                [6] pass_data.latitude,
-                [7] pass_data.longitude,
-                [8] pass_data.elevation,
-                [9] pass_data.start_time,
-                [10] pass_data.end_time
+                [0] uid
+                [1] user_token,
+                [2] pass_uid,
+                [3] is_approved,
+                [4] is_sent,
+                [5] created_date,
+                [6] updated_date,
+                [7] observation_type,
+                [8] pass_data.latitude,
+                [9] pass_data.longitude,
+                [10] pass_data.elevation,
+                [11] pass_data.start_time,
+                [12] pass_data.end_time
                 )
 
-         
+
             Note: only the pass_uid, latitude, longitude, start_time will be 
             sent to the satellite
         numberOfRequests : number of passes to be scheduled or canceled
@@ -51,21 +53,18 @@ class Schedule_Pass:
         return print("Current list: \n{}\n".format(self.passRequestList))
 
 
-    def sched(self, pass_info, index):
+    def sched(self, pass_info):
         """ Helper function to send attribute info to Cosmos interface
             to schedule passes. Called by schedule_all().
-        """
-
-        set_replay_mode(False)
-        connect_interface('ENGR_LINK_INT')
+        """       
         print('\nsending SCHEDULE command for PASS_ID: {}...\n'\
-                .format(pass_info[1]))
+                .format(pass_info.pass_id))
 
         # typecasts for cmd_tlm_server input
-        pass_id = np.uint16(pass_info[1])
-        latitude = np.float32(pass_info[6])
-        longitude = np.float32(pass_info[7])
-        AOS = str(pass_info[9])
+        pass_id = np.uint16(pass_info.pass_id)
+        latitude = np.float32(pass_info.latitude)
+        longitude = np.float32(pass_info.longitude)
+        AOS = str(pass_info.start_time)
 
         cmd("ENGR_LINK", "PASS_SCHEDULE",\
             {"PKT_ID": 10,\
@@ -73,25 +72,22 @@ class Schedule_Pass:
              "LATITUDE": latitude,\
              "LONGITUDE": longitude,\
              "AOS": AOS })
-        shutdown_cmd_tlm()
 
         return print('command sent')
 
 
-    def cancel(self, pass_info, index):
+    def cancel(self, pass_info):
         """ Helper function to send attribute info to Cosmos interface
             to schedule passes. Called by cancel_all().
         """
-        set_replay_mode(False)
-        connect_interface('ENGR_LINK_INT')
+
         print('\nsending CANCEL command...\n{}\n'\
-                .format(pass_info[1]))
+                .format(pass_info.pass_id))
         # cast to uint16 for cmd_tlm_server
-        pass_id = np.uint16(pass_info[1])
+        pass_id = np.uint16(pass_info.pass_id)
         cmd("ENGR_LINK", "PASS_CANCEL",\
             {"PKT_ID": 20,\
              "PASS_ID":pass_id })
-        shutdown_cmd_tlm()
 
         return print('command sent')
 
@@ -106,14 +102,20 @@ class Schedule_Pass:
         numberOfRequests : total number of passes to schedule 
 
         """
+        set_replay_mode(False)
+        connect_interface('ENGR_LINK_INT')
+        
         for row in range(0,self.numberOfRequests):
-            self.sched(self.passRequestList,row)
+            if self.passRequestList[row].is_approved is True:
+                self.sched(self.passRequestList[row])
+
+        shutdown_cmd_tlm()
 
         return print("\n{} requests(s) sent.".format(self.numberOfRequests))
 
 
     def cancel_all(self):
-        """ Iterates through list to send ancels all pass requests staged in satellite
+        """ Iterates through list to cancel all pass requests staged in satellite
 
         Attributes
         ----------
@@ -122,14 +124,23 @@ class Schedule_Pass:
         response: collects user input
         emptyPassRequestList : collects the newly emptied list
         """
+        set_replay_mode(False)
+        connect_interface('ENGR_LINK_INT')
+
         print("This request cannot be undone.")
         response = input("y/n: ")
         if response.lower() == 'y' or response.lower() == 'yes':
             for row in range(0,self.numberOfRequests):
-                self.cancel(self.passRequestList,row)
+                if self.passRequestList[row].is_approved is False\
+                    and self.passRequestList[row].is_sent is True:
+                    self.cancel(self.passRequestList[row])
+            
+            shutdown_cmd_tlm()
             return print("{} requests(s) deleted.".format(self.numberOfRequests))
         else:
             print("List not deleted")
+            shutdown_cmd_tlm()
+
             return self.passRequestList
 
 

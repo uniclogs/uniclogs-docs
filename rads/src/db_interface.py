@@ -41,7 +41,7 @@ def _fill_request_data(results):
                 r.pass_data.longitude,
                 r.pass_data.elevation,
                 r.pass_data.start_time,
-                r.pass_data.end_time
+                r.pass_data.end_time,
                 )
         requests.append(rd)
 
@@ -93,7 +93,7 @@ def query_new_requests():
     approved_req = query_upcomming_requests()
     for r in ret:
         for a in approved_req:
-            if pass_overlap(r.pass_data, [a.pass_data]) is True:
+            if pass_overlap(a.pass_data, [r.pass_data]) is True:
                 r.db_approved_overlap.append(a.id)
 
     # find all overlap for new request

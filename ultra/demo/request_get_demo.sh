@@ -4,4 +4,4 @@ if [[ -z "$REQUEST_ID" ]]; then
     exit 0
 fi
 
-curl -X GET -H "Content-Type: application/json" -d '{"user_token": "test token"}' http://127.0.0.1:5000/request/$REQUEST_ID
+curl -X GET -H "Content-Type: application/json" http://127.0.0.1:5000/request/$REQUEST_ID
