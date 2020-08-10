@@ -1,11 +1,15 @@
-import sys, os, getopt
-import ultra
+#!/usr/bin/env python3
+import sys
+import os
+import getopt
+import ultra.models
+import ultra.server
 
 
 def daemonize(pid_file):
     # Check for a pidfile to see if the daemon is already running
     try:
-        with open(pid_file,'r') as pf:
+        with open(pid_file, 'r') as pf:
 
             pid = int(pf.read().strip())
     except IOError:
@@ -41,7 +45,7 @@ def daemonize(pid_file):
     os.dup2(se.fileno(), sys.stderr.fileno())
 
     pid = str(os.getpid())
-    with open(pid_file,'w+') as f:
+    with open(pid_file, 'w+') as f:
         f.write(pid + '\n')
 
 
@@ -74,7 +78,7 @@ if __name__ == "__main__":
     if daemon_flag:
         daemonize(pid_file)
 
-    ultra.run()
+    ultra.server.run()
 
     if daemon_flag:
         # remove pid file
