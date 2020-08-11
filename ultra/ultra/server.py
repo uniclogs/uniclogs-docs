@@ -38,7 +38,7 @@ app.config["RESTFUL_JSON"] = {
 api.add_resource(passes.PassesEndpoint, '/passes')
 api.add_resource(request.RequestEndpoint, '/request')
 api.add_resource(request_id.RequestIdEndpoint, '/request/<int:request_id>')
-api.add_resource(user_token.UserTokenEndpoint, '/users')
+api.add_resource(user_token.UserTokenEndpoint, '/user')
 api.add_resource(signal.SignalEndpoint, '/signal')
 api.add_resource(telemetry.TelemetryEndpoint, '/telemetry')
 

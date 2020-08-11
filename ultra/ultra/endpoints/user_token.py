@@ -2,7 +2,7 @@ from flask import json
 from flask_restful import reqparse, Resource, inputs
 from loguru import logger
 from ultra.database import db
-from ultra.models import UserTokens
+from ultra.models import UserTokens, get_random_string
 
 
 class UserTokenJsonEncoder(json.JSONEncoder):
@@ -68,26 +68,23 @@ class UserTokenEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("request_token",
-                            type=inputs.regex('^\w{1,25}$'),
-                            required=True,
-                            location="json")
         parser.add_argument("user_id",
-                            type=inputs.regex('^\w{1,35}$'),
+                            type=inputs.regex('^\w{1,25}$'),
                             required=True,
                             location="json")
         args = parser.parse_args()
 
         try:
-            new_user_token = UserTokens(token=args["request_token"],
-                                        user_id=args["user_id"])
+            new_token = get_random_string(128)
+            new_user = UserTokens(token=new_token, user_id=args["user_id"])
 
-            db.session.add(new_user_token)
+            db.session.add(new_user)
             db.session.commit()
 
         except Exception:
             db.session.rollback()
         return {
                 "message": "New UserToken submitted.",
-                "user_id": args["user_id"]
+                "user_id": args["user_id"],
+                "token": new_token
                 }
