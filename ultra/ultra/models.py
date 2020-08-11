@@ -29,7 +29,11 @@ class Request(db.Model):
     """
     __tablename__ = 'requests'
     uid = db.Column(db.Integer, db.Sequence('requests_seq'), primary_key=True, nullable=False)
-    user_token = db.Column(db.Text, nullable=False)
+    user_token = db.Column(db.Text,
+                           db.ForeignKey('user_token.token',
+                                         onupdate="NO ACTION",
+                                         ondelete="NO ACTION"),
+                           nullable=False)
     is_approved = db.Column(db.Boolean)
     is_sent = db.Column(db.Boolean, nullable=False, default=False)
     pass_uid = db.Column(db.Integer,
@@ -131,10 +135,8 @@ class UserTokens(db.Model):
     """
     __tablename__ = 'user_tokens'
     token = db.Column(db.Text,
-                      db.ForeignKey('requests.user_token',
-                                    onupdate="NO ACTION",
-                                    ondelete="NO ACTION"),
-                      primary_key=True)
+                      primary_key=True,
+                      nullable=False)
     user_id = db.Column(db.String(120), nullable=False, primary_key=True)
 
 
