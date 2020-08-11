@@ -2,7 +2,6 @@
 # DECLARE_TARGET target_name [substitute_name]
 
 AUTO_DECLARE_TARGETS
-# DECLARE_TARGET SYSTEM
 
 # Listen Hosts - Ip addresses or hostnames to listen on when running the tools
 LISTEN_HOST CTS_API 127.0.0.1

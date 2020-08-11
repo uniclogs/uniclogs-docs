@@ -1,4 +1,7 @@
 import datetime
+import string
+import random
+import ultra
 from ultra.database import db
 
 
@@ -25,12 +28,14 @@ class Request(db.Model):
         Used when joined with Pass.
     """
     __tablename__ = 'requests'
-    uid = db.Column(db.Integer, db.Sequence('requests_seq'), primary_key=True)
-    user_token = db.Column(db.String(120), nullable=False)
-    is_approved = db.Column(db.Boolean, default=True, nullable=False)
-    is_sent = db.Column(db.Boolean, nullable=False)
+    uid = db.Column(db.Integer, db.Sequence('requests_seq'), primary_key=True, nullable=False)
+    user_token = db.Column(db.Text, nullable=False)
+    is_approved = db.Column(db.Boolean)
+    is_sent = db.Column(db.Boolean, nullable=False, default=False)
     pass_uid = db.Column(db.Integer,
-                         db.ForeignKey('pass.uid', ondelete="CASCADE"),
+                         db.ForeignKey('pass.uid',
+                                       onupdate="NO ACTION",
+                                       ondelete="NO ACTION"),
                          nullable=False)
     created_date = db.Column(db.DateTime(timezone=False),
                              nullable=False,
@@ -126,9 +131,31 @@ class UserTokens(db.Model):
     """
     __tablename__ = 'user_tokens'
     token = db.Column(db.Text,
-                      db.ForeignKey('requests.user_token', ondelete="CASCADE"),
+                      db.ForeignKey('requests.user_token',
+                                    onupdate="NO ACTION",
+                                    ondelete="NO ACTION"),
                       primary_key=True)
     user_id = db.Column(db.String(120), nullable=False, primary_key=True)
+
+
+class Packets(db.Model):
+    """
+    Used to model the packets table in the database.
+    """
+    __tablename__ = 'packets'
+    id = db.Column(db.BigInteger,
+                   db.Sequence('packets_id_seq'),
+                   primary_key=True,
+                   nullable=False)
+    target_id = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.Text, nullable=False)
+    is_tlm = db.Column(db.Boolean, nullable=False, default=True)
+    created_at = db.Column(db.DateTime(timezone=False),
+                           nullable=False,
+                           default=datetime.datetime.utcnow())
+    updated_at = db.Column(db.DateTime(timezone=False),
+                           nullable=False,
+                           default=datetime.datetime.utcnow())
 
 
 class Items(db.Model):
@@ -159,7 +186,7 @@ class ItemToDecomTableMappings(db.Model):
     reduced = db.Column(db.Boolean)
 
 
-class T2_0(db.Model):
+class Telemetry(db.Model):
     """
     Used to model the t2_0 table in database.
     This models a many-to-many relationship between Request and User
@@ -167,15 +194,13 @@ class T2_0(db.Model):
     ----------
     __tablename__: `str` The raw postgresql table name.
     """
-    __tablename__ = 't2_0'
+    __tablename__ = ultra.TELEMETRY_TABLE_NAME
     id = db.Column(db.BigInteger, nullable=False, primary_key=True)
     time = db.Column(db.DateTime(timezone=False))
     ple_id = db.Column(db.BigInteger)
     meta_id = db.Column(db.BigInteger)
     reduced_id = db.Column(db.BigInteger)
-    packet_log_id = db.Column(db.Integer,
-                              db.ForeignKey('packet_logs.id',
-                                            ondelete="CASCADE"))
+    packet_log_id = db.Column(db.Integer)
     reduced_state = db.Column(db.Integer, default=0)
     i0 = db.Column(db.Float(precision=2))
     i1 = db.Column(db.Text)
@@ -188,3 +213,12 @@ class T2_0(db.Model):
     i8 = db.Column(db.Integer)
     i9 = db.Column(db.Integer)
     i10 = db.Column(db.Integer)
+
+
+def get_random_string(length):
+    """
+    Helper for generation of random string
+    """
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for i in range(length))
+    return result_str
