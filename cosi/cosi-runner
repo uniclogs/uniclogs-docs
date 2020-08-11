@@ -48,48 +48,45 @@ def fetch_tle(args: list):
     tle = models.TLE(header_text=tle.get('TLE_LINE0'),
                      first_line=tle.get('TLE_LINE1'),
                      second_line=tle.get('TLE_LINE2'))
-    print('\n\nInserting {} into db...'.format(tle))
-    models.add_tle(tle)
+    if(args.debug):
+        print('Inserting {} into db...'.format(tle))
+    models.add_tle_to_db(tle)
+
+
+def fetch_satellite(args: list):
+    satellite = satnogs.request_satellite(args.norad_id)
+    if(args.debug):
+        print('Satellite info: {}'.format(satellite))
 
 
 def fetch_telemetry(args: list):
-    satellite = satnogs.request_satellite(args.norad_id)
-    print('\n\nSatellite: ' + str(satellite))
+    # Get latest telemetry
+    encoded_telemetry = satnogs.request_telemetry(args.norad_id)
+    frame = bytearray.fromhex(encoded_telemetry.get('frame'))
 
-    encoded_telemetry = satnogs.request_telemetry(args.norad_id)[0]
-    status = {True: 'OK',
-              False: 'ERR'}[encoded_telemetry != []
-                            and encoded_telemetry is not None]
-    print('\n\nTelemetry: ' + status)
-    if(status == 'OK'):
-        # Get data from DART
-        packet = bcs.get_tlm_packet('ENGR_LINK', 'MAGNETOMETER')
-        print('\n\nGot magentometer packets from DART: {}'.format(packet))
+    # Decode telemetry
+    decoded_telemetry = satnogs.decode_telemetry_frame(frame)
 
-        # Decode telemetry
-        decoded_telemetry = satnogs.decode_telemetry_frame(encoded_telemetry)
+    # Send data to dart
+    magentometer_telemetry = {
+        'INVALID_COUNT': decoded_telemetry.mag_invalid_count,
+        'SENSOR_USED': decoded_telemetry.mag_sensor_used,
+        'VECTOR_BODY1': decoded_telemetry.mag_vector_body1,
+        'VECTOR_BODY2': decoded_telemetry.mag_vector_body2,
+        'VECTOR_BODY3': decoded_telemetry.mag_vector_body3,
+        'VECTOR_VALID': decoded_telemetry.mag_vector_valid
+    }
 
-        # Get data from DART
-        packet = bcs.get_tlm_packet('ENGR_LINK', 'MAGNETOMETER')
-        print('\n\nGot magentometer packets from DART: {}'.format(packet))
-
-        # Send data to dart
-        magentometer_telemetry = {
-            'INVALID_COUNT': decoded_telemetry.mag_invalid_count,
-            'SENSOR_USED': decoded_telemetry.mag_sensor_used,
-            'VECTOR_BODY1': decoded_telemetry.mag_vector_body1,
-            'VECTOR_BODY2': decoded_telemetry.mag_vector_body2,
-            'VECTOR_BODY3': decoded_telemetry.mag_vector_body3,
-            'VECTOR_VALID': decoded_telemetry.mag_vector_valid
-        }
-        try:
-            print('\n\nInjecting telemetry into DART: {}'
+    try:
+        if(args.debug):
+            print('Injecting telemetry into DART: {}'
                   .format(magentometer_telemetry))
-            bcs.inject_tlm('ENGR_LINK',
-                           'MAGNETOMETER',
-                           item_hash=magentometer_telemetry)
+        bcs.inject_tlm('ENGR_LINK', 'MAGNETOMETER',
+                       item_hash=magentometer_telemetry)
+        if(args.debug):
             print('Succesfully injected!')
-        except Exception:
+    except Exception:
+        if(args.debug):
             print('Failed to inject telemetry frame into DART: {}'
                   .format(magentometer_telemetry))
 
@@ -100,29 +97,11 @@ def cycle(args):
               .format(time.ctime()))
 
     if(not args.no_tle):
-        latest_tle = spacetrack.request_tle(args.norad_id[0])
-        tle = models.TLE(header_text=latest_tle.get('TLE_LINE0'),
-                         first_line=latest_tle.get('TLE_LINE1'),
-                         second_line=latest_tle.get('TLE_LINE2'))
-        success = models.add_tle_to_db(tle)
-        if(args.debug):
-            print('Latest TLE: {}\nInserted: {}'
-                  .format(latest_tle, success))
-
+        fetch_tle(args)
     if(not args.no_satellite):
-        satellite = satnogs.request_satellite(args.norad_id[0])
-        if(args.debug):
-            print('satellite info: {}'.format(satellite))
-
+        fetch_satellite(args)
     if(not args.no_telemetry):
-        telemetry_response = satnogs.request_telemetry(args.norad_id[0])
-        if(args.debug):
-            print('Telemetry: {}'.format(telemetry_response))
-
-        frame = bytearray.fromhex(telemetry_response.get('frame'))
-        decoded_telemetry = satnogs.decode_telemetry_frame(frame)
-        if(args.debug):
-            print('Decoded telemetry frame: {}'.format(decoded_telemetry))
+        fetch_telemetry(args)
 
     if(args.latest_tle is not None):
         try:
@@ -148,9 +127,8 @@ def main(args: list) -> None:
                               satellite name')
     parser.add_argument('-n', '--norad-id',
                         dest='norad_id',
-                        nargs=1,
                         type=int,
-                        default=[43793],
+                        default=43793,
                         help='[Default: 43793 (CSim)] Norad Satellite ID to\
                               use when fetching TLE and Telemetry')
     parser.add_argument('--no-satellite',
@@ -179,7 +157,6 @@ def main(args: list) -> None:
                         interval')
     parser.add_argument('-p', '--poll-interval',
                         dest='poll_interval',
-                        nargs=1,
                         type=str,
                         default='30m',
                         help='[Default: 30m] Time interval at which CoSI polls\
