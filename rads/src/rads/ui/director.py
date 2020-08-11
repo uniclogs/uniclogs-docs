@@ -7,7 +7,7 @@ from rads.database.db_interface import query_new_requests,\
         update_approve_deny
 from rads.database.request_data import RequestHeader
 from .eb_request import print_eb_passes
-from rads.command.schedule_pass import *  
+from rads.command.schedule_pass import Schedule_Pass
 
 #To prevent screen flickering
 WAIT_TIME = 0.07
@@ -72,7 +72,7 @@ def print_adrequest(stdscreen):
     # gets the max height and width
     height, width = stdscreen.getmaxyx()
     width -= 1
-    draw_height = height - 2 
+    draw_height = height - 2
     vheight, vwidth = stdscreen.getmaxyx()
 
     panel = curses.newpad(height, width)

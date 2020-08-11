@@ -81,10 +81,10 @@ def query_new_requests():
                     Request.is_approved.is_(None))\
             .order_by(Request.created_date.asc())\
             .all()
+        ret = _fill_request_data(result)
     except exc.SQLAlchemyError as e:
         logger.critical("Database query failed {}".format(e))
     finally:
-        ret = _fill_request_data(result)
         session.close()
 
     # find all overlap for approved request in db
