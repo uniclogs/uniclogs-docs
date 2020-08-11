@@ -1,5 +1,6 @@
 import flask_restful as fr
 import flask
+from flask_cors import CORS
 import ultra.database as db
 import ultra.log_interface as li
 import ultra.endpoints.passes as passes
@@ -21,6 +22,7 @@ Then initializes the Flask back-end server and set up REST endpoints
 
 li.init(__name__)
 app = flask.Flask(__name__)
+CORS(app)
 api = fr.Api(app)
 
 

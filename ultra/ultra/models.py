@@ -1,7 +1,6 @@
 import datetime
 import string
 import random
-import ultra
 from ultra.database import db
 
 
@@ -190,31 +189,48 @@ class ItemToDecomTableMappings(db.Model):
 
 class Telemetry(db.Model):
     """
-    Used to model the t2_0 table in database.
+    Used to model the telemetry table in database.
     This models a many-to-many relationship between Request and User
     Attributes
     ----------
     __tablename__: `str` The raw postgresql table name.
     """
-    __tablename__ = ultra.TELEMETRY_TABLE_NAME
-    id = db.Column(db.BigInteger, nullable=False, primary_key=True)
-    time = db.Column(db.DateTime(timezone=False))
-    ple_id = db.Column(db.BigInteger)
-    meta_id = db.Column(db.BigInteger)
-    reduced_id = db.Column(db.BigInteger)
-    packet_log_id = db.Column(db.Integer)
-    reduced_state = db.Column(db.Integer, default=0)
-    i0 = db.Column(db.Float(precision=2))
-    i1 = db.Column(db.Text)
-    i2 = db.Column(db.Float(precision=2))
-    i3 = db.Column(db.Text)
-    i4 = db.Column(db.Integer)
-    i5 = db.Column(db.Integer)
-    i6 = db.Column(db.Integer)
-    i7 = db.Column(db.Integer)
-    i8 = db.Column(db.Integer)
-    i9 = db.Column(db.Integer)
-    i10 = db.Column(db.Integer)
+    __tablename__ = 'telemetry'
+    id = db.Column(db.Integer,
+                   db.Sequence('telemetry_id_seq'),
+                   nullable=False,
+                   primary_key=True)
+    received_at = db.Column(db.DateTime(timezone=False),
+                            nullable=False,
+                            default=datetime.datetime.utcnow())
+    invalid_count = db.Column(db.Integer)
+    sensor_used = db.Column(db.Integer)
+    vector_body_1 = db.Column(db.Integer)
+    vector_body_2 = db.Column(db.Integer)
+    vector_body_3 = db.Column(db.Integer)
+    vector_valid = db.Column(db.Boolean)
+
+    def to_json(self):
+        return {
+                'id': self.id,
+                'received_at': self.received_at.isoformat(),
+                'invalid_count': self.invalid_count,
+                'sensor_used': self.sensor_used,
+                'vector_body_1': self.vector_body_1,
+                'vector_body_2': self.vector_body_2,
+                'vector_body_3': self.vector_body_3,
+                'vector_valid': self.vector_valid
+               }
+
+    def __repr__(self):
+        return "<Telemetry ({}) [{}]: {} {} {} {} {}>" \
+               .format(self.id,
+                       self.received_at,
+                       self.invalid_count,
+                       self.vector_body_1,
+                       self.vector_body_2,
+                       self.vector_body_3,
+                       self.vector_valid)
 
 
 def get_random_string(length):
