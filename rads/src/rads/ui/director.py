@@ -56,7 +56,7 @@ def print_menu(stdscreen, menu, current_row_index):
 
 
 def print_adrequest(stdscreen):
-    """Prints main menu and updates the display to current row/option selected.
+    """Prints accept/deny menu and updates the display to current row/option selected. Allow for accepting and denying requests.
 
     Parameters
     ----------
@@ -77,8 +77,6 @@ def print_adrequest(stdscreen):
 
     panel = curses.newpad(height, width)
     adrequest = query_new_requests()
-    # adrequest.insert(0, RequestHeader) #TODO fix this
-    # panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
     while loop is True:
         # interprets arrow key strokes
@@ -98,44 +96,34 @@ def print_adrequest(stdscreen):
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(adrequest)
             ### Update added to connect to COSMOS ###
-            Schedule_Pass.schedule_all(adrequest)
+ #           Schedule_Pass.schedule_all(adrequest)
             loop = False
 
-       # elif key == curses.KEY_F1:
         elif key == 97: #a = 97 Approve
             if len(adrequest[ad_index].db_approved_overlap) == 0:
               adrequest[ad_index].is_approved = True
-            for index, row in enumerate(adrequest):
-                if adrequest[index].id in adrequest[ad_index].new_overlap:
-                    adrequest[index].is_approved = False
-            # expensive to use might want to avoid?
-        #    panel.clear() 
+              for index, row in enumerate(adrequest):
+                  if adrequest[index].id in adrequest[ad_index].new_overlap:
+                      adrequest[index].is_approved = False
             panel.touchwin()
         elif key == 100: #d = 100 Deny
             adrequest[ad_index].is_approved = False
-            # expensive to use might want to avoid?
-            #panel.clear()
             panel.touchwin()
         elif key == 119: #w = 100 Set all Requests with the same pass to pending (Used to Undo Accept)            
             for index, row in enumerate(adrequest):
                 if adrequest[index].id in adrequest[ad_index].new_overlap:
                     adrequest[index].is_approved = None
             adrequest[ad_index].is_approved = None
-            # expensive to use might want to avoid?
-            #panel.clear()
             panel.touchwin()
 
         while(len(adrequest) >= (height - 2)):
             height = height*2
             panel.resize(height, width)
-            # panel.clear()
 
         for index, row in enumerate(adrequest):
             if adrequest[ad_index].is_approved is False:
                 panel.attron(curses.color_pair(2))
-            # panel.addstr(index + 1, 1, str(adrequest[index]))
 
-        # print_pad(panel, stdscreen, list1, schedule_index)
         if(len(adrequest) < (height - 2)):
             """
             enumerate loops over menu and creates a counter to know what part
@@ -190,7 +178,7 @@ def print_adrequest(stdscreen):
 
 
 def print_schedulepad(stdscreen):
-    """Prints main menu and updates the display to current row/option selected.
+    """Prints schedule and updates the display to current row/option selected. Allows for cancellation of approved requests.
 
     Parameters
     ----------
@@ -211,8 +199,6 @@ def print_schedulepad(stdscreen):
 
     panel = curses.newpad(height, width)
     schedule = query_upcomming_requests()
-    # schedule.insert(0, RequestHeader) # TODO fix this
-    # panel.refresh(schedule_index, 0, 1, 1, draw_height, width)
 
     while loop is True:
         # interprets arrow key strokes
@@ -230,20 +216,16 @@ def print_schedulepad(stdscreen):
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(schedule)
             ### UPDATE to connect to COSMOS
-            Schedule_Pass.schedule_all(schedule)
+#            Schedule_Pass.schedule_all(schedule)
             loop = False
            
 
         elif key == 97: #a = 97
             schedule[schedule_index].is_approved = True
-            # expensive to use might want to avoid?
-            #panel.clear()
             panel.touchwin()
 
         elif key == 100: #d = 100
             schedule[schedule_index].is_approved = False
-            # expensive to use might want to avoid?
-            #panel.clear()
             panel.touchwin()
 
 
@@ -331,9 +313,6 @@ def print_archive(stdscreen):
         if(len(archive) >= (height - 2)):
             height = height*2
             panel.resize(height, width)
-            # panel.clear()
-            # panel.refresh(schedule_index, 0, 2, 1, draw_height, width)
-        # print_pad(panel, stdscreen, list1, schedule_index)
 
         if(len(archive) < (height - 2)):
             """
@@ -356,7 +335,6 @@ def print_archive(stdscreen):
         stdscreen.refresh()
         time.sleep(WAIT_TIME)
 
-    # panel.endwin()
     stdscreen.refresh()
     stdscreen.scrollok(False)      # Enable window scroll
     stdscreen.nodelay(False)

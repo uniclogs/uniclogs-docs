@@ -3,9 +3,9 @@ import random
 import string
 import getopt
 from datetime import datetime, timedelta
-sys.path.insert(0, '../src')
+sys.path.insert(0, '../src/rads/database')
 from models import Request, Pass, Session
-sys.path.insert(0, '../..')
+sys.path.insert(0, '../../pass_calculator')
 import pass_calculator.calculator as pc
 
 
