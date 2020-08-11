@@ -7,7 +7,7 @@
 `$ python3 setup.py bdist_wheel`
 
 ## Installation
-`$ python -m pip install dist/rads.whl` 
+`$ python -m pip install dist/rads*.whl` 
 
 ## Run
 local:
