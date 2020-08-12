@@ -29,4 +29,5 @@ def init_db(app):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
-    db.create_all(app=app)
+    if app.debug:
+        db.create_all(app=app)
