@@ -12,11 +12,11 @@ USER_MODIFIED
 "config/targets/UNICLOGS/procedures/uniclogs_script.rb" 0x2F2EDC86
 "config/targets/UNICLOGS/procedures/uniclogs_test.rb" 0xC450C397
 "config/targets/UNICLOGS/cmd_tlm_server.txt" 0xFE81FF5F
-"config/targets/TLM/cmd_tlm/_ccsds_cmd.txt" 0x7F5572F3
-"config/targets/TLM/cmd_tlm/_ccsds_tlm.txt" 0xA6227DD1
-"config/targets/TLM/cmd_tlm/cmd.txt" 0x053219F9
-"config/targets/TLM/cmd_tlm/tlm.txt" 0xB96E6810
-"config/targets/TLM/cmd_tlm_server.txt" 0x81C1A988
+"config/targets/ENGR_LINK/cmd_tlm/_ccsds_cmd.txt" 0x7F5572F3
+"config/targets/ENGR_LINK/cmd_tlm/_ccsds_tlm.txt" 0xA6227DD1
+"config/targets/ENGR_LINK/cmd_tlm/cmd.txt" 0x053219F9
+"config/targets/ENGR_LINK/cmd_tlm/tlm.txt" 0xB96E6810
+"config/targets/ENGR_LINK/cmd_tlm_server.txt" 0x81C1A988
 "config/targets/SYSTEM/screens/meta.txt" 0xBA40DB4B
 "config/targets/SYSTEM/cmd_tlm/meta_tlm.txt" 0x07CDABCB
 "config/targets/SYSTEM/target.txt" 0x07E82776

@@ -6,10 +6,18 @@ REMOTE_IMAGE=dmitrimcguuckin/$(LOCAL_IMAGE):latest
 
 IMAGE=$(REMOTE_IMAGE)
 USE_LOCAL_BUILD=1
-START_INTERACTIVE_MODE=0
+START_INTERACTIVE_MODE=1
 
 build:
-	docker build --compress --network=host --build-arg DART_DB=$(DART_DB) --build-arg DART_USERNAME=$(DART_USERNAME) --build-arg DART_PASSWORD=$(DART_PASSWORD) --force-rm --tag $(LOCAL_IMAGE) .
+	$(info Using Arguments: ($(DART_DB), $(DART_USERNAME), $(DART_PASSWORD), $(LOCAL_IMAGE)))
+	docker build \
+		--compress \
+		--network=host \
+		--build-arg DART_DB=$(DART_DB) \
+		--build-arg DART_USERNAME=$(DART_USERNAME) \
+		--build-arg DART_PASSWORD=$(DART_PASSWORD) \
+		--force-rm \
+		--tag $(LOCAL_IMAGE) .
 
 run:
 ifeq ($(USE_LOCAL_BUILD), 1)
@@ -22,7 +30,19 @@ ifeq ($(START_INTERACTIVE_MODE), 1)
 	$(eval FLAGS=--interactive)
 endif
 
-	docker run --tty $(FLAGS) --detach --name $(CONTAINER) --network=host --ipc=host --env DART_DB=$(DART_DB) --env DART_USERNAME=$(DART_USERNAME) --env DART_PASSWORD=$(DART_PASSWORD) --env DISPLAY=$(DISPLAY) --volume $(XAUTH):/root/.Xauthority --volume /var/run/postgresql/.s.PGSQL.5432:/var/run/postgresql/.s.PGSQL.5432 $(IMAGE)
+	docker run \
+		--tty $(FLAGS) \
+		--detach \
+		--name $(CONTAINER) \
+		--network=host \
+		--ipc=host \
+		--env DART_DB=$(DART_DB) \
+		--env DART_USERNAME=$(DART_USERNAME) \
+		--env DART_PASSWORD=$(DART_PASSWORD) \
+		--env DISPLAY=$(DISPLAY) \
+		--volume $(PG_SOCKET):$(PG_SOCKET) \
+		--volume $(XAUTH):/root/.Xauthority \
+		$(IMAGE)
 
 deploy:
 	docker commit -a $(AUTHOR) -m $(DESCRIPTION) $(CONTAINER) $(REMOTE_IMAGE)

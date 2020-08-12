@@ -31,10 +31,9 @@ class RequestEndpoint(Resource):
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_uid",
+        parser.add_argument("token",
                             required=True,
-                            type=inputs.regex('^\w{1,25}$'),
-                            location="json")
+                            location="headers")
         parser.add_argument("latitude",
                             required=True,
                             type=float,
@@ -165,20 +164,20 @@ class RequestEndpoint(Resource):
 
         parser = reqparse.RequestParser()
         # user_uid length shouldn't be more than 25 chars
-        parser.add_argument("user_uid",
+        parser.add_argument("token",
                             type=inputs.regex('^\w{1,25}$'),
                             required=True,
-                            location="json")
+                            location="headers")
         args = parser.parse_args()
 
         # TODO user check user day count
         try:
             result = db.session.query(UserTokens, Pass) \
-                            .join(Request,
-                                  UserTokens.token == Request.user_token) \
-                            .join(Pass, Pass.uid == Request.pass_uid) \
-                            .filter(UserTokens.user_id == args["user_uid"]) \
-                            .all()
+                               .join(Request,
+                                     UserTokens.token == Request.user_token) \
+                               .join(Pass, Pass.uid == Request.pass_uid) \
+                               .filter(UserTokens.token == args["token"]) \
+                               .all()
         except Exception as e:
             logger.error(e)
             logger.error("Error fetching token '{}'".format(args["user_uid"]))

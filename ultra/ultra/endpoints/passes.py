@@ -30,11 +30,11 @@ class PassesEndpoint(Resource):
         parser.add_argument("latitude",
                             required=True,
                             type=float,
-                            location="json")
+                            location="args")
         parser.add_argument("longitude",
                             required=True,
                             type=float,
-                            location="json")
+                            location="args")
         parser.add_argument("elevation_m", type=float)
         args = parser.parse_args()
 

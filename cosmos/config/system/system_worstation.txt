@@ -1,9 +1,7 @@
 # Declare Targets that make up the system
 # DECLARE_TARGET target_name [substitute_name]
 
-# AUTO_DECLARE_TARGETS
-DECLARE_TARGET UNICLOGS
-DECLARE_TARGET SYSTEM
+AUTO_DECLARE_TARGETS
 
 # Listen Hosts - Ip addresses or hostnames to listen on when running the tools
 LISTEN_HOST CTS_API 127.0.0.1

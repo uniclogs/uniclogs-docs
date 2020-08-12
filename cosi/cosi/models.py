@@ -1,6 +1,6 @@
 import datetime
 import cosi
-from sqlalchemy import Column, Text, DateTime
+from sqlalchemy import Column, Text, DateTime, Integer, Sequence, Boolean
 
 
 class TLE(cosi.Base):
@@ -29,10 +29,28 @@ class TLE(cosi.Base):
                                                self.second_line)
 
 
-def create_all_tables() -> None:
-    """Creates all of the tables requred to exist by CoSI
+class Telemetry(cosi.Base):
     """
-    cosi.Base.metadata.create_all(cosi.engine)
+    Used to model the telemetry table in database.
+    This models a many-to-many relationship between Request and User
+    Attributes
+    ----------
+    __tablename__: `str` The raw postgresql table name.
+    """
+    __tablename__ = 'telemetry'
+    id = Column(Integer,
+                Sequence('telemetry_id_seq'),
+                nullable=False,
+                primary_key=True)
+    received_at = Column(DateTime(timezone=False),
+                         nullable=False,
+                         default=datetime.datetime.utcnow())
+    invalid_count = Column(Integer)
+    sensor_used = Column(Integer)
+    vector_body_1 = Column(Integer)
+    vector_body_2 = Column(Integer)
+    vector_body_3 = Column(Integer)
+    vector_valid = Column(Boolean)
 
 
 def new_db_session() -> cosi.DartSession:
@@ -48,7 +66,7 @@ def new_db_session() -> cosi.DartSession:
     return cosi.DartSession(autocommit=True)
 
 
-def add_tle_to_db(tle: TLE) -> bool:
+def inject_tle(tle: TLE) -> bool:
     """Adds the given TLE to the database
 
     Parameters
@@ -110,3 +128,30 @@ def get_latest_tle_by_name(name: str) -> TLE:
                   .filter(TLE.header_text.contains(name.upper())) \
                   .order_by(TLE.time_added.desc()) \
                   .first()
+
+
+def inject_telemetry(telemetry: Telemetry):
+    """Adds the given Telemetry frame to the database
+
+    Parameters
+    ----------
+    telemetry: `Telemetry` The TLE to be added to DART DB
+
+    Returns
+    -------
+    `bool`: An indicator of whether or not the submition of the Telemetry
+            succeeded
+    """
+    success = False
+    session = new_db_session()
+    session.begin()
+
+    try:
+        session.add(telemetry)
+        session.commit()
+        success = True
+    except Exception:
+        session.rollback()
+    finally:
+        session.close()
+        return success
