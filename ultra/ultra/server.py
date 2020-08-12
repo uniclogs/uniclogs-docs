@@ -6,7 +6,7 @@ import ultra.log_interface as li
 import ultra.endpoints.passes as passes
 import ultra.endpoints.request as request
 import ultra.endpoints.request_id as request_id
-import ultra.endpoints.user_token as user_token
+import ultra.endpoints.user as user
 import ultra.endpoints.signal as signal
 import ultra.endpoints.telemetry as telemetry
 import sys
@@ -38,7 +38,7 @@ app.config["RESTFUL_JSON"] = {
 api.add_resource(passes.PassesEndpoint, '/passes')
 api.add_resource(request.RequestEndpoint, '/request')
 api.add_resource(request_id.RequestIdEndpoint, '/request/<int:request_id>')
-api.add_resource(user_token.UserTokenEndpoint, '/user')
+api.add_resource(user.UserEndpoint, '/user')
 api.add_resource(signal.SignalEndpoint, '/signal')
 api.add_resource(telemetry.TelemetryEndpoint, '/telemetry')
 

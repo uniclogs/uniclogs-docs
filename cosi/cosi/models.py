@@ -53,12 +53,6 @@ class Telemetry(cosi.Base):
     vector_valid = Column(Boolean)
 
 
-def create_all_tables() -> None:
-    """Creates all of the tables requred to exist by CoSI
-    """
-    cosi.Base.metadata.create_all(cosi.engine)
-
-
 def new_db_session() -> cosi.DartSession:
     """Re-binds the cosi engine to the SQLAlchemy ORM engine and
     creates a new active session with the DART DB

@@ -171,7 +171,6 @@ def main(args: list) -> None:
                         default=False,
                         help='Enable additional debug information')
     args = parser.parse_args(args)
-    models.create_all_tables()
     poll_interval = parse_poll_interval(args.poll_interval)
 
     if(args.once):
