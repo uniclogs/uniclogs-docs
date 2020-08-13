@@ -29,7 +29,7 @@ class Request(db.Model):
     __tablename__ = 'requests'
     uid = db.Column(db.Integer, db.Sequence('requests_seq'), primary_key=True, nullable=False)
     user_token = db.Column(db.Text,
-                           db.ForeignKey('user_token.token',
+                           db.ForeignKey('user_tokens.token',
                                          onupdate="NO ACTION",
                                          ondelete="NO ACTION"),
                            nullable=False)
@@ -237,6 +237,6 @@ def get_random_string(length):
     """
     Helper for generation of random string
     """
-    letters = string.ascii_lowercase
+    letters = string.ascii_letters + string.digits
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str

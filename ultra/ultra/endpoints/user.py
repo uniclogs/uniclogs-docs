@@ -18,7 +18,7 @@ class UserTokenJsonEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-class UserTokenEndpoint(Resource):
+class UserEndpoint(Resource):
     """
     request endpoint for ULTRA to handle requesting oresat passes.
     """
@@ -34,17 +34,16 @@ class UserTokenEndpoint(Resource):
 
         parser = reqparse.RequestParser()
         # Length of user_uid shouldn't be more than 25 chars
-        parser.add_argument("request_token",
-                            type=inputs.regex('^\w{1,25}$'),
+        parser.add_argument("token",
                             required=True,
-                            location="json")
+                            location="headers")
         args = parser.parse_args()
         requests = []
 
         try:
             requests = db.session.query(UserTokens) \
                         .with_lockmode('read') \
-                        .filter(UserTokens.token == args["request_token"]) \
+                        .filter(UserTokens.token == args["token"]) \
                         .all()
         except Exception as e:
             logger.error(e)
@@ -81,10 +80,9 @@ class UserTokenEndpoint(Resource):
             db.session.add(new_user)
             db.session.commit()
 
-        except Exception:
+            return {"message": "New UserToken submitted.",
+                    "user_id": args["user_id"],
+                    "token": new_token}
+        except Exception as e:
             db.session.rollback()
-        return {
-                "message": "New UserToken submitted.",
-                "user_id": args["user_id"],
-                "token": new_token
-                }
+            return {"message": "Unhandled fatal error, please contact the server admin with this message: {}".format(e)}, 422
