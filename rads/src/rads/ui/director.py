@@ -96,7 +96,8 @@ def print_adrequest(stdscreen):
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(adrequest)
             ### Update added to connect to COSMOS ###
- #           Schedule_Pass.schedule_all(adrequest)
+            schedule_pass = Schedule_Pass(adrequest)
+            schedule_pass.schedule_all()
             loop = False
 
         elif key == 97: #a = 97 Approve
@@ -216,7 +217,8 @@ def print_schedulepad(stdscreen):
         elif(key == 115): #s = 115 Exit and Save
             update_approve_deny(schedule)
             ### UPDATE to connect to COSMOS
-#            Schedule_Pass.schedule_all(schedule)
+            schedule_pass = Schedule_Pass(schedule)
+            schedule_pass.schedule_all()
             loop = False
            
 
