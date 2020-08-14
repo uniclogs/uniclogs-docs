@@ -1,30 +1,25 @@
+import ultra.models as models
+import pass_calculator.calculator as pc
 from flask_restful import reqparse, Resource
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from ultra.database import db
-from ultra.models import Tle
-import sys
-sys.path.insert(0, '..')
-import pass_calculator.calculator as pc
 
 
 class PassesEndpoint(Resource):
     """
-    /passes endpoint for ULTRA.
+    `/passes` endpoint for getting available passes for OreSat and a
+    coinciding location
     """
 
-    def get(self):
-        # type: () -> str, int
+    def get(self) -> [str, int]:
         """
         Calculautes orbital pass for API users.
 
         Returns
         -------
-        str
-            Orbital pass JSON str
-        int
-            error code
-
+        `str`: Orbital pass data
+        `int`: HTTP Status code
         """
         parser = reqparse.RequestParser()
         parser.add_argument("latitude",
@@ -40,30 +35,34 @@ class PassesEndpoint(Resource):
 
         # Get latest TLE from DB
         try:
-            latest_tle_time = db.session.query(func.max(Tle.time_added)).one()
-            latest_tle = db.session.query(Tle).filter(Tle.time_added == latest_tle_time).one()
-        except Exception:
-            return "internal TLE error", 400
-        tle = [
-                latest_tle.first_line,
-                latest_tle.second_line
-                ]
+            latest_tle = db.session.query(models.Tle) \
+                                   .with_lockmode('read') \
+                                   .order_by(models.Tle.time_added.desc()) \
+                                   .first()
+        except Exception as e:
+            return {'message': 'There was a problem fetching the latests TLEs. Please report this to the server admin with this message: {}'.format(e)}, 500
+        tle = [latest_tle.first_line, latest_tle.second_line]
 
-        # Get latest TLE and approved passes list from the DB
-        approved_passes = []  # TODO get from DB
+        # Get already approved passes list from the DB and remove them
+        #   from the calculated orbital passes
+        approved_passes = db.session.query(models.Pass) \
+                                    .with_lockmode('read') \
+                                    .join(models.Request,
+                                          models.Pass.uid == models.Request.pass_uid) \
+                                    .filter(models.Request.is_approved) \
+                                    .all()
+        # Convert the list of Pass objects to OrbitalPass objects
+        approved_passes = list(map(lambda x: x.to_orbital_pass(), approved_passes))
 
-        # call pass calculator
+        # Call pass calculator
         now = datetime.now()
         now = now.replace(tzinfo=timezone.utc)
         future = now + timedelta(days=7)
         future = future.replace(tzinfo=timezone.utc)
-        orbital_passes = pc.get_all_passes(
-                tle=tle,
-                lat_deg=args["latitude"],
-                long_deg=args["longitude"],
-                start_datetime_utc=now,
-                end_datetime_utc=future,
-                approved_passes=approved_passes
-                )
-
+        orbital_passes = pc.get_all_passes(tle=tle,
+                                           lat_deg=args["latitude"],
+                                           long_deg=args["longitude"],
+                                           start_datetime_utc=now,
+                                           end_datetime_utc=future,
+                                           approved_passes=approved_passes)
         return orbital_passes, 200

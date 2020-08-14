@@ -1,3 +1,4 @@
+import ultra
 from flask import json
 from flask_restful import reqparse, Resource, inputs
 from loguru import logger
@@ -6,6 +7,10 @@ from ultra.models import UserTokens, get_random_string
 
 
 class UserTokenJsonEncoder(json.JSONEncoder):
+    """
+    JSON encoder for injecting python objects into JSON bodies of HTTP requests
+    """
+
     def default(self, obj):
         if isinstance(obj, UserTokens):
             json_str = {
@@ -20,69 +25,69 @@ class UserTokenJsonEncoder(json.JSONEncoder):
 
 class UserEndpoint(Resource):
     """
-    request endpoint for ULTRA to handle requesting oresat passes.
+    `/user` endpoint for handling creating a new user or forwarding existing
+    user information
     """
 
-    def get(self):
-        # type: () -> str
+    def get(self) -> [str, int]:
         """
-        Return associated user to the request token.
+        Gets the user associated with the token and all prevailing details
 
-        request_token: str
-            Request unique token.
+        Parameters
+        ----------
+        token: `str` Unique user token
+
+        Returns
+        -------
+        `str`: The associated token details
+        `int`: HTTP status code
         """
 
         parser = reqparse.RequestParser()
-        # Length of user_uid shouldn't be more than 25 chars
         parser.add_argument("token",
+                            type=inputs.regex(ultra.ULTRA_TOKEN_PATTERN),
                             required=True,
                             location="headers")
         args = parser.parse_args()
-        requests = []
 
         try:
-            requests = db.session.query(UserTokens) \
+            user = db.session.query(UserTokens) \
                         .with_lockmode('read') \
                         .filter(UserTokens.token == args["token"]) \
-                        .all()
+                        .first()
+            return json.dumps(user, cls=UserTokenJsonEncoder), 201
         except Exception as e:
             logger.error(e)
-            logger.error("Error fetching token '{}'"
-                         .format(args["request_token"]))
-            return {"Error": "No user token or invalid request token "}, 400
+            return {"Error": "There was a problem fetching the tokens. Please report this to the server admin with the message: {}".format(e)}, 500
 
-        return json.dumps(requests, cls=UserTokenJsonEncoder)
-
-    def post(self):
-        # type: () -> str, int
+    def post(self) -> [str, int]:
         """
         Makes a new request token for a user.
 
         Returns
         -------
-        str
-            New UserToken data as a JSON or a error message.
-        int
-            error code
+        `str`: New UserToken data as a JSON or a error message.
+        `int`: HTTP status code
         """
 
         parser = reqparse.RequestParser()
-        parser.add_argument("user_id",
-                            type=inputs.regex('^\w{1,25}$'),
+        parser.add_argument("username",
+                            type=inputs.regex(ultra.ULTRA_USERNAME_PATTERN),
                             required=True,
                             location="json")
         args = parser.parse_args()
 
         try:
             new_token = get_random_string(128)
-            new_user = UserTokens(token=new_token, user_id=args["user_id"])
+            new_user = UserTokens(token=new_token, user_id=args["username"])
 
             db.session.add(new_user)
             db.session.commit()
 
-            return {"message": "New UserToken submitted.",
-                    "user_id": args["user_id"],
-                    "token": new_token}
+            return {"message": "Success: new user created",
+                    "username": args["username"],
+                    "token": new_token}, 201
         except Exception as e:
             db.session.rollback()
-            return {"message": "Unhandled fatal error, please contact the server admin with this message: {}".format(e)}, 422
+            logger.error(e)
+            return {"message": "There was a problem with trying to create or submit a new user. Please contact the server admin with this message: {}".format(e)}, 500

@@ -6,7 +6,7 @@ from ultra.models import Telemetry
 
 class TelemetryEndpoint(Resource):
     """
-    /telemetry
+    ``/telemetry` endpoint for handling forwarding of telemetry data
     """
 
     def get(self):
@@ -15,7 +15,7 @@ class TelemetryEndpoint(Resource):
             telemetries = db.session.query(Telemetry) \
                                     .with_lockmode('read') \
                                     .all()
-            return list(map(lambda x: x.to_json(), telemetries))
+            return list(map(lambda x: x.to_json(), telemetries)), 200
         except Exception as e:
             logger.error(e)
-            return "internal error fetching telemetry", 500
+            return {"message": "There was a problem fetching the telemetry. Please report this to the server admin with this message: {}".format(e)}, 500
