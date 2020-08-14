@@ -1,6 +1,5 @@
 from datetime import datetime, timezone
 import sys
-sys.path.append("..")
 import pass_calculator as pc
 
 
