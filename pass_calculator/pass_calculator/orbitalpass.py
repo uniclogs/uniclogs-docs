@@ -52,6 +52,24 @@ class OrbitalPass(object):
         self.aos_utc = aos_utc
         self.los_utc = los_utc
 
+    def __eq__(self, other):
+        ret = True
+
+        if self.gs_latitude_deg != other.gs_latitude_deg:
+            ret = False
+        elif self.gs_longitude_deg != other.gs_longitude_deg:
+            ret = False
+        elif self.gs_elevation_m != other.gs_elevation_m:
+            ret = False
+        elif self.horizon_deg != other.horizon_deg:
+            ret = False
+        elif self.aos_utc != other.aos_utc:
+            ret = False
+        elif self.los_utc != other.los_utc:
+            ret = False
+
+        return ret
+
 
 class OrbitalPassJsonEncoder(json.JSONEncoder):
     """

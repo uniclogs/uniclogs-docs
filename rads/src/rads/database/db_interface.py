@@ -1,11 +1,9 @@
-from models import Request, Pass, Tle, Session
-from request_data import RequestData
+from .models import Request, Pass, Tle, Session
+from .request_data import RequestData
 from datetime import datetime
 from sqlalchemy import func, exc
 from loguru import logger
 import reverse_geocoder as rg
-import sys
-sys.path.insert(0, '../..')
 from pass_calculator.calculator import pass_overlap
 
 
@@ -41,7 +39,7 @@ def _fill_request_data(results):
                 r.pass_data.longitude,
                 r.pass_data.elevation,
                 r.pass_data.start_time,
-                r.pass_data.end_time
+                r.pass_data.end_time,
                 )
         requests.append(rd)
 
@@ -83,17 +81,17 @@ def query_new_requests():
                     Request.is_approved.is_(None))\
             .order_by(Request.created_date.asc())\
             .all()
+        ret = _fill_request_data(result)
     except exc.SQLAlchemyError as e:
         logger.critical("Database query failed {}".format(e))
     finally:
-        ret = _fill_request_data(result)
         session.close()
 
     # find all overlap for approved request in db
     approved_req = query_upcomming_requests()
     for r in ret:
         for a in approved_req:
-            if pass_overlap(r.pass_data, [a.pass_data]) is True:
+            if pass_overlap(a.pass_data, [r.pass_data]) is True:
                 r.db_approved_overlap.append(a.id)
 
     # find all overlap for new request
@@ -178,9 +176,10 @@ def query_tle():
     session = Session()
 
     try:
+        # NOTE locking this will error and doesn't need to be atomic
         latest_tle_time = session.query(func.max(Tle.time_added))\
-            .with_lockmode('read')\
             .one()
+
         latest_tle = session.query(Tle)\
             .with_lockmode('read')\
             .filter(Tle.time_added == latest_tle_time)\

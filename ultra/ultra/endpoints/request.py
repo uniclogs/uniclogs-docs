@@ -1,13 +1,12 @@
 from flask_restful import reqparse, Resource, inputs
-from sqlalchemy import func
 from loguru import logger
 import sys
+import ultra
 from ultra.database import db
 from ultra.models import Request, \
                          Tle, \
                          Pass, \
-                         UserTokens, \
-                         get_random_string
+                         UserTokens
 sys.path.insert(0, '..')
 import pass_calculator as pc
 
@@ -33,6 +32,9 @@ class RequestEndpoint(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument("token",
                             required=True,
+                            location="headers")
+        parser.add_argument("username",
+                            default='',
                             location="headers")
         parser.add_argument("latitude",
                             required=True,
@@ -64,35 +66,34 @@ class RequestEndpoint(Resource):
             los_utc = inputs.datetime_from_iso8601(args["los_utc"])
         except Exception as e:
             logger.error(e)
-            return {"Error": "Invalid format for aos_utc or los_utc."}, 401
+            return {"Error": "Invalid time-format for aos_utc/los_utc."}, 401
 
-        # validate pass
-        try:
-            latest_tle_time = db.session.query(func.max(Tle.time_added)) \
-                                        .with_lockmode('read') \
-                                        .one()
-            latest_tle = db.session.query(Tle) \
-                                   .with_lockmode('read') \
-                                   .filter(Tle.time_added == latest_tle_time) \
-                                   .one()
-        except Exception:
-            return {"Error": "internal TLE error"}, 400
+        # Validate pass
+        # try:
+        #     latest_tle = db.session.query(Tle) \
+        #                            .with_lockmode('read') \
+        #                            .filter(Tle.first_line.contains(str(ultra.DEFAULT_NORAD_ID))) \
+        #                            .order_by(Tle.time_added.desc()) \
+        #                            .first()
+        # except Exception:
+        #     return {"Error": "There was an internal issue with grabing the latest TLE."}, 500
 
-        tle = [latest_tle.first_line, latest_tle.second_line]
-
-        orbital_pass = pc.orbitalpass.OrbitalPass(
-                gs_latitude_deg=args["latitude"],
-                gs_longitude_deg=args["longitude"],
-                aos_utc=aos_utc,
-                los_utc=los_utc,
-                gs_elevation_m=args["elevation_m"],
-                horizon_deg=0.0
-                )
-
-        if not pc.calculator.validate_pass(tle, orbital_pass):
-            return {"error": "Invalid pass"}, 401
+        # tle = [latest_tle.first_line, latest_tle.second_line]
+        #
+        # orbital_pass = pc.orbitalpass.OrbitalPass(
+        #         gs_latitude_deg=args["latitude"],
+        #         gs_longitude_deg=args["longitude"],
+        #         aos_utc=aos_utc,
+        #         los_utc=los_utc,
+        #         gs_elevation_m=args["elevation_m"],
+        #         horizon_deg=0.0
+        #         )
+        #
+        # if not pc.calculator.validate_pass(tle, orbital_pass):
+        #     return {"error": "Invalid pass"}, 422
 
         # make sure the pass is not already in db
+
         try:
             pass_check = db.session.query(Pass) \
                                    .with_lockmode('read') \
@@ -105,52 +106,37 @@ class RequestEndpoint(Resource):
         except Exception:
             return {"Error": "internal TLE error"}, 400
 
-        try:
-            new_pass = Pass(
-                    latitude=args["latitude"],
-                    longitude=args["longitude"],
-                    elevation=args["elevation_m"],
-                    start_time=aos_utc,
-                    end_time=los_utc
-                    )
+        # try:
+        new_pass = Pass(latitude=args["latitude"],
+                        longitude=args["longitude"],
+                        elevation=args["elevation_m"],
+                        start_time=aos_utc,
+                        end_time=los_utc)
+        db.session.add(new_pass)
+        db.session.flush()
 
-            db.session.add(new_pass)
-            db.session.flush()
+        new_request = Request(
+                user_token=args['token'],
+                is_approved=None,
+                is_sent=False,
+                pass_uid=new_pass.uid
+        )
 
-            user_token = get_random_string(4) + args["user_uid"] \
-                                              + get_random_string(4)
+        db.session.add(new_request)
+        db.session.flush()
 
-            new_request = Request(
-                    user_token=user_token,
-                    is_approved=None,
-                    is_sent=False,
-                    pass_uid=new_pass.uid
-            )
-
-            db.session.add(new_request)
-            db.session.flush()
-
-            new_user_token = UserTokens(
-                    token=new_request.user_token,
-                    user_id=args["user_uid"]
-            )
-
-            db.session.add(new_user_token)
-            db.session.flush()
-
-            db.session.commit()
-
-        except Exception:
-            db.session.rollback()
-        return {
-                "message": "New request submitted.",
-                "request_id": new_request.uid
-                }
+        db.session.commit()
+        return {"message": "New request submitted.",
+                "request_id": new_request.uid }, 201
+        # except Exception:
+        #     db.session.rollback()
+        # finally:
+        #     return {'message': 'Unhandled fatal error, please contact the server admin and report this.'}, 500
 
     def get(self):
         # type: () -> str, int
         """
-        Get a list of all request for a user.
+        Get a list of all request for a user.FLICT (content): Merge conflict in ultra/ultra/endpoints/request.py
 
         Returns
         -------

@@ -37,10 +37,6 @@ class UserEndpoint(Resource):
         parser.add_argument("token",
                             required=True,
                             location="headers")
-        parser.add_argument("request_id",
-                            type=inputs.regex('^\w{1,25}$'),
-                            required=True,
-                            location="json")
         args = parser.parse_args()
         requests = []
 
@@ -84,10 +80,9 @@ class UserEndpoint(Resource):
             db.session.add(new_user)
             db.session.commit()
 
-        except Exception:
+            return {"message": "New UserToken submitted.",
+                    "user_id": args["user_id"],
+                    "token": new_token}
+        except Exception as e:
             db.session.rollback()
-        return {
-                "message": "New UserToken submitted.",
-                "user_id": args["user_id"],
-                "token": new_token
-                }
+            return {"message": "Unhandled fatal error, please contact the server admin with this message: {}".format(e)}, 422

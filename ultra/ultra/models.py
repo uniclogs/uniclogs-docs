@@ -29,7 +29,7 @@ class Request(db.Model):
     __tablename__ = 'requests'
     uid = db.Column(db.Integer, db.Sequence('requests_seq'), primary_key=True, nullable=False)
     user_token = db.Column(db.Text,
-                           db.ForeignKey('user_token.token',
+                           db.ForeignKey('user_tokens.token',
                                          onupdate="NO ACTION",
                                          ondelete="NO ACTION"),
                            nullable=False)
