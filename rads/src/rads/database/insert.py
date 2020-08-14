@@ -1,6 +1,10 @@
-from .models import Request, Pass, Session
+"""
+A nice place to hold all database insert functions.
+"""
+
 import string
 import random
+from .models import Request, Pass, Session
 
 
 def _randomword(length):
@@ -9,6 +13,9 @@ def _randomword(length):
 
 
 def insert_new_request(new_pass):
+    """
+    Inset new uniclogs passes into db.
+    """
     session = Session()
 
     # look for pass in db

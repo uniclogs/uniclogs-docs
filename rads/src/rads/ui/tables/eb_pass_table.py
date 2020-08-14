@@ -1,5 +1,9 @@
+"""
+The menu for selecting eb passes table.
+"""
+
 from datetime import datetime, timedelta
-from rads.database.db_interface import query_tle
+from rads.database.query import query_latest_tle
 from rads.database.insert import insert_new_request
 from pass_calculator.calculator import get_all_passes
 from pass_calculator.orbitalpass import OrbitalPass
@@ -12,15 +16,20 @@ _STR_FORMAT = "{:19} | {:19} | {:^3}"
 
 
 class EBPass(OrbitalPass):
+    """
+    A nice wrapper class for expanding OrbitalPass to have a flag for add the
+    pass.
+    """
+
     def __init__(self, orbital_pass):
         super().__init__(
-               orbital_pass.gs_latitude_deg,
-               orbital_pass.gs_longitude_deg,
-               orbital_pass.aos_utc,
-               orbital_pass.los_utc,
-               orbital_pass.gs_elevation_m,
-               orbital_pass.horizon_deg
-               )
+            orbital_pass.gs_latitude_deg,
+            orbital_pass.gs_longitude_deg,
+            orbital_pass.aos_utc,
+            orbital_pass.los_utc,
+            orbital_pass.gs_elevation_m,
+            orbital_pass.horizon_deg
+            )
         self.add = False
 
     def __str__(self):
@@ -30,26 +39,28 @@ class EBPass(OrbitalPass):
             add_status = " "
 
         return _STR_FORMAT.format(
-                self.aos_utc.strftime(_DT_STR_FORMAT),
-                self.los_utc.strftime(_DT_STR_FORMAT),
-                add_status
-                )
+            self.aos_utc.strftime(_DT_STR_FORMAT),
+            self.los_utc.strftime(_DT_STR_FORMAT),
+            add_status
+            )
 
 
 class EBPassTable():
+    """
+    A list of eb pass object that is used by eb requests.
+    """
+
     def __init__(self):
-        tle = query_tle()
+        tle = query_latest_tle()
         now = datetime.utcnow()
-        now = now
         future = datetime.now() + timedelta(days=7)
-        future = future
         eb_passes = get_all_passes(
-                tle,
-                PSU_LAT,
-                PSU_LONG,
-                now,
-                future
-                )
+            tle,
+            PSU_LAT,
+            PSU_LONG,
+            now,
+            future
+            )
         self.header = _STR_FORMAT.format("AOS", "LOS", "Add")
         self.data = []
         for p in eb_passes:  # TODO look for existing passes
