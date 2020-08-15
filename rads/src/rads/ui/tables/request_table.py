@@ -101,10 +101,10 @@ class RequestTable():
             coor = (r.pass_data.gs_latitude_deg, r.pass_data.gs_longitude_deg)
             coordinates.append(coor)
 
-        locations = rg.search(coordinates, verbose=False)
-
-        for i in range(len(self.data)):
-            self.data[i].geo = locations[i]
+        if requests:
+            locations = rg.search(coordinates, verbose=False)
+            for i in range(len(self.data)):
+                self.data[i].geo = locations[i]
 
         self.data_len = len(self.data)
         self.header = _STR_FORMAT.format(

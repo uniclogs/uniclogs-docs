@@ -119,7 +119,7 @@ def main():
     """
     Main for rads.
     """
-    ctrl_c = False
+    msg = None
 
     init('rads')
     logger.info('Starting director')
@@ -130,11 +130,12 @@ def main():
     try:
         main_menu(stdscreen)
     except KeyboardInterrupt:
-        ctrl_c = True
-    except Exception as e:
-        logger.critical("error {}".format(e))
+        msg = "control-c was called"
+    #except Exception as e:
+    #    msg = "exception caught: {}".format(e)
+    #    logger.error(msg)
 
     end_ui(stdscreen)
 
-    if ctrl_c:
-        print("control-c was called")
+    if msg is not None:
+        print(msg)

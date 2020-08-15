@@ -4,6 +4,7 @@ The window for selecting UniClOGS passes.
 
 from curses import color_pair, KEY_UP, KEY_DOWN, newpad, flushinp
 from time import sleep
+from loguru import logger
 from pass_calculator.calculator import overlap
 from .tables.request_table import RequestTable
 from .tables.eb_pass_table import EBPassTable
@@ -17,6 +18,36 @@ _DT_STR_FORMAT = "%Y/%m/%d %H:%M:%S"
 _STR_FORMAT = "{:7} | {:8} | {:15} | {:^5} | {:7} | {:19} | {:19} | {:30}"
 REQUEST_HEADER = _STR_FORMAT.format(
         "ID", "Status", "Type", "Sent", "Pass ID", "AOS", "LOS", "City, State")
+
+
+def no_tle_window(stdscreen, screen_width: int):
+    """
+    No tle are in the database, so the eb_pass_table will not work.
+
+    Parameters
+    ----------
+    stdscreen : window object
+        A windows object initialized by curses.initscr() from the curses
+    screen_width: int
+        the width of the screen
+    """
+
+    msg1 = "No TLEs in database"
+    msg2 = "press 'c' to go back"
+    stdscreen.addstr(0, screen_width//2 - len(msg1)//2, msg1)
+    stdscreen.addstr(1, screen_width//2 - len(msg2)//2, msg2)
+    logger.error(msg1)
+    key = stdscreen.getch()
+    flushinp()
+    while True:
+        key = stdscreen.getch()
+        flushinp()
+        if key == ord('c'):
+            break
+        sleep(0.01)
+    stdscreen.refresh()
+    stdscreen.scrollok(False)      # Enable window scroll
+    stdscreen.nodelay(False)
 
 
 def print_eb_passes(stdscreen):
@@ -53,14 +84,21 @@ def print_eb_passes(stdscreen):
     schedule_win_x0 = pass_win_x1 + 1 + panel_space_width
     schedule_win_x1 = screen_width - boarder_x
 
-    eb_passes = EBPassTable()
-    pass_pad_height = len(eb_passes)
-    pass_pad_width = len(str(eb_passes[0]))
+    try:
+        eb_passes = EBPassTable()
+        pass_pad_height = len(eb_passes)
+        pass_pad_width = len(str(eb_passes[0]))
+    except Exception:
+        no_tle_window(stdscreen, screen_width)
+        return
+
     pass_pad = newpad(pass_pad_height+1, pass_pad_width+1)
 
     schedule = RequestTable()
     schedule_pad_height = len(schedule)
-    schedule_pad_width = len(str(schedule[0]))
+    schedule_pad_width = 0
+    if schedule_pad_height > 0:
+        schedule_pad_width = len(str(schedule[0]))
     schedule_pad = newpad(schedule_pad_height+1, schedule_pad_width+1)
 
     focus = 0
@@ -77,14 +115,14 @@ def print_eb_passes(stdscreen):
         schedule_win_x1
         )
 
+    # print headers
     msg = "EB Pass Scheduler (lat {}, long {}, elev {} meters)".format(
         PSU_LAT,
         PSU_LONG,
         PSU_ELEV
         )
-
-    command_msg = "Arrow Keys: To Move, a: Accept, d: Deny, c: Exit, s: Save and Exit, f: swap focus"
     stdscreen.addstr(0, screen_width//2 - len(msg)//2, msg)
+    command_msg = "Arrow Keys: To Move, a: Accept, d: Deny, c: Exit, s: Save and Exit, f: swap focus"
     stdscreen.addstr(1, screen_width//2 - len(command_msg)//2, command_msg)
     stdscreen.addstr(3, boarder_x, eb_passes.header)
     stdscreen.addstr(3, pass_win_x1+panel_space_width, " "+schedule.header)
@@ -130,6 +168,9 @@ def print_eb_passes(stdscreen):
 
             # rebuild display strings for schedule
             for i in range(schedule_index, schedule_pad_height):
+                if len(eb_passes) == 0:
+                    continue
+
                 if overlap(eb_passes[pass_index], schedule[i].pass_data):
                     schedule_pad.addstr(i, 0, str(schedule[i]), color_pair(5))
                 elif schedule[i].is_approved is False:  # denied
@@ -144,6 +185,9 @@ def print_eb_passes(stdscreen):
 
             # rebuild display strings for eb_passes
             for i in range(pass_index, pass_pad_height):
+                if len(schedule) == 0:
+                    continue
+
                 if overlap(schedule[schedule_index].pass_data, eb_passes[i]):
                     pass_pad.addstr(i, 0, str(eb_passes[i]), color_pair(4))
                 elif eb_passes[i].add is True:  # added
