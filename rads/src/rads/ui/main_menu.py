@@ -131,9 +131,9 @@ def main():
         main_menu(stdscreen)
     except KeyboardInterrupt:
         msg = "control-c was called"
-    #except Exception as e:
-    #    msg = "exception caught: {}".format(e)
-    #    logger.error(msg)
+    except Exception as e:
+        msg = "exception caught: {}".format(e)
+        logger.error(msg)
 
     end_ui(stdscreen)
 
