@@ -1,0 +1,9 @@
+[Unit]
+Description=COSMOS SatNOGS interface
+
+[Service]
+Type=forking
+PIDFile=/run/cosid.pid
+ExecStart=/opt/uniclogs-software/cosi/cosi-runner
+User=root
+Group=root
