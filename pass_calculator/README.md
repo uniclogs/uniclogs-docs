@@ -9,8 +9,6 @@ Mostly a simple wrapper ontop of [skyfeild].
 `$ python3 setup.py bdist_wheel`
 
 ## Installation
-`$ python -m pip install dist/pass_calculator-*-py3-none-any.whl` 
-or
-`$ sudo python -m pip install dist/pass_calculator-*-py3-none-any.whl` 
+`$ pytho3 -m pip install dist/pass_calculator-*-py3-none-any.whl` 
 
 [skyfeild]:https://rhodesmill.org/skyfield/
