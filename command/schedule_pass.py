@@ -1,6 +1,6 @@
 #schedule_pass.py
 
-import os 
+import os
 from ballcosmos.script \
     import set_replay_mode,\
             connect_interface,\
@@ -10,12 +10,12 @@ from ballcosmos.script \
 class Schedule_Pass:
     def __init__(self, request):
         """
-        Schedule_Pass data object is loaded with data 
+        Schedule_Pass data object is loaded with data
         from Passes table retrieved through RADS
 
 Attributes
         ----------
-        passRequestList : a query/list received from RADS consisting of  
+        passRequestList : a query/list received from RADS consisting of
             request = (
                 uid,
                 user_token,
@@ -33,7 +33,7 @@ Attributes
                 )
 
 
-            Note: only the pass_uid, latitude, longitude, start_time 
+            Note: only the pass_uid, latitude, longitude, start_time
             will be sent to the satellite.
         numberOfRequests : number of passes to be scheduled or canceled
         """
@@ -42,7 +42,7 @@ Attributes
 
 
     def show_list(self):
-        """ Prints pass_id for items on current list 
+        """ Prints pass_id for items on current list
             for user confirmation of items on the list.
 
         Attributes
@@ -84,13 +84,13 @@ Attributes
 
 
     def schedule_all(self):
-        """ Iterates through list to send schedule pass requests message 
+        """ Iterates through list to send schedule pass requests message
             for all passes on list
 
         Attributes
         ----------
         passRequestList : list retrieved from pass_request database
-        numberOfRequests : total number of passes to schedule 
+        numberOfRequests : total number of passes to schedule
 
         """
         set_replay_mode(False)
@@ -127,7 +127,7 @@ Attributes
         return print("{} requests(s) deleted.".format(self.numberOfRequests))
 
 
-# for testing purposes: 
+# for testing purposes:
 #if __name__ == "__main__":
     #sp = Schedule_Pass(request)
     #sp.show_list()
