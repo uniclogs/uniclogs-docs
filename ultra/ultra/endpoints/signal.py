@@ -1,3 +1,4 @@
+import ultra
 from flask_restful import reqparse, Resource, inputs
 
 
