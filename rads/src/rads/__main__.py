@@ -1,4 +1,3 @@
-from rads.ui.director import main
-
-
+"""the main for the module"""
+from rads.ui.main_menu import main
 main()

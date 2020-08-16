@@ -1,4 +1,5 @@
 import sys
+import getopt
 sys.path.insert(0, '../src/rads/database')
 from models import Tle, Session
 
@@ -21,5 +22,34 @@ def add_tle():
     session.close()
 
 
+def clear_db():
+    session = Session()
+
+    result = session.query(Tle).all()
+
+    for r in result:
+        session.delete(r)
+
+    session.commit()
+    session.close()
+
+
 if __name__ == '__main__':
+    opts, argv = getopt.getopt(sys.argv[1:], "hc")
+    for o, a in opts:
+        if o == '-h':
+            print("""
+            Flags
+            -h   : help message
+            -c   : clean db
+            None : gererate 100 non randomize requests
+            """)
+            exit(0)
+        elif o == '-c':
+            clear_db()
+            exit(0)
+        else:
+            print("Unkown flag, run with -h for help message")
+            exit(1)
+
     add_tle()
