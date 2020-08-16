@@ -2,10 +2,10 @@ import sys
 import random
 import string
 import getopt
-sys.path.insert(0, '../src')
-from models import Request, Pass, Tle, Session
-from datetime import datetime, timezone, timedelta
-sys.path.insert(0, '../..')
+from datetime import datetime, timedelta
+sys.path.insert(0, '../src/rads/database')
+from models import Request, Pass, Session
+sys.path.insert(0, '../../pass_calculator')
 import pass_calculator.calculator as pc
 
 
@@ -22,9 +22,9 @@ MinLatitude = 41.990853
 
 
 days_in_past = 2
-start = datetime.now()
+start = datetime.utcnow()
 start = start - timedelta(days=days_in_past)
-start = start.replace(tzinfo=timezone.utc)
+start = start
 
 
 def randomword(length):
@@ -38,9 +38,9 @@ def generated_passes(num: int):
     for i in range(num):
         days = random.randrange(days_in_past+7)
         start_day = start + timedelta(days=days)
-        start_day = start_day.replace(tzinfo=timezone.utc)
+        start_day = start_day
         end_day = start_day + timedelta(days=1)
-        end_day = end_day.replace(tzinfo=timezone.utc)
+        end_day = end_day
 
         latitude = round(random.uniform(MinLatitude, MaxLatitude), 6)
         longitude = round(random.uniform(MinLongitude, MaxLongitude), 6)
@@ -64,6 +64,7 @@ def generated_passes(num: int):
 
 def insert_into_db(generated_passes, random_status=False):
     session = Session()
+    ret = []
 
     for p in generated_passes:
 
@@ -106,7 +107,7 @@ def insert_into_db(generated_passes, random_status=False):
         mins = random.randrange(60)
         secs = random.randrange(60)
         created_dt = start - timedelta(days=days, hours=hours, minutes=mins, seconds=secs)
-        created_dt = created_dt.replace(tzinfo=timezone.utc)
+        created_dt = created_dt
 
         new_request = Request(
             user_token=randomword(10),
@@ -120,8 +121,12 @@ def insert_into_db(generated_passes, random_status=False):
         session.add(new_request)
         session.flush()
 
+        ret.append(new_request.uid)
+
     session.commit()
     session.close()
+
+    return ret
 
 
 def clear_db():
@@ -173,4 +178,4 @@ if __name__ == '__main__':
             exit(1)
 
     pass_list = generated_passes(num)
-    insert_into_db(pass_list, random_status)
+    req = insert_into_db(pass_list, random_status)
