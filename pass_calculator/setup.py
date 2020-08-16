@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name='pass_calculator',
-    version='0.1.1',
+    version='1.1',
     description='A common pass calculator for ULTRA and RADS',
     long_description='A common pass calculator for ULTRA and RADS',
     license="GPL v3",
