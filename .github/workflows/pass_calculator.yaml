@@ -38,24 +38,3 @@ jobs:
 
     - name: Run unit tests
       run: pytest pass_calculator/tests/*
-
-  build:
-    name: Building to `prod` branch
-
-    runs-on: ubuntu-latest
-    needs: tests
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Setup ${{ matrix.python-version }} on ${{ matrix.os }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - run: python -m pip install --upgrade pip
-
-    - name: Install Dependencies
-      run: pip install -r pass_calculator/requirements.txt
-
-    - name: Install Developer Dependencies
-      run: pip install -r pass_calculator/dev-requirements.txt

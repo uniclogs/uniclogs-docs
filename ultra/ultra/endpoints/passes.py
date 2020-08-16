@@ -2,7 +2,6 @@ import ultra.models as models
 import pass_calculator.calculator as pc
 from flask_restful import reqparse, Resource
 from datetime import datetime, timezone, timedelta
-from sqlalchemy import func
 from ultra.database import db
 
 
