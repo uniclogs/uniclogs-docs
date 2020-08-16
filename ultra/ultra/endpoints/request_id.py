@@ -1,4 +1,4 @@
-import sys
+import ultra
 import ballcosmos.script as bcs
 from flask_restful import reqparse, \
                           Resource, \
@@ -9,51 +9,70 @@ from ultra.database import db
 from ultra.models import Request, \
                          Tle, \
                          Pass
-sys.path.insert(0, "..")
 import pass_calculator as pc
 
 
 class RequestIdEndpoint(Resource):
     """
-    request endpoint for ULTRA to handle requesting oresat passes.
+    `/request` endpoint for handling request-specific actions like updating a
+    time-and-place, or canceling a previously scheduled pass
     """
 
     def get(self, request_id: int) -> [str, int]:
         """
-        Get info request(s).
+        Get a singular request by id
+        request_id: `int` Request id
 
-        request_id: `int` Request unique id.
+        Returns:
+        --------
+        `int`: HTTP Status code
         """
+        parser = reqparse.RequestParser()
+        parser.add_argument("token",
+                            type=inputs.regex(ultra.ULTRA_TOKEN_PATTERN),
+                            required=True,
+                            location="headers")
+        args = parser.parse_args()
+
         try:
-            result = db.session.query(Pass) \
-                           .with_lockmode('read') \
-                           .join(Request, Pass.uid == Request.pass_uid) \
-                           .filter(Request.uid == request_id) \
-                           .one()
+            pass_request = db.session.query(Pass, Request) \
+                                     .with_lockmode('read') \
+                                     .join(Request, Pass.uid == Request.pass_uid) \
+                                     .filter(Request.uid == request_id) \
+                                     .one()
         except Exception as e:
             logger.error(e)
             logger.error("Error fetching req id '{}'".format(request_id))
-            return {"Error": "No matching pass or wrong user token"}, 400
+            return {"Error": "No request matching id: {}"
+                    .format(request_id)}, 400
 
         pass_data = pc.orbitalpass.OrbitalPass(
-                gs_latitude_deg=result.latitude,
-                gs_longitude_deg=result.longitude,
-                gs_elevation_m=result.elevation,
-                aos_utc=result.start_time,
-                los_utc=result.end_time,
-                horizon_deg=0.0
-                )
+                        gs_latitude_deg=pass_request.latitude,
+                        gs_longitude_deg=pass_request.longitude,
+                        gs_elevation_m=pass_request.elevation,
+                        aos_utc=pass_request.start_time,
+                        los_utc=pass_request.end_time,
+                        horizon_deg=0.0)
 
-        return pass_data
+        if(pass_data.token == args['token']):
+            return pass_data, 200
+        else:
+            return {'message': 'Unauthorized: the token: {} does not own the \
+                     request with id: {}'.format(args['token'], request_id)}, \
+                     403
 
     def put(self, request_id: int) -> [str, int]:
         """
-        Update request for a user.
+        Update as singular request for a user
 
         request_id: `int` Request unique id.
         """
 
         parser = reqparse.RequestParser()
+        parser.add_argument("token",
+                            type=inputs.regex(ultra.ULTRA_TOKEN_PATTERN),
+                            required=True,
+                            location="headers")
         parser.add_argument("latitude",
                             required=True,
                             type=float,
@@ -73,9 +92,9 @@ class RequestIdEndpoint(Resource):
                             required=True,
                             type=str,
                             location="json")
-
         args = parser.parse_args()
 
+        # TODO: Review this
         request = None
         try:
             request = db.session.query(Request) \
@@ -148,8 +167,8 @@ class RequestIdEndpoint(Resource):
 
         db.session.commit()
 
-        return {"message": "Request {} succesfully modified."
-                .format(request_id)}
+        return {"message": "Succes: request modified".format(request_id),
+                "user": result}, 201
 
     def delete(self, request_id: int) -> [str, int]:
         """
@@ -164,17 +183,20 @@ class RequestIdEndpoint(Resource):
                                        .filter(Request.uid == request_id) \
                                        .one()
 
+            if(request_result is None):
+                return {"Error": "No request with matching id",
+                        "request_id": request_id}, 404
+
             if request_result.is_approved and request_result.is_sent:
                 bcs.cmd('ENGR_LINK PASS_CANCEL with TYPE NORMAL, PASS_ID {}'
                         .format(request_id))
             else:
                 request_result.is_approved = False
-
             db.session.commit()
 
+            return {"message": "Succes: canceled request".format(request_id),
+                    "request": request_result}, 200
         except Exception as e:
-            logger.error(e)
             db.session.rollback()
-            return {"Error": "No matching pass or wrong user token"}, 400
-
-        return {"message": "Deleted request {}".format(request_id)}
+            logger.error(e)
+            return {"message": "There was a problem trying to delete the request. Please report this to the server admin with this message: {}".format(e)}, 500

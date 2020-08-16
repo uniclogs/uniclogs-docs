@@ -9,8 +9,6 @@ import ultra.endpoints.request_id as request_id
 import ultra.endpoints.user as user
 import ultra.endpoints.signal as signal
 import ultra.endpoints.telemetry as telemetry
-import sys
-sys.path.insert(0, '../..')
 import pass_calculator as pc
 
 """

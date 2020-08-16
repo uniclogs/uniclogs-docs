@@ -1,6 +1,7 @@
 import datetime
 import string
 import random
+import pass_calculator.orbitalpass as op
 from ultra.database import db
 
 
@@ -112,6 +113,9 @@ class Pass(db.Model):
                          nullable=False,
                          default=datetime.datetime.utcnow())
     elevation = db.Column(db.Float)
+
+    def to_orbital_pass(self) -> op.OrbitalPass:
+        return op.OrbitalPass(self.latitude, self.longitude, self.start_time, self.end_time)
 
     def __repr__(self):
         return '<Pass {}, {}, {}>'.format(self.uid,
