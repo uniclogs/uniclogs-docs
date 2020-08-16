@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name='pass_calculator',
-    version='1.0',
+    version='1.0.1',
     description='A common pass calculator for ULTRA and RADS',
     long_description='A common pass calculator for ULTRA and RADS',
     license="GPLv3",
@@ -15,8 +15,7 @@ setup(
     packages=['pass_calculator'],
     install_requires=['skyfield'],
     classifiers=[
-         "Programming Language :: Python :: 3",
-         "OSI Approved :: GNU General Public License v3 (GPLv3)"
-         "Operating System :: OS Independent",
-     ],
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+    ],
 )
