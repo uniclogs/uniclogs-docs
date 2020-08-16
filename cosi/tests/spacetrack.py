@@ -1,10 +1,13 @@
-import sys; sys.path.append('..')
 import os
 import pytest
 import cosi
 import cosi.spacetrack as spacetrack
+import sys
+
+sys.path.insert(0, '..')
 
 
+@pytest.mark.skip(reason='Need to mock SpaceTrack.org')
 def test_request_tle_is_not_none():
     """Given a valid `norad_id`, when polling spacetrack for latest TLE, then
     the result should be a non-null dictionary with three string values
@@ -17,6 +20,7 @@ def test_request_tle_is_not_none():
     assert res.get('TLE_LINE2') is not None
 
 
+@pytest.mark.skip(reason='Need to mock SpaceTrack.org')
 def test_request_tle_raises_error_on_bad_norad_id():
     """Given an invalid `norad_id`, when polling spacetrack for latest TLE,
     then the function should raise a TLERequestFailed exception
@@ -26,6 +30,7 @@ def test_request_tle_raises_error_on_bad_norad_id():
         spacetrack.request_tle(norad_id)
 
 
+@pytest.mark.skip(reason='Need to mock SpaceTrack.org')
 def test_request_tle_raises_error_on_no_username():
     """Given no username, when polling spacetrack for latest TLE, then the
     function should raise an EnvironmentError exception
@@ -36,6 +41,7 @@ def test_request_tle_raises_error_on_no_username():
         spacetrack.request_tle(norad_id)
 
 
+@pytest.mark.skip(reason='Need to mock SpaceTrack.org')
 def test_request_tle_raises_error_on_no_password():
     """Given no password, when polling spacetrack for latest TLE, then the
     function should raise an EnvironmentError exception
@@ -46,6 +52,7 @@ def test_request_tle_raises_error_on_no_password():
         spacetrack.request_tle(norad_id)
 
 
+@pytest.mark.skip(reason='Need to mock SpaceTrack.org')
 def test_request_tle_raises_error_on_bad_username():
     """Given an invalid username, when polling spacetrack for latest TLE, then
     the function should raise an TLERequestFailed exception
@@ -57,6 +64,7 @@ def test_request_tle_raises_error_on_bad_username():
         spacetrack.request_tle(norad_id)
 
 
+@pytest.mark.skip(reason='Need to mock SpaceTrack.org')
 def test_request_tle_raises_error_on_bad_password():
     """Given an invalid password, when polling spacetrack for latest TLE, then
     the function should raise an TLERequestFailed exception

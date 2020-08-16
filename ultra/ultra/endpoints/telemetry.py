@@ -1,5 +1,6 @@
 from flask_restful import Resource
 from loguru import logger
+import ultra
 from ultra.database import db
 from ultra.models import Telemetry
 

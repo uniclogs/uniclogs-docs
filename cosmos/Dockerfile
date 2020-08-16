@@ -60,4 +60,4 @@ WORKDIR /opt/cosmos
 RUN bundle install
 
 # Start script entry point
-# CMD bash /opt/cosmos/start.sh
+CMD bash /opt/cosmos/start.sh
