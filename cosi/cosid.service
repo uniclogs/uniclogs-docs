@@ -4,6 +4,6 @@ Description=COSMOS SatNOGS interface
 [Service]
 Type=forking
 PIDFile=/run/cosid.pid
-ExecStart=/opt/uniclogs-software/cosi/cosi-runner
+ExecStart=/opt/uniclogs-software/cosi/cosi-runner -p 6h
 User=root
 Group=root

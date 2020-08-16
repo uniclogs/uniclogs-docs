@@ -2,9 +2,6 @@ import pytest
 import ultra.database as database
 import ultra.models as models
 
-# app = flask.Flask(__name__)
-# database.init_db(app)
-
 
 @pytest.mark.skip(reason='Need to be able to mock DB first.')
 def test_pass_model():

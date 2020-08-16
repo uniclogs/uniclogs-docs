@@ -19,4 +19,4 @@ function spin() {
 bundle exec rake db:schema:load
 bundle exec rake db:seed
 
-ruby tools/Dart --force-cleanup & ruby tools/CmdTlmServer --production --no-gui & spin
+ruby ruby tools/CmdTlmServer --production --no-gui & spin
