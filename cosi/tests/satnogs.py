@@ -1,8 +1,9 @@
-import sys; sys.path.append('..')
 import pytest
 import cosi.satnogs as satnogs
-import cosi.structs as structs
 import datetime
+import sys
+
+sys.path.insert(0, '..')
 
 
 def test_get_age_is_valid():

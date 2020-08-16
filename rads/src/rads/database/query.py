@@ -1,12 +1,14 @@
-from models import Request, Pass, Tle, Session
-from request_data import RequestData
+"""
+A nice place to hold all database query functions.
+"""
+
 from datetime import datetime
 from sqlalchemy import func, exc
 from loguru import logger
 import reverse_geocoder as rg
-import sys
-sys.path.insert(0, '../..')
 from pass_calculator.calculator import pass_overlap
+from .models import Request, Pass, Tle, Session
+from .request_data import RequestData
 
 
 def _fill_request_data(results):
@@ -29,20 +31,20 @@ def _fill_request_data(results):
 
     for r in results:
         rd = RequestData(
-                r.uid,
-                r.user_token,
-                r.pass_uid,
-                r.is_approved,
-                r.is_sent,
-                r.created_date,
-                r.updated_date,
-                r.observation_type,
-                r.pass_data.latitude,
-                r.pass_data.longitude,
-                r.pass_data.elevation,
-                r.pass_data.start_time,
-                r.pass_data.end_time
-                )
+            r.uid,
+            r.user_token,
+            r.pass_uid,
+            r.is_approved,
+            r.is_sent,
+            r.created_date,
+            r.updated_date,
+            r.observation_type,
+            r.pass_data.latitude,
+            r.pass_data.longitude,
+            r.pass_data.elevation,
+            r.pass_data.start_time,
+            r.pass_data.end_time,
+            )
         requests.append(rd)
 
     if requests:
@@ -83,17 +85,19 @@ def query_new_requests():
                     Request.is_approved.is_(None))\
             .order_by(Request.created_date.asc())\
             .all()
-    except exc.SQLAlchemyError as e:
-        logger.critical("Database query failed {}".format(e))
-    finally:
         ret = _fill_request_data(result)
+    except exc.SQLAlchemyError:
+        logger.critical("New requests query failed {}".format(
+            exc.SQLAlchemyError
+            ))
+    finally:
         session.close()
 
     # find all overlap for approved request in db
     approved_req = query_upcomming_requests()
     for r in ret:
         for a in approved_req:
-            if pass_overlap(r.pass_data, [a.pass_data]) is True:
+            if pass_overlap(a.pass_data, [r.pass_data]) is True:
                 r.db_approved_overlap.append(a.id)
 
     # find all overlap for new request
@@ -127,8 +131,10 @@ def query_upcomming_requests():
                     Request.is_approved.is_(True))\
             .order_by(Pass.start_time.asc())\
             .all()
-    except exc.SQLAlchemyError as e:
-        logger.critical("Database query failed {}".format(e))
+    except exc.SQLAlchemyError:
+        logger.critical("Upcomming requests query failed {}".format(
+            exc.SQLAlchemyError
+            ))
     finally:
         ret = _fill_request_data(result)
         session.close()
@@ -156,8 +162,10 @@ def query_archived_requests():
             .filter(Pass.start_time <= datetime.utcnow())\
             .order_by(Pass.start_time.desc())\
             .all()
-    except exc.SQLAlchemyError as e:
-        logger.critical("Database query failed {}".format(e))
+    except exc.SQLAlchemyError:
+        logger.critical("Archive requests query failed {}".format(
+            exc.SQLAlchemyError
+            ))
     finally:
         ret = _fill_request_data(result)
         session.close()
@@ -165,7 +173,7 @@ def query_archived_requests():
     return ret
 
 
-def query_tle():
+def query_latest_tle():
     """
     Get the latest tle from db.
 
@@ -178,76 +186,19 @@ def query_tle():
     session = Session()
 
     try:
+        # NOTE locking this will error and doesn't need to be atomic
         latest_tle_time = session.query(func.max(Tle.time_added))\
-            .with_lockmode('read')\
             .one()
+
         latest_tle = session.query(Tle)\
             .with_lockmode('read')\
             .filter(Tle.time_added == latest_tle_time)\
             .one()
 
         tle = [latest_tle.first_line, latest_tle.second_line]
-    except exc.SQLAlchemyError as e:
-        logger.critical("Database query failed {}".format(e))
+    except exc.SQLAlchemyError:
+        logger.critical("TLE query failed {}".format(exc.SQLAlchemyError))
     finally:
         session.close()
 
     return tle
-
-
-def update_approve_deny(request_list):
-    """
-    Update request in th db to be approved or denied.
-
-    Parameter
-    ---------
-   request_list: RequestData
-        A list of requests to update
-
-    Returns
-    -------
-    int
-        number of requests that failed to updated.
-    """
-
-    ret = 0
-
-    for r in request_list:
-        if r.updated is False:
-            continue
-
-        session = Session(autocommit=True)
-        session.begin()
-
-        try:
-            # find the matching reuqest and check if pass data are the same
-            session.query(Request)\
-                .with_lockmode('read')\
-                .join(Pass, Pass.uid == Request.pass_uid)\
-                .filter(Request.user_token == r.user_token,
-                        Pass.start_time == r.pass_data.aos_utc,
-                        Pass.end_time == r.pass_data.los_utc,
-                        Request.updated_date == r.updated_dt,
-                        Request.uid == r.id)\
-                .one()
-
-            # update value
-            session.query(Request)\
-                .with_lockmode('update')\
-                .filter(Request.uid == r.id)\
-                .update({Request.is_approved: r.is_approved,
-                        Request.updated_date: datetime.utcnow()})
-
-            session.commit()
-        except exc.SQLAlchemyError as e:
-            session.rollback()
-            logger.critical(
-                    "approved status update failed for request {} with {}"
-                    .format(r.id, e)
-                    )
-            ret += 1
-            continue
-        finally:
-            session.close()
-
-    return ret

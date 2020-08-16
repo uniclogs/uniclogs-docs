@@ -1,7 +1,7 @@
 import datetime
 import string
 import random
-import ultra
+import pass_calculator.orbitalpass as op
 from ultra.database import db
 
 
@@ -29,7 +29,11 @@ class Request(db.Model):
     """
     __tablename__ = 'requests'
     uid = db.Column(db.Integer, db.Sequence('requests_seq'), primary_key=True, nullable=False)
-    user_token = db.Column(db.Text, nullable=False)
+    user_token = db.Column(db.Text,
+                           db.ForeignKey('user_tokens.token',
+                                         onupdate="NO ACTION",
+                                         ondelete="NO ACTION"),
+                           nullable=False)
     is_approved = db.Column(db.Boolean)
     is_sent = db.Column(db.Boolean, nullable=False, default=False)
     pass_uid = db.Column(db.Integer,
@@ -110,6 +114,9 @@ class Pass(db.Model):
                          default=datetime.datetime.utcnow())
     elevation = db.Column(db.Float)
 
+    def to_orbital_pass(self) -> op.OrbitalPass:
+        return op.OrbitalPass(self.latitude, self.longitude, self.start_time, self.end_time)
+
     def __repr__(self):
         return '<Pass {}, {}, {}>'.format(self.uid,
                                           self.latitude,
@@ -131,10 +138,8 @@ class UserTokens(db.Model):
     """
     __tablename__ = 'user_tokens'
     token = db.Column(db.Text,
-                      db.ForeignKey('requests.user_token',
-                                    onupdate="NO ACTION",
-                                    ondelete="NO ACTION"),
-                      primary_key=True)
+                      primary_key=True,
+                      nullable=False)
     user_id = db.Column(db.String(120), nullable=False, primary_key=True)
 
 
@@ -188,37 +193,54 @@ class ItemToDecomTableMappings(db.Model):
 
 class Telemetry(db.Model):
     """
-    Used to model the t2_0 table in database.
+    Used to model the telemetry table in database.
     This models a many-to-many relationship between Request and User
     Attributes
     ----------
     __tablename__: `str` The raw postgresql table name.
     """
-    __tablename__ = ultra.TELEMETRY_TABLE_NAME
-    id = db.Column(db.BigInteger, nullable=False, primary_key=True)
-    time = db.Column(db.DateTime(timezone=False))
-    ple_id = db.Column(db.BigInteger)
-    meta_id = db.Column(db.BigInteger)
-    reduced_id = db.Column(db.BigInteger)
-    packet_log_id = db.Column(db.Integer)
-    reduced_state = db.Column(db.Integer, default=0)
-    i0 = db.Column(db.Float(precision=2))
-    i1 = db.Column(db.Text)
-    i2 = db.Column(db.Float(precision=2))
-    i3 = db.Column(db.Text)
-    i4 = db.Column(db.Integer)
-    i5 = db.Column(db.Integer)
-    i6 = db.Column(db.Integer)
-    i7 = db.Column(db.Integer)
-    i8 = db.Column(db.Integer)
-    i9 = db.Column(db.Integer)
-    i10 = db.Column(db.Integer)
+    __tablename__ = 'telemetry'
+    id = db.Column(db.Integer,
+                   db.Sequence('telemetry_id_seq'),
+                   nullable=False,
+                   primary_key=True)
+    received_at = db.Column(db.DateTime(timezone=False),
+                            nullable=False,
+                            default=datetime.datetime.utcnow())
+    invalid_count = db.Column(db.Integer)
+    sensor_used = db.Column(db.Integer)
+    vector_body_1 = db.Column(db.Integer)
+    vector_body_2 = db.Column(db.Integer)
+    vector_body_3 = db.Column(db.Integer)
+    vector_valid = db.Column(db.Boolean)
+
+    def to_json(self):
+        return {
+                'id': self.id,
+                'received_at': self.received_at.isoformat(),
+                'invalid_count': self.invalid_count,
+                'sensor_used': self.sensor_used,
+                'vector_body_1': self.vector_body_1,
+                'vector_body_2': self.vector_body_2,
+                'vector_body_3': self.vector_body_3,
+                'vector_valid': self.vector_valid
+               }
+
+    def __repr__(self):
+        return "<Telemetry ({}) [{}]: {} {} {} {} {}>" \
+               .format(self.id,
+                       self.received_at,
+                       self.invalid_count,
+                       self.vector_body_1,
+                       self.vector_body_2,
+                       self.vector_body_3,
+                       self.vector_valid)
 
 
 def get_random_string(length):
     """
     Helper for generation of random string
     """
-    letters = string.ascii_lowercase
+    letters = string.ascii_letters + string.digits
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str

@@ -1,0 +1,9 @@
+[Unit]
+Description=UniClOGS Live Telemetry & Request API
+
+[Service]
+Type=forking
+PIDFile=/run/ultrad.pid
+ExecStart=/opt/uniclogs-software/ultra/ultra-runner
+User=root
+Group=root

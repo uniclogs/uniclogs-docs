@@ -1,8 +1,8 @@
 AUTHOR="Dmitri McGuckin"
-DESCRIPTION="A modified version of ballaerospace/cosmos custom fit for OreSat's UniClOGS server."
-CONTAINER=command-telemetry-server
-LOCAL_IMAGE=cosmos
-REMOTE_IMAGE=psaspdx/$(LOCAL_IMAGE):latest
+DESCRIPTION="A modification of the cosmos docker image customized for oresat mission server."
+CONTAINER=cosmos
+LOCAL_IMAGE=ms-cosmos
+REMOTE_IMAGE=dmitrimcguuckin/$(LOCAL_IMAGE):latest
 
 IMAGE=$(REMOTE_IMAGE)
 USE_LOCAL_BUILD=1

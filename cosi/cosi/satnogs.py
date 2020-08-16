@@ -131,4 +131,7 @@ def decode_telemetry_frame(telemetry_frame: bytes) -> csim.Csim.BeaconLong:
                        .ax25_frame \
                        .payload \
                        .ax25_info
-    return payload
+    if(type(payload) is csim.Csim.BeaconLong):
+        return payload
+    else:
+        return None
