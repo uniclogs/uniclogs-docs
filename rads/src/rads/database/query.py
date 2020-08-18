@@ -131,12 +131,12 @@ def query_upcomming_requests():
                     Request.is_approved.is_(True))\
             .order_by(Pass.start_time.asc())\
             .all()
+        ret = _fill_request_data(result)
     except exc.SQLAlchemyError:
         logger.critical("Upcomming requests query failed {}".format(
             exc.SQLAlchemyError
             ))
     finally:
-        ret = _fill_request_data(result)
         session.close()
 
     return ret
@@ -162,12 +162,12 @@ def query_archived_requests():
             .filter(Pass.start_time <= datetime.utcnow())\
             .order_by(Pass.start_time.desc())\
             .all()
+        ret = _fill_request_data(result)
     except exc.SQLAlchemyError:
         logger.critical("Archive requests query failed {}".format(
             exc.SQLAlchemyError
             ))
     finally:
-        ret = _fill_request_data(result)
         session.close()
 
     return ret
