@@ -93,6 +93,9 @@ Attributes
         numberOfRequests : total number of passes to schedule
 
         """
+        if(self.passRequestList == []):
+            return (print("No passes to upload, list empty."))
+
         set_replay_mode(False)
         connect_interface('ENGR_LINK_INT')
 
@@ -115,6 +118,9 @@ Attributes
         response: collects user input
         emptyPassRequestList : collects the newly emptied list
         """
+        if(self.passRequestList == []):
+            return (print("No passes to cancel, list empty."))
+
         set_replay_mode(False)
         connect_interface('ENGR_LINK_INT')
 
