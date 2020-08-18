@@ -85,7 +85,8 @@ def inject_tle(tle: TLE) -> bool:
         session.add(tle)
         session.commit()
         success = True
-    except Exception:
+    except Exception as e:
+        print('fatal: {}'.format(e))
         session.rollback()
     finally:
         session.close()

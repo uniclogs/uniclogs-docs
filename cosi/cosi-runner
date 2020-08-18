@@ -86,9 +86,11 @@ def fetch_telemetry(args: list):
         if(args.debug):
             print('Injecting telemetry into the DB: {}'
                   .format(magentometer_telemetry))
-            models.inject_telemetry(magentometer_telemetry)
-        if(args.debug):
-            print('\nSuccesfully injected!')
+            status = models.inject_telemetry(magentometer_telemetry)
+            if(args.debug and status):
+                print('\nSuccesfully injected!')
+            else:
+                raise Exception('Failed to inject telemetry')
     except Exception:
         if(args.debug):
             print('\nFailed to inject telemetry frame into DB: {}'
