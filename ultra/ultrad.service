@@ -8,3 +8,6 @@ EnvironmentFile=/etc/environment
 ExecStart=/usr/bin/python3 /opt/uniclogs-software/ultra/ultra-runner -d
 User=root
 Group=root
+
+[Install]
+WantedBy=multi-user.target
