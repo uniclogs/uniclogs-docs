@@ -17,21 +17,21 @@ Installing the mission server on a server running Arch Linux.
 - Add environment variable
     - Put all these in /etc/environment
     ```
-    export DART_HOST="localhost"
-    export DART_PORT="5432"
-    export DART_DB="cosmos"
-    export DART_USERNAME="root"
-    export DART_PASSWORD="password here"
-    export COSI_USER_NAME="root"
-    export COSI_PASSWORD="password here"
-    export ULTRA_USER_NAME="root"
-    export ULTRA_PASSWORD="password here"
-    export RADS_USERNAME="root"
-    export RADS_PASSWORD="password here"
-    export COSMOS_USERPATH="/tmp/userpath.txt"
-    export SATNOGS_TOKEN="token here"
-    export SPACETRACK_USERNAME="username here"
-    export SPACETRACK_PASSWORD="password here"
+    DART_HOST="localhost"
+    DART_PORT="5432"
+    DART_DB="cosmos"
+    DART_USERNAME="username here"
+    DART_PASSWORD="password here"
+    COSI_USER_NAME="cosi"
+    COSI_PASSWORD="password here"
+    ULTRA_USER_NAME="ultra"
+    ULTRA_PASSWORD="password here"
+    RADS_USERNAME="rads"
+    RADS_PASSWORD="password here"
+    COSMOS_USERPATH="/tmp/userpath.txt"
+    SATNOGS_TOKEN="token here"
+    SPACETRACK_USERNAME="username here"
+    SPACETRACK_PASSWORD="password here"
     ```
 - Docker / COSMOS
     - `$ yay -S docker`

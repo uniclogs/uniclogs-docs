@@ -43,4 +43,4 @@ api.add_resource(telemetry.TelemetryEndpoint, '/telemetry')
 
 def run():
     db.init_db(app)
-    app.run(debug=True)
+    app.run()

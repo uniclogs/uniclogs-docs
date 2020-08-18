@@ -61,7 +61,7 @@ def usage():
 
 
 if __name__ == "__main__":
-    pid_file = "/run/mission_server_ultrad.pid"
+    pid_file = "/run/ultrad.pid"
     daemon_flag = False
 
     opts, args = getopt.getopt(sys.argv[1:], "dh")
