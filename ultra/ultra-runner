@@ -66,9 +66,9 @@ if __name__ == "__main__":
 
     opts, args = getopt.getopt(sys.argv[1:], "dh")
     for opt, arg in opts:
-        if opt == "d":
+        if opt == "-d":
             daemon_flag = True
-        elif opt == "h":
+        elif opt == "-h":
             usage()
             exit(0)
         else:
