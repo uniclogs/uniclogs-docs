@@ -13,7 +13,7 @@ def init(name):
     None
     """
     now = datetime.now()
-    filename = "logs/{0}_{1}.log".format(name, now.strftime("%m_%d_%y"))
+    filename = "/var/log/ultra{0}_{1}.log".format(name, now.strftime("%m_%d_%y"))
     logger.add(filename, rotation="00:00", format="<green>{time}</green> <level>{message}</level>") # New file is created each day at noon
     logger.warning("Logs will saved in logs/{0}_{1}.log".format(name, now.strftime("%m_%d_%y")))
 
