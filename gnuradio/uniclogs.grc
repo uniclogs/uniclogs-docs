@@ -8,7 +8,7 @@ options:
     description: ''
     gen_cmake: 'On'
     gen_linking: dynamic
-    generate_options: no_gui
+    generate_options: qt_gui
     hier_block_src_path: '.:'
     id: uniclogs
     max_nouts: '0'
@@ -32,6 +32,27 @@ options:
     state: enabled
 
 blocks:
+- name: freq
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: ''
+    min_len: '200'
+    orient: Qt.Horizontal
+    rangeType: float
+    start: 100e6
+    step: 10e6
+    stop: 200e6
+    value: 100e6
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [520, 34]
+    rotation: 0
+    state: true
 - name: packet_len
   id: variable
   parameters:
@@ -85,7 +106,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [771, 399]
+    coordinate: [627, 515]
     rotation: 0
     state: true
 - name: audio_sink_0
@@ -121,7 +142,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [812, 477]
+    coordinate: [668, 593]
     rotation: 0
     state: true
 - name: blocks_message_debug_0
@@ -134,7 +155,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1485, 94]
+    coordinate: [1251, 347]
     rotation: 0
     state: true
 - name: blocks_socket_pdu_0
@@ -154,44 +175,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1471, 233]
-    rotation: 0
-    state: true
-- name: blocks_socket_pdu_0_0
-  id: blocks_socket_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    host: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    mtu: '10000'
-    port: '52001'
-    tcp_no_delay: 'False'
-    type: TCP_SERVER
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [80, 368]
-    rotation: 0
-    state: true
-- name: blocks_tagged_stream_to_pdu_0
-  id: blocks_tagged_stream_to_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    tag: packet_len
-    type: byte
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1196, 197]
+    coordinate: [692, 371]
     rotation: 0
     state: true
 - name: dec_block_0
@@ -256,7 +240,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [570, 399]
+    coordinate: [406, 515]
     rotation: 0
     state: true
 - name: framing_block_0
@@ -272,7 +256,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [307, 396]
+    coordinate: [163, 512]
     rotation: 0
     state: true
 - name: limesdr_sink_0
@@ -306,7 +290,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1319, 407]
+    coordinate: [1175, 523]
     rotation: 0
     state: true
 - name: limesdr_source_0
@@ -334,7 +318,7 @@ blocks:
     nco_freq_ch0: '0'
     nco_freq_ch1: '0'
     oversample: '0'
-    rf_freq: 100e6
+    rf_freq: freq
     samp_rate: samp_rate
     serial: ''
   states:
@@ -357,20 +341,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1088, 407]
-    rotation: 0
-    state: true
-- name: note_0
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: Placeholder for now
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1203, 145]
+    coordinate: [944, 523]
     rotation: 0
     state: true
 
@@ -378,11 +349,10 @@ connections:
 - [FEC_dec_block_0, '0', dec_block_0, '0']
 - [FEC_enc_block_0, '0', mod_block_0, '0']
 - [audio_source_0, '0', mod_block_0, '1']
-- [blocks_socket_pdu_0_0, pdus, framing_block_0, in]
-- [blocks_tagged_stream_to_pdu_0, pdus, blocks_message_debug_0, print_pdu]
-- [blocks_tagged_stream_to_pdu_0, pdus, blocks_socket_pdu_0, pdus]
+- [blocks_socket_pdu_0, pdus, framing_block_0, in]
 - [dec_block_0, '0', deframing_block_0, '0']
-- [deframing_block_0, '0', blocks_tagged_stream_to_pdu_0, '0']
+- [deframing_block_0, out, blocks_message_debug_0, print_pdu]
+- [deframing_block_0, out, blocks_socket_pdu_0, pdus]
 - [demod_block_0, '0', FEC_dec_block_0, '0']
 - [demod_block_0, '1', audio_sink_0, '0']
 - [enc_block_0, '0', FEC_enc_block_0, '0']

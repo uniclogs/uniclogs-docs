@@ -44,6 +44,23 @@ blocks:
     coordinate: [192, 12.0]
     rotation: 0
     state: enabled
+- name: blocks_char_to_float_0
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [247, 335]
+    rotation: 0
+    state: true
 - name: blocks_selector_1
   id: blocks_selector
   parameters:
@@ -58,13 +75,13 @@ blocks:
     num_outputs: '2'
     output_index: '0'
     showports: 'True'
-    type: byte
+    type: float
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [262, 316]
+    coordinate: [464, 307]
     rotation: 0
     state: true
 - name: pad_sink_0
@@ -82,7 +99,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [820, 356]
+    coordinate: [1022, 347]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -136,7 +153,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [516, 277]
+    coordinate: [718, 268]
     rotation: 0
     state: true
 - name: satellites_ccsds_concatenated_deframer_0
@@ -157,14 +174,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [499, 384]
+    coordinate: [701, 375]
     rotation: 0
     state: true
 
 connections:
+- [blocks_char_to_float_0, '0', blocks_selector_1, '0']
 - [blocks_selector_1, '0', satellites_ax25_deframer_0, '0']
 - [blocks_selector_1, '1', satellites_ccsds_concatenated_deframer_0, '0']
-- [pad_source_0, '0', blocks_selector_1, '0']
+- [pad_source_0, '0', blocks_char_to_float_0, '0']
 - [satellites_ax25_deframer_0, out, pad_sink_0, in]
 - [satellites_ccsds_concatenated_deframer_0, out, pad_sink_0, in]
 
