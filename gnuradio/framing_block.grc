@@ -32,18 +32,18 @@ options:
     state: enabled
 
 blocks:
-- name: samp_rate
+- name: path_select
   id: variable
   parameters:
     comment: ''
-    value: '32000'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 12.0]
+    coordinate: [174, 5]
     rotation: 0
-    state: enabled
+    state: true
 - name: blocks_pdu_to_tagged_stream_0_1
   id: blocks_pdu_to_tagged_stream
   parameters:
@@ -58,7 +58,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [250, 351]
+    coordinate: [210, 261]
     rotation: 0
     state: true
 - name: blocks_pdu_to_tagged_stream_0_1_0
@@ -75,7 +75,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1217, 382]
+    coordinate: [940, 326]
     rotation: 0
     state: true
 - name: blocks_selector_0
@@ -85,12 +85,12 @@ blocks:
     alias: ''
     comment: ''
     enabled: 'True'
-    input_index: '0'
+    input_index: path_select
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_inputs: '1'
-    num_outputs: '2'
-    output_index: path_select
+    num_inputs: '2'
+    num_outputs: '1'
+    output_index: '0'
     showports: 'True'
     type: byte
     vlen: '1'
@@ -98,7 +98,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [496, 335]
+    coordinate: [1188, 266]
     rotation: 0
     state: true
 - name: blocks_tagged_stream_to_pdu_0_0
@@ -115,24 +115,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [723, 331]
-    rotation: 0
-    state: true
-- name: blocks_tagged_stream_to_pdu_0_0_0
-  id: blocks_tagged_stream_to_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    tag: packet_len
-    type: byte
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [720, 416]
+    coordinate: [450, 324]
     rotation: 0
     state: true
 - name: pad_sink_0
@@ -150,7 +133,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1455, 381]
+    coordinate: [1416, 304]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -170,24 +153,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 350]
-    rotation: 0
-    state: true
-- name: path_select
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: Framing Selection
-    short_id: ''
-    type: ''
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [18, 148]
+    coordinate: [16, 260]
     rotation: 0
     state: true
 - name: satellites_hdlc_framer_0
@@ -204,37 +170,18 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [993, 317]
-    rotation: 0
-    state: true
-- name: satellites_hdlc_framer_0_0
-  id: satellites_hdlc_framer
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    postamble_bytes: '7'
-    preamble_bytes: '50'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [999, 412]
+    coordinate: [720, 317]
     rotation: 0
     state: true
 
 connections:
 - [blocks_pdu_to_tagged_stream_0_1, '0', blocks_selector_0, '0']
-- [blocks_pdu_to_tagged_stream_0_1_0, '0', pad_sink_0, '0']
-- [blocks_selector_0, '0', blocks_tagged_stream_to_pdu_0_0, '0']
-- [blocks_selector_0, '1', blocks_tagged_stream_to_pdu_0_0_0, '0']
+- [blocks_pdu_to_tagged_stream_0_1, '0', blocks_tagged_stream_to_pdu_0_0, '0']
+- [blocks_pdu_to_tagged_stream_0_1_0, '0', blocks_selector_0, '1']
+- [blocks_selector_0, '0', pad_sink_0, '0']
 - [blocks_tagged_stream_to_pdu_0_0, pdus, satellites_hdlc_framer_0, in]
-- [blocks_tagged_stream_to_pdu_0_0_0, pdus, satellites_hdlc_framer_0_0, in]
 - [pad_source_0, out, blocks_pdu_to_tagged_stream_0_1, pdus]
 - [satellites_hdlc_framer_0, out, blocks_pdu_to_tagged_stream_0_1_0, pdus]
-- [satellites_hdlc_framer_0_0, out, blocks_pdu_to_tagged_stream_0_1_0, pdus]
 
 metadata:
   file_format: 1

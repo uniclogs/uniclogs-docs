@@ -1,6 +1,7 @@
 options:
   parameters:
     author: Miles Simpson
+    catch_exceptions: 'True'
     category: '[UniClOGS]'
     cmake_opt: ''
     comment: ''
@@ -22,7 +23,6 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: Modulation
-    window_size: ''
   states:
     bus_sink: false
     bus_source: false
@@ -32,6 +32,30 @@ options:
     state: enabled
 
 blocks:
+- name: path_select
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [289, 13]
+    rotation: 0
+    state: true
+- name: samp_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [383, 11]
+    rotation: 0
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
@@ -61,7 +85,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 375]
+    coordinate: [625, 573]
     rotation: 0
     state: true
 - name: analog_wfm_tx_0
@@ -81,9 +105,96 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 519]
+    coordinate: [625, 717]
     rotation: 0
     state: true
+- name: blocks_add_const_vxx_0
+  id: blocks_add_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '-0.5'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [629, 374]
+    rotation: 0
+    state: enabled
+- name: blocks_char_to_float_0
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [461, 374]
+    rotation: 0
+    state: enabled
+- name: blocks_float_to_complex_0
+  id: blocks_float_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 360]
+    rotation: 0
+    state: true
+- name: blocks_multiply_const_vxx_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    const: '0.5'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [813, 374]
+    rotation: 0
+    state: enabled
+- name: blocks_repeat_0
+  id: blocks_repeat
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    interp: samp_per_sym
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [298, 374]
+    rotation: 0
+    state: enabled
 - name: blocks_selector_0
   id: blocks_selector
   parameters:
@@ -95,7 +206,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '1'
-    num_outputs: '2'
+    num_outputs: '3'
     output_index: path_select % 2
     showports: 'True'
     type: byte
@@ -104,7 +215,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [413, 197]
+    coordinate: [227, 194]
     rotation: 0
     state: true
 - name: blocks_selector_0_0
@@ -127,7 +238,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [423, 423]
+    coordinate: [204, 613]
     rotation: 0
     state: true
 - name: blocks_selector_1
@@ -140,7 +251,7 @@ blocks:
     input_index: path_select
     maxoutbuf: '0'
     minoutbuf: '0'
-    num_inputs: '4'
+    num_inputs: '5'
     num_outputs: '1'
     output_index: '0'
     showports: 'True'
@@ -150,7 +261,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1110, 298]
+    coordinate: [1305, 309]
     rotation: 0
     state: true
 - name: digital_gfsk_mod_0
@@ -207,7 +318,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1350, 358]
+    coordinate: [1545, 369]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -227,7 +338,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [227, 214]
+    coordinate: [41, 211]
     rotation: 0
     state: true
 - name: pad_source_0_0
@@ -247,32 +358,21 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [242, 436]
-    rotation: 0
-    state: true
-- name: path_select
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: Modulation Select
-    short_id: ''
-    type: intx
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 140.0]
+    coordinate: [23, 626]
     rotation: 0
     state: true
 
 connections:
-- [analog_nbfm_tx_0, '0', blocks_selector_1, '2']
-- [analog_wfm_tx_0, '0', blocks_selector_1, '3']
+- [analog_nbfm_tx_0, '0', blocks_selector_1, '3']
+- [analog_wfm_tx_0, '0', blocks_selector_1, '4']
+- [blocks_add_const_vxx_0, '0', blocks_multiply_const_vxx_0, '0']
+- [blocks_char_to_float_0, '0', blocks_add_const_vxx_0, '0']
+- [blocks_float_to_complex_0, '0', blocks_selector_1, '2']
+- [blocks_multiply_const_vxx_0, '0', blocks_float_to_complex_0, '0']
+- [blocks_repeat_0, '0', blocks_char_to_float_0, '0']
 - [blocks_selector_0, '0', digital_gfsk_mod_0, '0']
 - [blocks_selector_0, '1', digital_gmsk_mod_0, '0']
+- [blocks_selector_0, '2', blocks_repeat_0, '0']
 - [blocks_selector_0_0, '0', analog_nbfm_tx_0, '0']
 - [blocks_selector_0_0, '1', analog_wfm_tx_0, '0']
 - [blocks_selector_1, '0', pad_sink_0, '0']

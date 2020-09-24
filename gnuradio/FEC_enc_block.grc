@@ -32,18 +32,18 @@ options:
     state: enabled
 
 blocks:
-- name: samp_rate
+- name: path_select
   id: variable
   parameters:
     comment: ''
-    value: '32000'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 12.0]
+    coordinate: [169, 13]
     rotation: 0
-    state: enabled
+    state: true
 - name: blocks_selector_1
   id: blocks_selector
   parameters:
@@ -64,7 +64,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1250, 282]
+    coordinate: [480, 205]
     rotation: 0
     state: true
 - name: fec_generic_encoder_0
@@ -82,7 +82,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [909, 339]
+    coordinate: [192, 257]
     rotation: 0
     state: true
 - name: pad_sink_0
@@ -100,7 +100,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1508, 312]
+    coordinate: [738, 235]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -120,24 +120,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 300.0]
-    rotation: 0
-    state: true
-- name: path_select
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: FEC Encoding Selection
-    short_id: ''
-    type: intx
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 140.0]
+    coordinate: [19, 204]
     rotation: 0
     state: true
 

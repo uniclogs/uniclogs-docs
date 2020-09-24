@@ -32,18 +32,23 @@ options:
     state: enabled
 
 blocks:
-- name: samp_rate
-  id: variable
+- name: path_select
+  id: variable_config
   parameters:
     comment: ''
-    value: '32000'
+    config_file: default
+    option: key
+    section: coding
+    type: int
+    value: '0'
+    writeback: None
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [192, 12.0]
+    coordinate: [198, 14]
     rotation: 0
-    state: enabled
+    state: true
 - name: blocks_selector_1
   id: blocks_selector
   parameters:
@@ -64,7 +69,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1263, 288]
+    coordinate: [601, 201]
     rotation: 0
     state: true
 - name: pad_sink_0
@@ -82,7 +87,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1492, 318]
+    coordinate: [847, 235]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -102,27 +107,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [95, 312]
+    coordinate: [24, 211]
     rotation: 0
     state: true
-- name: path_select
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: Decoding Selection
-    short_id: ''
-    type: ''
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 140.0]
-    rotation: 0
-    state: true
-- name: satellites_nrzi_decode_0
+- name: satellites_nrzi_decode_0_0
   id: satellites_nrzi_decode
   parameters:
     affinity: ''
@@ -134,15 +122,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [997, 331]
+    coordinate: [276, 249]
     rotation: 0
-    state: true
+    state: enabled
 
 connections:
 - [blocks_selector_1, '0', pad_sink_0, '0']
 - [pad_source_0, '0', blocks_selector_1, '0']
-- [pad_source_0, '0', satellites_nrzi_decode_0, '0']
-- [satellites_nrzi_decode_0, '0', blocks_selector_1, '1']
+- [pad_source_0, '0', satellites_nrzi_decode_0_0, '0']
+- [satellites_nrzi_decode_0_0, '0', blocks_selector_1, '1']
 
 metadata:
   file_format: 1

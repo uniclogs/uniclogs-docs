@@ -1,16 +1,17 @@
 options:
   parameters:
-    author: Ryan Medick
+    author: Ryan
+    catch_exceptions: 'True'
     category: '[UniClOGS]'
     cmake_opt: ''
     comment: ''
-    copyright: Portland State Aerospace Society
+    copyright: PSAS
     description: ''
     gen_cmake: 'On'
     gen_linking: dynamic
     generate_options: hb
     hier_block_src_path: '.:'
-    id: FEC_dec_block
+    id: scrambler
     max_nouts: '0'
     output_language: python
     placement: (0,0)
@@ -21,8 +22,7 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: FEC Decoding
-    window_size: ''
+    title: Scrambler
   states:
     bus_sink: false
     bus_source: false
@@ -32,6 +32,30 @@ options:
     state: enabled
 
 blocks:
+- name: length
+  id: variable
+  parameters:
+    comment: ''
+    value: '16'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [424, 14]
+    rotation: 0
+    state: true
+- name: mask
+  id: variable
+  parameters:
+    comment: ''
+    value: '0x21'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [275, 13]
+    rotation: 0
+    state: true
 - name: path_select
   id: variable
   parameters:
@@ -41,7 +65,36 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [172, 11]
+    coordinate: [173, 14]
+    rotation: 0
+    state: true
+- name: seed
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [354, 15]
+    rotation: 0
+    state: true
+- name: variable_config_0
+  id: variable_config
+  parameters:
+    comment: ''
+    config_file: default
+    option: key
+    section: main
+    type: real
+    value: '0'
+    writeback: None
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [557, 47]
     rotation: 0
     state: true
 - name: blocks_selector_1
@@ -64,25 +117,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [463, 253]
+    coordinate: [568, 261]
     rotation: 0
     state: true
-- name: fec_generic_decoder_0
-  id: fec_generic_decoder
+- name: digital_scrambler_bb_0
+  id: digital_scrambler_bb
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    decoder: decoder_variable
-    itype: byte
+    len: length
+    mask: mask
     maxoutbuf: '0'
     minoutbuf: '0'
-    otype: byte
+    seed: seed
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [217, 312]
+    coordinate: [311, 312]
     rotation: 0
     state: true
 - name: pad_sink_0
@@ -100,7 +153,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [692, 283]
+    coordinate: [826, 291]
     rotation: 0
     state: true
 - name: pad_source_0
@@ -120,15 +173,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 254]
+    coordinate: [41, 263]
     rotation: 0
     state: true
 
 connections:
 - [blocks_selector_1, '0', pad_sink_0, '0']
-- [fec_generic_decoder_0, '0', blocks_selector_1, '1']
+- [digital_scrambler_bb_0, '0', blocks_selector_1, '1']
 - [pad_source_0, '0', blocks_selector_1, '0']
-- [pad_source_0, '0', fec_generic_decoder_0, '0']
+- [pad_source_0, '0', digital_scrambler_bb_0, '0']
 
 metadata:
   file_format: 1

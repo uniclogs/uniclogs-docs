@@ -155,7 +155,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1251, 347]
+    coordinate: [1293, 168]
     rotation: 0
     state: true
 - name: blocks_socket_pdu_0
@@ -175,7 +175,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [692, 371]
+    coordinate: [810, 366]
     rotation: 0
     state: true
 - name: dec_block_0
@@ -303,6 +303,7 @@ blocks:
     analog_bandw_ch1: 1.5e6
     calibr_bandw_ch0: 2.5e6
     calibr_bandw_ch1: 2.5e6
+    ch_align: 'False'
     channel_mode: '0'
     comment: ''
     dacVal: '180'
@@ -325,7 +326,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [35, 205]
+    coordinate: [34, 186]
     rotation: 0
     state: true
 - name: mod_block_0

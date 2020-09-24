@@ -109,7 +109,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [774, 334]
+    coordinate: [863, 359]
     rotation: 0
     state: enabled
 - name: audio_sink_0_0
@@ -126,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1126, 342]
+    coordinate: [1215, 367]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_0_1
@@ -144,7 +144,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [966, 342]
+    coordinate: [1055, 367]
     rotation: 0
     state: enabled
 - name: limesdr_source_0_0
@@ -179,10 +179,10 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 317]
+    coordinate: [128, 324]
     rotation: 0
     state: enabled
-- name: low_pass_filter_0_1
+- name: low_pass_filter_0_1_0
   id: low_pass_filter
   parameters:
     affinity: ''
@@ -203,7 +203,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [318, 291]
+    coordinate: [357, 293]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0
@@ -295,7 +295,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [607, 216]
+    coordinate: [696, 241]
     rotation: 0
     state: true
 - name: rational_resampler_xxx_1_0_1
@@ -315,16 +315,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [549, 322]
+    coordinate: [638, 347]
     rotation: 0
     state: enabled
 
 connections:
 - [analog_wfm_rcv_0_1, '0', blocks_multiply_const_vxx_0_1, '0']
 - [blocks_multiply_const_vxx_0_1, '0', audio_sink_0_0, '0']
-- [limesdr_source_0_0, '0', low_pass_filter_0_1, '0']
-- [low_pass_filter_0_1, '0', qtgui_const_sink_x_0, '0']
-- [low_pass_filter_0_1, '0', rational_resampler_xxx_1_0_1, '0']
+- [limesdr_source_0_0, '0', low_pass_filter_0_1_0, '0']
+- [low_pass_filter_0_1_0, '0', qtgui_const_sink_x_0, '0']
+- [low_pass_filter_0_1_0, '0', rational_resampler_xxx_1_0_1, '0']
 - [rational_resampler_xxx_1_0_1, '0', analog_wfm_rcv_0_1, '0']
 
 metadata:
