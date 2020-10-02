@@ -1,0 +1,429 @@
+options:
+  parameters:
+    author: Miles Simpson
+    category: '[UniClOGS]'
+    cmake_opt: ''
+    comment: ''
+    copyright: Portland State Aerospace Society
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: no_gui
+    hier_block_src_path: '.:'
+    id: uniclogs_sdr
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: '1'
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: SDR Interface
+    window_size: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: rx_analog_filter
+  id: variable
+  parameters:
+    comment: ''
+    value: samp_rate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 396.0]
+    rotation: 0
+    state: enabled
+- name: rx_center_freq
+  id: variable
+  parameters:
+    comment: ''
+    value: '[[436.5e6,145e6],[145e6,436.5e6]]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 268.0]
+    rotation: 0
+    state: enabled
+- name: rx_digital_filter
+  id: variable
+  parameters:
+    comment: ''
+    value: samp_rate - 500e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 460.0]
+    rotation: 0
+    state: enabled
+- name: rx_nco_freq
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 332.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: 4.8e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 12.0]
+    rotation: 0
+    state: enabled
+- name: tx_analog_filter
+  id: variable
+  parameters:
+    comment: ''
+    value: 5e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [120, 396.0]
+    rotation: 0
+    state: enabled
+- name: tx_center_freq
+  id: variable
+  parameters:
+    comment: ''
+    value: '[[0,144.63e6,1265e6],[0,436e6,0]]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 268.0]
+    rotation: 0
+    state: enabled
+- name: tx_digital_filter
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [120, 460.0]
+    rotation: 0
+    state: enabled
+- name: tx_nco_freq
+  id: variable
+  parameters:
+    comment: ''
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [120, 332.0]
+    rotation: 0
+    state: enabled
+- name: analog_sig_source_x_0
+  id: analog_sig_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: '1'
+    comment: ''
+    freq: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: samp_rate
+    type: complex
+    waveform: analog.GR_COS_WAVE
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 548.0]
+    rotation: 0
+    state: enabled
+- name: blocks_selector_0
+  id: blocks_selector
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    enabled: 'True'
+    input_index: tx_src
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    num_outputs: '1'
+    output_index: '0'
+    showports: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 476.0]
+    rotation: 0
+    state: true
+- name: channel
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Channel Select
+    short_id: c
+    type: intx
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 156.0]
+    rotation: 0
+    state: enabled
+- name: limesdr_sink_0_0
+  id: limesdr_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    allow_tcxo_dac: '0'
+    analog_bandw_ch0: tx_analog_filter
+    analog_bandw_ch1: tx_analog_filter
+    calibr_bandw_ch0: samp_rate
+    calibr_bandw_ch1: samp_rate
+    channel_mode: '0'
+    comment: ''
+    dacVal: '125'
+    digital_bandw_ch0: tx_digital_filter
+    digital_bandw_ch1: tx_digital_filter
+    filename: ''
+    gain_dB_ch0: tx_gain
+    gain_dB_ch1: tx_gain
+    length_tag_name: ''
+    nco_freq_ch0: tx_nco_freq
+    nco_freq_ch1: tx_nco_freq
+    oversample: '0'
+    pa_path_ch0: tx_band
+    pa_path_ch1: tx_band
+    rf_freq: tx_center_freq[channel][tx_band]
+    samp_rate: samp_rate
+    serial: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1048, 492.0]
+    rotation: 0
+    state: enabled
+- name: limesdr_source_0_0
+  id: limesdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    allow_tcxo_dac: '0'
+    analog_bandw_ch0: rx_analog_filter
+    analog_bandw_ch1: rx_analog_filter
+    calibr_bandw_ch0: samp_rate
+    calibr_bandw_ch1: samp_rate
+    ch_align: 'False'
+    channel_mode: '0'
+    comment: ''
+    dacVal: '125'
+    digital_bandw_ch0: rx_digital_filter
+    digital_bandw_ch1: rx_digital_filter
+    filename: ''
+    gain_dB_ch0: rx_gain
+    gain_dB_ch1: rx_gain
+    lna_path_ch0: '2'
+    lna_path_ch1: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nco_freq_ch0: rx_nco_freq
+    nco_freq_ch1: rx_nco_freq
+    oversample: '0'
+    rf_freq: rx_center_freq[rx_swap][channel]
+    samp_rate: samp_rate
+    serial: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 356.0]
+    rotation: 0
+    state: enabled
+- name: rational_resampler_xxx_1
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: '1'
+    fbw: '0'
+    interp: '10'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: ''
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [600, 452.0]
+    rotation: 0
+    state: enabled
+- name: rx_gain
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: RX Gain
+    short_id: ''
+    type: intx
+    value: '55'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 524.0]
+    rotation: 0
+    state: true
+- name: rx_swap
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: RX Path Swap
+    short_id: r
+    type: intx
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [144, 156.0]
+    rotation: 0
+    state: enabled
+- name: tx_band
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: TX Band Select
+    short_id: b
+    type: intx
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [272, 156.0]
+    rotation: 0
+    state: enabled
+- name: tx_gain
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: TX Gain
+    short_id: ''
+    type: intx
+    value: '25'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [120, 524.0]
+    rotation: 0
+    state: true
+- name: tx_src
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: TX Source Select
+    short_id: t
+    type: intx
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [408, 156.0]
+    rotation: 0
+    state: true
+- name: zeromq_pub_sink_0
+  id: zeromq_pub_sink
+  parameters:
+    address: tcp://0.0.0.0:8888
+    affinity: ''
+    alias: ''
+    comment: ''
+    hwm: '-1'
+    pass_tags: 'False'
+    timeout: '100'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1048, 364.0]
+    rotation: 0
+    state: enabled
+- name: zeromq_pull_source_0
+  id: zeromq_pull_source
+  parameters:
+    address: tcp://uniclogs.psas.pdx.edu:8888
+    affinity: ''
+    alias: ''
+    comment: ''
+    hwm: '-1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    pass_tags: 'False'
+    timeout: '100'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [312, 460.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [analog_sig_source_x_0, '0', blocks_selector_0, '1']
+- [blocks_selector_0, '0', limesdr_sink_0_0, '0']
+- [limesdr_source_0_0, '0', zeromq_pub_sink_0, '0']
+- [rational_resampler_xxx_1, '0', blocks_selector_0, '0']
+- [zeromq_pull_source_0, '0', rational_resampler_xxx_1, '0']
+
+metadata:
+  file_format: 1
