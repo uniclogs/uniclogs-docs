@@ -1,0 +1,221 @@
+options:
+  parameters:
+    author: ryan
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: no_gui
+    hier_block_src_path: '.:'
+    id: test_rx
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Test Rx
+    window_size: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: samp_per_sym
+  id: variable
+  parameters:
+    comment: ''
+    value: '5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [271, 11]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '32000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 12]
+    rotation: 0
+    state: enabled
+- name: blocks_complex_to_float_0
+  id: blocks_complex_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [256, 298]
+    rotation: 0
+    state: true
+- name: blocks_message_debug_0
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1499, 241]
+    rotation: 0
+    state: enabled
+- name: digital_binary_slicer_fb_0
+  id: digital_binary_slicer_fb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [702, 304]
+    rotation: 0
+    state: enabled
+- name: digital_clock_recovery_mm_xx_0
+  id: digital_clock_recovery_mm_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gain_mu: '0.175'
+    gain_omega: 0.25*0.175*0.175
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mu: '0.5'
+    omega: samp_per_sym*(1+0.0)
+    omega_relative_limit: '0.005'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [462, 271]
+    rotation: 0
+    state: enabled
+- name: digital_descrambler_bb_0
+  id: digital_descrambler_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    len: '16'
+    mask: '0x21'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    seed: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1030, 310]
+    rotation: 0
+    state: enabled
+- name: limesdr_source_0
+  id: limesdr_source
+  parameters:
+    affinity: ''
+    alias: ''
+    allow_tcxo_dac: '0'
+    analog_bandw_ch0: 1.5e6
+    analog_bandw_ch1: 1.5e6
+    calibr_bandw_ch0: 2.5e6
+    calibr_bandw_ch1: 2.5e6
+    ch_align: 'False'
+    channel_mode: '0'
+    comment: ''
+    dacVal: '180'
+    digital_bandw_ch0: samp_rate
+    digital_bandw_ch1: samp_rate
+    filename: ''
+    gain_dB_ch0: '1'
+    gain_dB_ch1: '1'
+    lna_path_ch0: '255'
+    lna_path_ch1: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nco_freq_ch0: '0'
+    nco_freq_ch1: '0'
+    oversample: '0'
+    rf_freq: 100e6
+    samp_rate: samp_rate
+    serial: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [22, 276]
+    rotation: 0
+    state: true
+- name: satellites_hdlc_deframer_0
+  id: satellites_hdlc_deframer
+  parameters:
+    affinity: ''
+    alias: ''
+    check_fcs: 'True'
+    comment: ''
+    max_length: '10000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1182, 291]
+    rotation: 0
+    state: enabled
+- name: satellites_nrzi_decode_0
+  id: satellites_nrzi_decode
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [878, 303]
+    rotation: 0
+    state: enabled
+
+connections:
+- [blocks_complex_to_float_0, '0', digital_clock_recovery_mm_xx_0, '0']
+- [digital_binary_slicer_fb_0, '0', satellites_nrzi_decode_0, '0']
+- [digital_clock_recovery_mm_xx_0, '0', digital_binary_slicer_fb_0, '0']
+- [digital_descrambler_bb_0, '0', satellites_hdlc_deframer_0, '0']
+- [limesdr_source_0, '0', blocks_complex_to_float_0, '0']
+- [satellites_hdlc_deframer_0, out, blocks_message_debug_0, print_pdu]
+- [satellites_nrzi_decode_0, '0', digital_descrambler_bb_0, '0']
+
+metadata:
+  file_format: 1
