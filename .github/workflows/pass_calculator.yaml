@@ -1,0 +1,40 @@
+name: Pass Calculator Unit Tests
+
+on:
+  push:
+    branches: [ master, capstone-dev ]
+  pull_request:
+    branches: [ master, capstone-dev ]
+
+jobs:
+  tests:
+    name: Unit tests
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.8]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup ${{ matrix.python-version }} on ${{ matrix.os }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python -m pip install --upgrade pip
+    - run: pip install flake8 pytest
+
+    - name: Install Dependencies
+      run: pip install -r pass_calculator/requirements.txt
+
+    - name: Install Developer Dependencies
+      run: pip install -r pass_calculator/dev-requirements.txt
+
+    - name: Lint code
+      run: flake8 ./pass_calculator --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Run unit tests
+      run: pytest pass_calculator/tests/*

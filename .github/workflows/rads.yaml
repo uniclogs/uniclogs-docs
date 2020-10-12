@@ -1,0 +1,52 @@
+name: RADS Unit Tests
+
+on:
+  push:
+    branches: [ master, capstone-dev ]
+  pull_request:
+    branches: [ master, capstone-dev ]
+
+jobs:
+  tests:
+    name: Unit tests
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.8]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup ${{ matrix.python-version }} on ${{ matrix.os }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python -m pip install --upgrade pip
+    - run: pip install flake8 pytest
+
+    - name: Install Dependencies
+      run: pip install -r rads/requirements.txt
+
+    - name: Install Developer Dependencies
+      run: pip install -r rads/dev-requirements.txt
+
+    - name: Lint code
+      run: flake8 ./rads --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Run unit tests
+      run: |
+        # pytest rads/tests/*
+        echo "TODO: Add unit tests for RADS"
+      env:
+        SATNOGS_TOKEN: ${{ secrets.SATNOGS_TOKEN }}
+
+        SPACETRACK_USERNAME: ${{ secrets.SPACETRACK_USERNAME }}
+        SPACETRACK_PASSWORD: ${{ secrets.SPACETRACK_PASSWORD }}
+
+        DART_HOST: ${{ secrets.DART_HOST }}
+        DART_DB: ${{ secrets.DART_DB }}
+        DART_USERNAME: ${{ secrets.RADS_USER_NAME }}
+        DART_PASSWORD: ${{ secrets.RADS_PASSWORD }}

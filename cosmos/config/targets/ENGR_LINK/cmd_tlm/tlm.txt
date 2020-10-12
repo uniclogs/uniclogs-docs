@@ -1,0 +1,17 @@
+TELEMETRY ENGR_LINK TEMPS BIG_ENDIAN "Temperature Readings"
+  APPEND_ID_ITEM CCSDS_STREAMID 16 UINT 0x0801 "CCSDS Packet Identification"
+  APPEND_ITEM    TEMP1          16 UINT        "Temperature Sensor 1"
+  APPEND_ITEM    TEMP2          16 UINT        "Temperature Sensor 2"
+
+TELEMETRY ENGR_LINK MAGNETOMETER BIG_ENDIAN "Magnetometer Readings"
+    APPEND_ID_ITEM CCSDS_STREAMID 16 UINT 0x0801 "CCSDS Packet Identification"
+    APPEND_ITEM    INVALID_COUNT  16 INT         "Invalid Count"
+    APPEND_ITEM    SENSOR_USED    16 INT         "Sensor Used"
+    APPEND_ITEM    VECTOR_BODY1   32 INT         "Vector Body 1"
+    APPEND_ITEM    VECTOR_BODY2   32 INT         "Vector Body 2"
+    APPEND_ITEM    VECTOR_BODY3   32 INT         "Vector Body 3"
+    APPEND_ITEM    VECTOR_VALID   8  INT         "Vector Valid"
+
+TELEMETRY ENGR_LINK LOG BIG_ENDIAN "Generic Log"
+  APPEND_ID_ITEM CCSDS_STREAMID 16 UINT 0x0803 "CCSDS Packet Identification"
+  APPEND_ITEM    LOG           640 STRING      "Log"  # 80 bytes of string message
