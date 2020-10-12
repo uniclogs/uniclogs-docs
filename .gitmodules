@@ -1,3 +1,6 @@
 [submodule "cosmos"]
 	path = cosmos
 	url = https://github.com/oresat/uniclogs-cosmos
+[submodule "stationd"]
+	path = stationd
+	url = https://github.com/oresat/uniclogs-stationd
