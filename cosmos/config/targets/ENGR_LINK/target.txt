@@ -1,2 +1,0 @@
-COMMANDS cmd.txt
-TELEMETRY tlm.txt

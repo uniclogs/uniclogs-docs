@@ -11,6 +11,9 @@
 
 ***
 
+## Cloning this repo
+- `git clone --recursive https://github.com/oresat/uniclogs-software`
+
 ## Components
 * `/cosmos`: Tools and misc pipeline utilities for interfacing with UniClOGS
 * `/cosi`: Cosmos-Satnogs Interface: Daemon for fetching telemetry and TLEs

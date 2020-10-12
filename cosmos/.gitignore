@@ -1,9 +1,0 @@
-outputs/
-.mypy_cache/
-*.swp
-
-.idea/
-**/.idea
-
-__pycache__
-**/__pycache__

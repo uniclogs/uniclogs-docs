@@ -1,0 +1,3 @@
+[submodule "cosmos"]
+	path = cosmos
+	url = https://github.com/oresat/uniclogs-cosmos
