@@ -4,3 +4,6 @@
 [submodule "stationd"]
 	path = stationd
 	url = https://github.com/oresat/uniclogs-stationd
+[submodule "pass-calculator"]
+	path = pass-calculator
+	url = https://github.com/oresat/uniclogs-pass-calculator
