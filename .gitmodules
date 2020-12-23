@@ -7,3 +7,6 @@
 [submodule "pass-calculator"]
 	path = pass-calculator
 	url = https://github.com/oresat/uniclogs-pass-calculator
+[submodule "ultra"]
+	path = ultra
+	url = git@github.com:oresat/uniclogs-ultra.git
