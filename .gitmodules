@@ -13,3 +13,6 @@
 [submodule "cosi"]
 	path = cosi
 	url = git@github.com:oresat/uniclogs-cosi.git
+[submodule "rads"]
+	path = rads
+	url = git@github.com:oresat/uniclogs-rads.git
