@@ -11,4 +11,3 @@ CREATE TABLE pass
 );
 
 CREATE SEQUENCE pass_uid_seq start 1 increment 1;
--
