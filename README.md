@@ -33,3 +33,15 @@ This project uses Sphinx for documentation generation.
 `$` `cd docs`
 
 `$` `make clean html`
+
+### OreFLAT0
+
+A development version of OreSAT0 is integrated into the SatNOGS network by the name `OREFLAT-0`.
+
+A [provisional TLE](./oreflat0.tle) has been provided to mock the SatNOGS environment and provide necessary infrastructure for testing.
+
+#### TLE Checksum Validation
+
+See [this script](./tle-validate-checksum.py) for validating the provisional TLE checksum.
+
+The number at the end of each line element is simply the sum of all the numeric numbers, `-` characters are interpreted as 1.
