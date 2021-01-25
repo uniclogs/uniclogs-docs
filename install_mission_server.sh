@@ -1,5 +1,3 @@
-
-
 # pass_calculator
 pip3 install -r ./pass_calculator/requirements.txt
 python3 ./pass_calculator/setup.py bdist_wheel

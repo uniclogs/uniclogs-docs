@@ -1,18 +1,18 @@
-[submodule "cosmos"]
-	path = cosmos
+[submodule "uniclogs-cosi"]
+	path = uniclogs-cosi
+	url = https://github.com/oresat/uniclogs-cosi
+[submodule "uniclogs-cosmos"]
+	path = uniclogs-cosmos
 	url = https://github.com/oresat/uniclogs-cosmos
-[submodule "stationd"]
-	path = stationd
-	url = https://github.com/oresat/uniclogs-stationd
-[submodule "pass-calculator"]
-	path = pass-calculator
+[submodule "uniclogs-pass-calculator"]
+	path = uniclogs-pass-calculator
 	url = https://github.com/oresat/uniclogs-pass-calculator
-[submodule "ultra"]
-	path = ultra
-	url = git@github.com:oresat/uniclogs-ultra.git
-[submodule "cosi"]
-	path = cosi
-	url = git@github.com:oresat/uniclogs-cosi.git
-[submodule "rads"]
-	path = rads
-	url = git@github.com:oresat/uniclogs-rads.git
+[submodule "uniclogs-rads"]
+	path = uniclogs-rads
+	url = https://github.com/oresat/uniclogs-rads
+[submodule "uniclogs-stationd"]
+	path = uniclogs-stationd
+	url = https://github.com/oresat/uniclogs-stationd
+[submodule "uniclogs-ultra"]
+	path = uniclogs-ultra
+	url = https://github.com/oresat/uniclogs-ultra

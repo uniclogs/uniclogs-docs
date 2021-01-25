@@ -61,7 +61,7 @@ Installing the mission server on a server running Arch Linux.
 ## Run
 - `$ rads` to launch rads
 
-## Uninstall 
+## Uninstall
 - Unplug the server and throw it in the trash
 
 
