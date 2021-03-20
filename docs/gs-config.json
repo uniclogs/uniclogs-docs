@@ -1,0 +1,39 @@
+{
+
+    "radio": {
+        "name": "gr-satnogs",
+        "version": "v2.2-compat-xxx-v2.2.0.0",
+        "parameters": {
+            "soapy-rx-device": "driver=rtlsdr",
+            "samp-rate-rx": "1.024e6",
+            "rx-freq": "436500000",
+            "file-path": "/tmp/.satnogs/data/receiving_satnogs_31527_2021-03-19T23-34-53.out",
+            "waterfall-file-path": "/tmp/.satnogs/data/receiving_waterfall_31527_2021-03-19T23-34-53.dat",
+            "decoded-data-file-path": "/tmp/.satnogs/data/data_31527",
+            "doppler-correction-per-sec": "1",
+            "lo-offset": null,
+            "ppm": "48.1",
+            "rigctl-port": "4532",
+            "gain-mode": "Overall",
+            "gain": "24",
+            "antenna": "RX",
+            "dev-args": null,
+            "stream-args": null,
+            "tune-args": null,
+            "other-settings": null,
+            "dc-removal": null,
+            "bb-freq": null,
+            "bw": "34000",
+            "enable-iq-dump": "1",
+            "iq-file-path": null,
+            "wpm": null,
+            "baudrate": "9600",
+            "framing": "ax25"
+        }
+    },
+    "latitude": 45.509,
+    "longitude": -122.681,
+    "elevation": 17,
+    "frequency": 436500000
+
+}

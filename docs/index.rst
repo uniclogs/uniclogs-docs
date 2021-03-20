@@ -8,49 +8,57 @@ Documentation for UniClOGS, as well as a brief overview of the system as a whole
 .. warning::
     This is still a work in progress.
 
+Glossary
+--------
+
+.. toctree::
+    :maxdepth: 1
+
+    glossary
+
 What is UniClOGS?
 -----------------
 
 UniClOGS is an open-source and open-hardware ground station designed and used by the Portland State Aerospace Society.
 
-The physical antenna os located on the roof of the Engineering Building on the PSU campus.
+The physical antenna is located on the roof of the Engineering Building on the PSU campus.
 
 .. image:: ../images/uniclogs.png
 
 What is OreSat?
 ---------------
 
+.. image:: ../images/oresat-patch.png
+
 OreSat is a open source CubeSat from Oregon by PSAS (Portland State Aerospace
 Society).
 
-.. note:: If you are looking for more info on OreSat, go checkout `OreSat Website`_ and `OreSat GitHub`_
-
-Glossary
---------
+What is FlatNOGS?
+-----------------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-    glossary
+    flatnogs
 
-UniClOGS Software Standards
----------------------------
-
-.. toctree::
-    :maxdepth: 2
-
-    standards
-
-UniClOGS Software Git Repos
----------------------------
+What is OreFlat?
+----------------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-    repos
+    oreflat
+
+Software Components
+-------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    software/index
 
 Indices and Tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
