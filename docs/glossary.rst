@@ -20,7 +20,10 @@ Glossary
         The process of automatically correcting for frequency shifting that naturally occurs when observing a moving transmission source. *(i.e. a satellite in orbit)*.
 
     EDL
-        **Engineering Data Link**. A data link that is sent by OreSat and exclusively received by UniClOGS. It can contain critical engineering data, software updates for OreSat's subsystems, or files from OreSat's subsystems.
+        **Engineering Data Link.** A bi-directional data link between the UniClOGS ground station and the OreSat spacecraft. Specifically it's UpLink is sent by UniClOGS on L band and received by OreSat, and it's DownLink is sent by OreSat on UHF and received by UniClOGS. It can contain critical engineering data, software updates for OreSat’s subsystems, or files from OreSat’s subsystems.
+
+    L band
+        Microwave band above UHF. The range of radio frequencies from 1GHz to 2 GHz.
 
     OreSat
         The Portland State Aerospace Society's open-source and open-hardware CubeSat project. See the `OreSat website <https://www.oresat.org>`_ for more information.
@@ -38,7 +41,7 @@ Glossary
         **Software Define Radio**. Radio communications that are traditionally implemented in hardware are instead implemented in software.
 
     UHF
-        **Ultra High Frequency**. The range of radio frequencies from 300 MHz to 3 GHz.
+        **Ultra High Frequency.** The range of radio frequencies from 300 MHz to 1 GHz.
 
     UniClOGS
         **University Class Operation Ground Station**. A ground-station made by and for PSAS. It will be the sole receiver of EDL packets. Since UniClOGS is also a registered SatNOGS ground-station, it can also receive telemetry packets from SatNOGS-registered satellites. See the `hardware repository <https://github.com/oresat/uniclogs-hardware>`_ and `software repository <https://github.com/oresat/uniclogs-software>`_ for more information.
