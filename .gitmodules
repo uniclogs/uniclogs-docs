@@ -1,6 +1,3 @@
-[submodule "uniclogs-cosi"]
-	path = uniclogs-cosi
-	url = https://github.com/oresat/uniclogs-cosi
 [submodule "uniclogs-cosmos"]
 	path = uniclogs-cosmos
 	url = https://github.com/oresat/uniclogs-cosmos
@@ -16,3 +13,6 @@
 [submodule "uniclogs-ultra"]
 	path = uniclogs-ultra
 	url = https://github.com/oresat/uniclogs-ultra
+[submodule "uniclogs-cossi"]
+	path = uniclogs-cossi
+	url = https://github.com/oresat/uniclogs-cossi
