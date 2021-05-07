@@ -1,7 +1,7 @@
 - doc: '"{{z" User-Defined APRS packet format'
   id: aprs_packet_data_type_identifier
   type: u1
-- doc: CURRENT = 0
+- doc: '"1" - in progress, not yet programmed in OreSat0'
   id: aprs_packet_revision
   type: u1
 - doc: Character representing C3 critical state
@@ -24,7 +24,7 @@
 - doc: Stored in FRAM; Stick at 0xFFFF until reset from ground
   id: c3_wdt_num_timeouts
   type: u2
-- id: c3_emmc_perc_full
+- id: c3_emmc_percent_full
   type: u1
 - id: c3_l_rx_bytes_received
   type: u4
@@ -57,7 +57,7 @@
 - doc: '0 : AX5043 PLL Lock; More space in bit field available'
   id: c3_uhf_rx_pll_lock
   type: b1
-- id: c3_deployer_1_read_back
+- id: c3_fw_bank_current_and_next_bank
   type: b1
 - doc: 'Operational/High # errors/Other CAN status? '
   id: c3_can1_state

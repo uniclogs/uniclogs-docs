@@ -26,6 +26,8 @@ def clean_name(name: str) -> str:
              .replace(' ', '_') \
              .replace('+', '_plus_') \
              .replace('-', '_minus_') \
+             .replace('%', 'percent') \
+             .replace('#', 'num') \
              .replace('?', '')
 
 
@@ -59,6 +61,10 @@ def main():
         entries = []
 
         for i, line in enumerate(reader):
+            if(i < 2):  # Always skip the first line
+                continue
+
+            # Grab the elements for the var name
             system = clean_name(line[0])
             subsystem = clean_name(line[1])
             data = clean_name(line[2])
@@ -72,8 +78,8 @@ def main():
                 'type': vartype,
             }
 
-            if(line[4] != ''):
-                entry['doc'] = line[4]
+            if(line[6] != ''):
+                entry['doc'] = line[6]
 
             entries.append(entry)
 
