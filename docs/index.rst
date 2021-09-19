@@ -1,12 +1,14 @@
-Welcome to UniClOGS Software's documentation!
-=============================================
+Welcome to UniClOGS Central documentation!
+==========================================
 
 .. image:: ../images/gs-patch.png
 
-Documentation for UniClOGS, as well as a brief overview of the system as a whole and how the groundstation services OreSat.
+Documentation for the UniClOGS system as a whole.
 
 .. warning::
-    This is still a work in progress.
+    This is still a work in progress with many pages to populate. So collaboration is very much encouraged. If you think a needed page is missing or see a stub-page that is in need of more detail, feel free to make a branck/fork and submit a pull request at our public `repo`_.
+
+.. _repo: https://github.com/oresat/uniclogs-docs
 
 Glossary
 --------

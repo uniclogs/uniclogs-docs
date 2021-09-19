@@ -1,16 +1,18 @@
-# UniClOGS
+# UniClOGS Documentation
 
 [![License](https://img.shields.io/github/license/oresat/uniclogs-software)](./LICENSE)
 [![issues](https://img.shields.io/github/issues/oresat/uniclogs-software/bug)](https://github.com/oresat/uniclogs-software/labels/bug)
-[![docs](https://img.shields.io/readthedocs/uniclogs-software)](https://uniclogs-software.readthedocs.io)
+[![docs](https://img.shields.io/readthedocs/uniclogs-docs)](https://uniclogs-docs.readthedocs.io)
 
 ***
 
 ![UniClOGS Logo](./images/gs-patch.png)
 
-This is an umbrella repo, containing all of the various components, firmware, and software, and their respective separate repos.
+This is an umbrella repo, containing documentation all of the various components, firmware, and software, and their respective separate repos.
 
-Each repository is just a submodule. Checkout our [Read The Docs](https://uniclogs-software.readthedocs.io) page if you'd like a quick overview of the system as a whole. Or click on a git-submodule to follow it to its repo and it's own separate documentation, if you'd like to learn more about that particular submodule.
+This is just the repo for storing the raw documentation files. Find the actual docs website at our [Read-the-Docs page](https://uniclogs-docs.readthedocs.io)!
+
+Each repository is just a submodule, click on a git-submodule to follow it to its repo and it's own separate documentation, if you'd like to learn more about that particular submodule.
 
 ***
 
@@ -23,7 +25,6 @@ This project uses Sphinx for documentation generation.
 
 ### Installation:
 `$` `pip install -r docs/source/requirements.txt`
-
 ### Generate Docs:
 `$` `cd docs`
 

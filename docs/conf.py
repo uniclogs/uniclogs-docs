@@ -17,9 +17,9 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Uniclogs Software'
+project = 'Uniclogs Central Documentation'
 copyright = '2021, Portland State Aerospace Society'
-author = 'Dmitri McGuckin'
+author = 'Portland State Aerospace Society'
 
 
 # -- General configuration ---------------------------------------------------
