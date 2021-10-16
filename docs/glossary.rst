@@ -8,7 +8,7 @@ Glossary
         **Command-Communication-and-Control board**. See the `github repository <https://github.com/oresat/oresat-c3>`_ for more information.
 
     CubeSat
-        A relatively small satellite made up of one or more Units (U). A Unit is 10cm x 10cm x 10cm in volume. (For example, OreSat 1 will be a 2U satellite, i.e. 10cm x 10cm x 20cm).
+        A relatively small satellite made up of one or more Units (U). A Unit is 10cs x 10cs x 10cs in volume. (For example, OreSat 1 will be a 2U satellite, i.e. 10cs x 10cs x 20cs).
 
     Daemon
         A long-running Linux process that runs in the background.

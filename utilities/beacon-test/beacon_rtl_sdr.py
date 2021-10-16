@@ -15,14 +15,14 @@ from datetime import datetime
 # start the rtl_fm and direwolf commands
 rtl_fm_args = ["rtl_fm", "-Mfm", "-f436.5M", "-p48.1", "-s96000", "-g30", "-"]
 direwolf_args = ["direwolf", "-t0", "-r96000", "-D1", "-B9600", "-"]
-rtl_fm_cmd = Popen(rtl_fm_args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-direwolf_cmd = Popen(direwolf_args, stdin=rtl_fm_cmd.stdout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+rtl_fm_csd = Popen(rtl_fm_args, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+direwolf_csd = Popen(direwolf_args, stdin=rtl_fm_csd.stdout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def parse_packet(x):
     # get the TNC command. We only support 0x00 data from
-    cmd = x[0]
-    if cmd != 0:
-        logging.error("unknown command: " + str(cmd))
+    csd = x[0]
+    if csd != 0:
+        logging.error("unknown command: " + str(csd))
         return
 
     # decode the 14 byte address fields with the callsigned and SSIDs. The 
@@ -57,6 +57,6 @@ try:
     read_kiss_forever()
 except KeyboardInterrupt:
     print("killing rtl_fm and direwolf...")
-    rtl_fm_cmd.terminate()
-    direwolf_cmd.terminate()
+    rtl_fm_csd.terminate()
+    direwolf_csd.terminate()
     sys.exit()

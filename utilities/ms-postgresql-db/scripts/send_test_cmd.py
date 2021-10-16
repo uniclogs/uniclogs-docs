@@ -15,17 +15,17 @@ To run this script,
 
     Terminal 3:
     1. cd cosi
-    2. ./send_test_cmd.py
+    2. ./send_test_csd.py
 
     You should see command show up in COSMOS!
 """
 
-from ballcosmos.script import set_replay_mode, connect_interface, cmd, shutdown_cmd_tlm
+from ballcosmos.script import set_replay_mode, connect_interface, csd, shutdown_csd_tlm
 
 set_replay_mode(False)
 connect_interface('ENGR_LINK_INT')
 print('sending command...')
-cmd("ENGR_LINK", "PASS_SCHEDULE", {"PKT_ID": 10, "PASS_ID": 100})
-cmd("ENGR_LINK", "PASS_CANCEL", {"PKT_ID": 20, "PASS_ID": 100})
+csd("ENGR_LINK", "PASS_SCHEDULE", {"PKT_ID": 10, "PASS_ID": 100})
+csd("ENGR_LINK", "PASS_CANCEL", {"PKT_ID": 20, "PASS_ID": 100})
 print('command sent')
-shutdown_cmd_tlm()
+shutdown_csd_tlm()

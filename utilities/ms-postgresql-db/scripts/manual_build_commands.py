@@ -72,17 +72,17 @@ def send_spp_log(connection, log):
 
 
 def receive_packet(connection):
-    cmd_data = connection.recv(256)
-    if not cmd_data:
+    csd_data = connection.recv(256)
+    if not csd_data:
         raise Exception("Connection closed")
 
-    pktid = bytearray(cmd_data)[7]  # pktid is the 8th byte
+    pktid = bytearray(csd_data)[7]  # pktid is the 8th byte
     if pktid == 1:
         print("received COLLECT command")
     elif pktid == 2:
         print("received ABORT command")
     else:
-        e = "WHOA unexcepted pktid {} for command {}".format(pktid, cmd_data)
+        e = "WHOA unexcepted pktid {} for command {}".format(pktid, csd_data)
         raise Exception(e)
     return pktid
 

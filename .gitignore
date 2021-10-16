@@ -181,7 +181,7 @@ dmypy.json
 
 # Kernel Module Compile Results
 *.mod*
-*.cmd
+*.csd
 .tmp_versions/
 modules.order
 Module.symvers
