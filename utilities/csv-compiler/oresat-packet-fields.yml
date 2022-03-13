@@ -1,28 +1,14 @@
-- doc: '"{{z" User-Defined APRS packet format'
-  id: aprs_packet_data_type_identifier
+- id: aprs_packet_satellite_id
   type: u1
-- doc: '"1" - in progress, not yet programmed in OreSat0'
-  id: aprs_packet_revision
+- id: aprs_packet_revision
   type: u1
-- doc: Character representing C3 critical state
-  id: c3_m4_oresat0_state
-  type: b1
-- doc: Stick at 0xFFFFFF if we reach 194 days of uptime :)
-  id: c3_m4_uptime
+- id: c3_m4_oresat0_state
+  type: b3
+- id: c3_m4_uptime
   type: u4
 - id: c3_rtc_time
   type: u4
-- id: c3_m4_temperature
-  type: s1
-- id: c3_m4_ref_voltage
-  type: u1
-- id: c3_m4_vbusp_voltage
-  type: u1
-- doc: '"VBUS_ILIM" from U4 (TS59621 with 3.1k resistor)'
-  id: c3_m4_vbusp_current
-  type: u1
-- doc: Stored in FRAM; Stick at 0xFFFF until reset from ground
-  id: c3_wdt_num_timeouts
+- id: c3_wdt_num_power_cycles
   type: u2
 - id: c3_emmc_percent_full
   type: u1
@@ -30,47 +16,20 @@
   type: u4
 - id: c3_l_rx_valid_packets
   type: u4
-- doc: Of last packet received; -126 to -45 dBm range; 1 dB step; after LNA, filters,
-    and digital channel filter.
-  id: c3_l_rx_rssi
+- id: c3_l_rx_rssi
   type: u1
-- doc: '0 : AX5043 PLL Lock; 1 : Downconverter synth PLL lock; More space in bit field
-    available'
-  id: c3_l_rx_pll_lock
-  type: b1
-- id: c3_uhf_tx_temperature
-  type: s1
-- doc: '"UHF_LOG_RF_FWD" from U32; Scaled to usable dBm range'
-  id: c3_uhf_tx_fwd_forward_power
-  type: u2
-- doc: '"UHF_LOG_RF_REV" from U33; Scaled to usable dBm range'
-  id: c3_uhf_tx_rev_reverse_power
-  type: u2
 - id: c3_uhf_rx_bytes_received
   type: u4
 - id: c3_uhf_rx_valid_packets
   type: u4
-- doc: Of last packet received; -126 to -45 dBm range; 1 dB step; after LNA, filters,
-    and digital channel filter.
-  id: c3_uhf_rx_rssi
+- id: c3_uhf_rx_rssi
   type: u1
-- doc: '0 : AX5043 PLL Lock; More space in bit field available'
-  id: c3_uhf_rx_pll_lock
-  type: b1
 - id: c3_fw_bank_current_and_next_bank
-  type: b1
-- doc: 'Operational/High # errors/Other CAN status? '
-  id: c3_can1_state
-  type: b1
-- doc: 'Operational/High # errors/Other CAN status? '
-  id: c3_can2_state
-  type: b1
-- doc: '"OPD_ILIM" from U? (MAX? with ?k resistor)'
-  id: c3_opd_current
   type: u1
-- doc: Which OPDs are currently on
-  id: c3_opd_state
-  type: u1
+- id: c3_l_rx_sequence_number
+  type: u4
+- id: c3_l_rx_rejected_packets
+  type: u4
 - id: battery_pack_1_vbatt
   type: u2
 - id: battery_pack_1_vcell
@@ -141,7 +100,7 @@
   type: s2
 - id: battery_pack_2_state
   type: u1
-- id: battery_pack_2_reported_state_of_changed
+- id: battery_pack_2_reported_state_of_charge
   type: u1
 - id: battery_pack_2_full_capacity
   type: u2
@@ -217,7 +176,7 @@
   type: s2
 - id: star_tracker_roll
   type: s2
-- id: star_tracker_timestamp_of_last_packet
+- id: star_tracker_timestamp_of_last_measurement
   type: u4
 - id: gps_emmc_capacity
   type: u1
@@ -263,6 +222,5 @@
   type: u1
 - id: dxwifi_transmitting
   type: b1
-- doc: Polynomial 0x04C11DB7; computed over all bytes allocated
-  id: aprs_packet_crc_minus_32
+- id: aprs_packet_crc_minus_32
   type: u4

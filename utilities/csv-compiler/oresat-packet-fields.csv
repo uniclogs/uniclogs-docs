@@ -1,126 +1,115 @@
- ,,,Bytes Allocated:,242,,MAX: 255 bytes
-System,Subsystem,Data,Data Type,# Bytes,Units,Notes
-APRS,Packet,Data type identifier,UINT8,3,Code,"""{{z"" User-Defined APRS packet format"
-APRS,Packet,Revision,UINT8,1,Count,"""1"" - in progress, not yet programmed in OreSat0"
-C3,M4,OreSat0 State,State,1,State,Character representing C3 critical state
-C3,M4,Uptime,UINT32,4,Seconds,Stick at 0xFFFFFF if we reach 194 days of uptime :)
-C3,RTC,Time,UINT32,4,SCET coarse / UNIX timestamp ,
-C3,M4,Temperature,INT8,1,1 deg C / Count,
-C3,M4,Ref voltage,UINT8,1,0.02 V / Count,
-C3,M4,Vbusp Voltage,UINT8,1,0.02 V / Count,
-C3,M4,Vbusp Current,UINT8,1,.02 mA / Count,"""VBUS_ILIM"" from U4 (TS59621 with 3.1k resistor)"
-C3,WDT,# timeouts,UINT16,2,Count,Stored in FRAM; Stick at 0xFFFF until reset from ground
-C3,eMMC,% full,UINT8,1,% (0 - 100),
-C3,L RX,Bytes received,UINT32,4,???,
-C3,L RX ,Valid packets,UINT32,4,???,
-C3,L RX ,RSSI,UINT8,1,dBm,"Of last packet received; -126 to -45 dBm range; 1 dB step; after LNA, filters, and digital channel filter."
-C3,L RX ,PLL Lock,State,1,Lock state,0 : AX5043 PLL Lock; 1 : Downconverter synth PLL lock; More space in bit field available
-C3,UHF TX,Temperature,INT8,1,1 deg C / Count,
-C3,UHF TX FWD,Forward power,UINT16,2,dBm,"""UHF_LOG_RF_FWD"" from U32; Scaled to usable dBm range"
-C3,UHF TX REV,Reverse power,UINT16,2,dBm,"""UHF_LOG_RF_REV"" from U33; Scaled to usable dBm range"
-C3,UHF RX ,Bytes received,UINT32,4,???,
-C3,UHF RX ,Valid packets,UINT32,4,???,
-C3,UHF RX ,RSSI,UINT8,1,dBm,"Of last packet received; -126 to -45 dBm range; 1 dB step; after LNA, filters, and digital channel filter."
-C3,UHF RX ,PLL Lock,State,1,Lock state,0 : AX5043 PLL Lock; More space in bit field available
-C3,FW Bank,Current and next bank,State,1,???,
-C3,CAN1,State,State,1,State,Operational/High # errors/Other CAN status? 
-C3,CAN2,State,State,1,State,Operational/High # errors/Other CAN status? 
-C3,OPD,Current,UINT8,1,.02 mA / Count,"""OPD_ILIM"" from U? (MAX? with ?k resistor)"
-C3,OPD,State,UINT8,1,Flags,Which OPDs are currently on
-Battery,Pack 1,VBatt,UINT16,2,,
-Battery,Pack 1,VCell,UINT16,2,,
-Battery,Pack 1,VCell Max,UINT16,2,,
-Battery,Pack 1,VCell Min,UINT16,2,,
-Battery,Pack 1,VCell 1,UINT16,2,,
-Battery,Pack 1,VCell 2,UINT16,2,,
-Battery,Pack 1,VCell Avg,UINT16,2,,
-Battery,Pack 1,Temperature,INT16,2,,
-Battery,Pack 1,Temperature Avg,INT16,2,,
-Battery,Pack 1,Temperature Max,INT16,2,,
-Battery,Pack 1,Temperature Min,INT16,2,,
-Battery,Pack 1,Current,INT16,2,,
-Battery,Pack 1,Current Avg,INT16,2,,
-Battery,Pack 1,Current Max,INT16,2,,
-Battery,Pack 1,Current Min,INT16,2,,
-Battery,Pack 1,State,UINT8,1,,
-Battery,Pack 1,Reported State of Charge,UINT8,1,,
-Battery,Pack 1,full capacity,UINT16,2,,
-Battery,Pack 1,reported capacity,UINT16,2,,
-Battery,Pack 2,VBatt,UINT16,2,,
-Battery,Pack 2,VCell,UINT16,2,,
-Battery,Pack 2,VCell max,UINT16,2,,
-Battery,Pack 2,VCell min,UINT16,2,,
-Battery,Pack 2,VCell 1,UINT16,2,,
-Battery,Pack 2,VCell 2,UINT16,2,,
-Battery,Pack 2,VCell avg,UINT16,2,,
-Battery,Pack 2,temperature,INT16,2,,
-Battery,Pack 2,temperature avg,INT16,2,,
-Battery,Pack 2,temperature max,INT16,2,,
-Battery,Pack 2,temperature min,INT16,2,,
-Battery,Pack 2,current,INT16,2,,
-Battery,Pack 2,current avg,INT16,2,,
-Battery,Pack 2,current max,INT16,2,,
-Battery,Pack 2,current min,INT16,2,,
-Battery,Pack 2,state,UINT8,1,,
-Battery,Pack 2,reported state of changed,UINT8,1,,
-Battery,Pack 2,full capacity,UINT16,2,,
-Battery,Pack 2,reported capacity,UINT16,2,,
-Solar-X,,Voltage avg,UINT16,2,,
-Solar-X,,Current avg,INT16,2,,
-Solar-X,,Power avg,UINT16,2,,
-Solar-X,,Voltage max,UINT16,2,,
-Solar-X,,Current max,INT16,2,,
-Solar-X,,Power max,UINT16,2,,
-Solar-X,,Energy,UINT16,2,,
-Solar-Y,,Voltage avg,UINT16,2,,
-Solar-Y,,Current avg,INT16,2,,
-Solar-Y,,Power avg,UINT16,2,,
-Solar-Y,,Voltage max,UINT16,2,,
-Solar-Y,,Current max,INT16,2,,
-Solar-Y,,power max,UINT16,2,,
-Solar-Y,,Energy,UINT16,2,,
-Solar+X,,Voltage avg,UINT16,2,,
-Solar+X,,Current avg,INT16,2,,
-Solar+X,,Power avg,UINT16,2,,
-Solar+X,,Voltage max,UINT16,2,,
-Solar+X,,Current max,INT16,2,,
-Solar+X,,power max,UINT16,2,,
-Solar+X,,Energy,UINT16,2,,
-Solar+Y,,Voltage avg,UINT16,2,,
-Solar+Y,,Current avg,INT16,2,,
-Solar+Y,,Power avg,UINT16,2,,
-Solar+Y,,Voltage max,UINT16,2,,
-Solar+Y,,Current max,INT16,2,,
-Solar+Y,,power max,UINT16,2,,
-Solar+Y,,Energy,UINT16,2,,
-Star Tracker,,eMMC Capacity,UINT8,1,% (0 - 100),
-Star Tracker,,readable files,UINT8,1,,
-Star Tracker,,updater status,UINT8,1,,
-Star Tracker,,updates cached,UINT8,1,,
-Star Tracker,,Right Ascension,INT16,2,,
-Star Tracker,,Declination,INT16,2,,
-Star Tracker,,Roll,INT16,2,,
-Star Tracker,,Timestamp of last packet,UINT32,4,ms since midnight,
-GPS,,eMMC Capacity,UINT8,1,% (0 - 100),
-GPS,,readable files,UINT8,1,,
-GPS,,updater status,UINT8,1,,
-GPS,,updates cached,UINT8,1,,
-GPS,,gps status,UINT8,1,,
-GPS,,num of sats locked,UINT8,1,,
-GPS,,X position,INT32,4,cs,
-GPS,,Y postition,INT32,4,cs,
-GPS,,Z position,INT32,4,cs,
-GPS,,X velocity,INT32,4,cs/s,
-GPS,,Y velocity,INT32,4,cs/s,
-GPS,,Z velocity,INT32,4,cs/s,
-GPS,,Timestamp of last packet,UINT32,4,ms since midnight,
-ADS,Gyro,Roll dot,INT16,2,deg/sec?,
-ADS,Gyro,Pitch dot,INT16,2,deg/sec?,
-ADS,Gyro,Yaw dot,INT16,2,deg/sec?,
-ADS,Gyro,IMU temp,INT8,1,Deg C,
-DxWiFi,,eMMC Capacity,UINT8,1,% (0 - 100),
-DxWiFi,,readable files,UINT8,1,,
-DxWiFi,,updater status,UINT8,1,,
-DxWiFi,,updates cached,UINT8,1,,
-DxWiFi,,transmitting,BOOL,1,,
-APRS,Packet,CRC-32,UINT32,4,FCS,Polynomial 0x04C11DB7; computed over all bytes allocated
+APRS,Packet,APRS Header,UINT8,16,0,,,,,,,,,,,,,,,is dropped by yamcs
+APRS,Packet,Data type identifier,CHAR,3,10,,String,N/A,TRUE,-,-,-,-,-,-,-,-,-,-,"""{{z"" User-Defined APRS packet format"
+APRS,Packet,Satellite ID,UINT8,1,13,,Enum String,N/A,TRUE,0,-,-,-,-,-,-,-,-,255,"0 = OreSat0, 1 = Oresat0.5, 2 = OreSat1"
+APRS,Packet,Revision,UINT8,1,14,,Integer,Count,TRUE,0,-,-,-,-,-,-,1,-,255,APRS version #; curently 1
+C3,M4,OreSat0 State,CHAR,1,15,,Enum String,N/A,TRUE,A,-,-,-,B,-,-,E,-,F,"Character representing C3 critical state. A=predploy, B=Deploy, C=standby, D=beacon, E=EDL"
+C3,M4,Uptime,UINT32,4,16,,Integer,Seconds,TRUE,-,-,-,-,-,-,-,-,-,-,Stick at 0xFFFFFF if we reach 194 days of uptime :)
+C3,RTC,Time,UINT32,4,1A,,Datetime string,N/A,TRUE,-,-,-,-,-,-,-,-,-,-,SCET coarse timestamp with UNIX epoch
+C3,WDT,# power cycles,UINT16,2,1E,,Integer,Count,TRUE,0,-,-,-,-,2,-,-,10,65535,Stored in FRAM; Stick at 0xFFFF until reset from ground
+C3,eMMC,% full,UINT8,1,20,,Integer,%,TRUE,0,-,-,-,-,50,-,-,80,100,0 - 100 % 
+C3,L RX,Bytes received,UINT32,4,21,,Integer,Count,TRUE,0,-,-,-,-,-,-,-,-,2^32-1,# of bytes received on the L band radio
+C3,L RX ,Valid packets,UINT32,4,25,,Integer,Count,TRUE,0,-,-,-,-,-,-,-,-,2^32-1,# of packets received on the L band radio
+C3,L RX ,RSSI,UINT8,1,29,,Integer,dB,TRUE,0,-,-,-,-,-,-,-,-,255,"Of last packet received; -126 to -45 dBm range; 1 dB step; after LNA, filters, and digital channel filter."
+C3,UHF RX ,Bytes received,UINT32,4,2A,,Integer,Count,TRUE,0,-,-,-,-,-,-,-,-,2^32-1,# of bytes received on the UHF band radio
+C3,UHF RX ,Valid packets,UINT32,4,2E,,Integer,Count,TRUE,0,-,-,-,-,-,-,-,-,2^32-1,# of packets received on the UHF band radio
+C3,UHF RX ,RSSI,UINT8,1,32,,Integer,dB,TRUE,0,-,-,-,-,-,-,-,-,255,"Of last packet received; -126 to -45 dBm range; 1 dB step; after LNA, filters, and digital channel filter."
+C3,FW Bank,Current and next bank,UINT8,1,33,,Bitfield (mutiple enum strings),N/A,TRUE,0,-,-,-,-,-,-,-,-,3,"Bit 0 = Current Bank, Bit 1 = Next Bank"
+C3,L RX,Sequence number,UINT32,4,34,,Integer,N/A,TRUE,0,-,-,-,-,-,-,-,-,2^32-1,"This is the sequence number (sometimes called ""salt"") in the authentication scheme"
+C3,L RX,Rejected packets,UINT32,4,38,,Integer,N/A,TRUE,0,-,-,-,-,-,-,-,-,2^32-1,"This is the number of rejected packets, due to noise, bit flips, or bad sequence number or MAC."
+Battery,Pack 1,VBatt,UINT16,2,3C,,Integer,mV,TRUE,0,-,6000,6500,7000,8000,8400,8500,-,65535,Total battery pack voltage
+Battery,Pack 1,VCell,UINT16,2,3E,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: voltage
+Battery,Pack 1,VCell Max,UINT16,2,40,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: maximum voltage (since ... last charge?)
+Battery,Pack 1,VCell Min,UINT16,2,42,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: minimum voltage (since ... last charge?)
+Battery,Pack 1,VCell 1,UINT16,2,44,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Cell 1 voltage
+Battery,Pack 1,VCell 2,UINT16,2,46,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Cell 2 voltage
+Battery,Pack 1,VCell Avg,UINT16,2,48,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: average voltage (since ... last charge?)
+Battery,Pack 1,Temperature,INT16,2,4A,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 1,Temperature Avg,INT16,2,4C,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 1,Temperature Max,INT16,2,4E,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 1,Temperature Min,INT16,2,50,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 1,Current,INT16,2,52,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Instantaneous current
+Battery,Pack 1,Current Avg,INT16,2,54,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Average current
+Battery,Pack 1,Current Max,INT16,2,56,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Max current
+Battery,Pack 1,Current Min,INT16,2,58,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Min current
+Battery,Pack 1,State,UINT8,1,5A,,Bitfield (mutiple enum strings),Bit field,TRUE,0,-,-,-,-,-,-,-,-,255,"Bit 0: heater on/off , B1: discharge disabled, B2: charge disabled, B3: discharge status, B4: charge status"
+Battery,Pack 1,Reported State of Charge,UINT8,1,5B,,Integer,%,TRUE,0,5,12,25,50,-,-,101,-,255,State of Charge (%) of the pack (reported capacity / full capacity)
+Battery,Pack 1,full capacity,UINT16,2,5C,,Integer,mAh,TRUE,0,-,1000,1500,2000,-,-,3000,-,65535,Best guess at the total storage capacity of the pack
+Battery,Pack 1,reported capacity,UINT16,2,5E,,Integer,mAh,TRUE,0,100,250,500,1000,2600,2700,-,-,65535,Best guess at the current capacity of the pack
+Battery,Pack 2,VBatt,UINT16,2,60,,Integer,mV,TRUE,0,-,6000,6500,7000,8000,8400,8500,-,65535,Total battery pack voltage
+Battery,Pack 2,VCell,UINT16,2,62,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: voltage
+Battery,Pack 2,VCell Max,UINT16,2,64,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: maximum voltage (since ... last charge?)
+Battery,Pack 2,VCell Min,UINT16,2,66,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: minimum voltage (since ... last charge?)
+Battery,Pack 2,VCell 1,UINT16,2,68,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Cell 1 voltage
+Battery,Pack 2,VCell 2,UINT16,2,6A,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Cell 2 voltage
+Battery,Pack 2,VCell Avg,UINT16,2,6C,,Integer,mV,TRUE,0,-,3000,3250,3500,4000,4200,4250,-,65535,Lowest cell in the pack: average voltage (since ... last charge?)
+Battery,Pack 2,Temperature,INT16,2,6E,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 2,Temperature Avg,INT16,2,70,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 2,Temperature Max,INT16,2,72,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 2,Temperature Min,INT16,2,74,,Integer,deg C,TRUE,-32768,-5,0,5,10,40,50,60,-,32767,Could change this to an INT8.
+Battery,Pack 2,Current,INT16,2,76,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Instantaneous current
+Battery,Pack 2,Current Avg,INT16,2,78,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Average current
+Battery,Pack 2,Current Max,INT16,2,7A,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Max current
+Battery,Pack 2,Current Min,INT16,2,7C,,Integer,mA,TRUE,-32768,-,-,-,-,-,-,-,-,32767,Min current
+Battery,Pack 2,State,UINT8,1,7E,,Bitfield (mutiple enum strings),Bit field,TRUE,0,-,-,-,-,-,-,-,-,255,"Bit 0: heater on/off , B1: discharge disabled, B2: charge disabled, B3: discharge status, B4: charge status"
+Battery,Pack 2,Reported State of Charge,UINT8,1,7F,,Integer,%,TRUE,0,5,12,25,50,-,-,101,-,255,State of Charge (%) of the pack (reported capacity / full capacity)
+Battery,Pack 2,full capacity,UINT16,2,80,,Integer,mAh,TRUE,0,-,1000,1500,2000,-,-,3000,-,65535,Best guess at the total storage capacity of the pack
+Battery,Pack 2,reported capacity,UINT16,2,82,,Integer,mAh,TRUE,0,100,250,500,1000,2600,2700,-,-,65535,Best guess at the current capacity of the pack
+Solar-X,,Voltage avg,UINT16,2,84,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array voltage since power up (NOT bus voltage!)
+Solar-X,,Current avg,INT16,2,86,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Average of the solar array current since power up (NOT bus current)
+Solar-X,,Power avg,UINT16,2,88,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array power output since power up
+Solar-X,,Voltage max,UINT16,2,8A,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array voltage since power up (NOT bus voltage!)
+Solar-X,,Current max,INT16,2,8C,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Maximum of the solar array current since power up (NOT bus current)
+Solar-X,,Power max,UINT16,2,8E,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array power output since power up
+Solar-X,,Energy,UINT16,2,90,,Integer,J,TRUE,0,-,-,-,-,-,-,-,-,65535,Total energy (power over time) output of the solar array since power up
+Solar-Y,,Voltage avg,UINT16,2,92,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array voltage since power up (NOT bus voltage!)
+Solar-Y,,Current avg,INT16,2,94,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Average of the solar array current since power up (NOT bus current)
+Solar-Y,,Power avg,UINT16,2,96,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array power output since power up
+Solar-Y,,Voltage max,UINT16,2,98,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array voltage since power up (NOT bus voltage!)
+Solar-Y,,Current max,INT16,2,9A,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Maximum of the solar array current since power up (NOT bus current)
+Solar-Y,,power max,UINT16,2,9C,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array power output since power up
+Solar-Y,,Energy,UINT16,2,9E,,Integer,J,TRUE,0,-,-,-,-,-,-,-,-,65535,Total energy (power over time) output of the solar array since power up
+Solar+X,,Voltage avg,UINT16,2,A0,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array voltage since power up (NOT bus voltage!)
+Solar+X,,Current avg,INT16,2,A2,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Average of the solar array current since power up (NOT bus current)
+Solar+X,,Power avg,UINT16,2,A4,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array power output since power up
+Solar+X,,Voltage max,UINT16,2,A6,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array voltage since power up (NOT bus voltage!)
+Solar+X,,Current max,INT16,2,A8,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Maximum of the solar array current since power up (NOT bus current)
+Solar+X,,power max,UINT16,2,AA,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array power output since power up
+Solar+X,,Energy,UINT16,2,AC,,Integer,J,TRUE,0,-,-,-,-,-,-,-,-,65535,Total energy (power over time) output of the solar array since power up
+Solar+Y,,Voltage avg,UINT16,2,AE,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array voltage since power up (NOT bus voltage!)
+Solar+Y,,Current avg,INT16,2,B0,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Average of the solar array current since power up (NOT bus current)
+Solar+Y,,Power avg,UINT16,2,B2,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Average of the solar array power output since power up
+Solar+Y,,Voltage max,UINT16,2,B4,,Integer,mV,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array voltage since power up (NOT bus voltage!)
+Solar+Y,,Current max,INT16,2,B6,,Integer,mA,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,Maximum of the solar array current since power up (NOT bus current)
+Solar+Y,,power max,UINT16,2,B8,,Integer,mW,TRUE,0,-,-,-,-,-,-,-,-,65535,Maximum of the solar array power output since power up
+Solar+Y,,Energy,UINT16,2,BA,,Integer,J,TRUE,0,-,-,-,-,-,-,-,-,65535,Total energy (power over time) output of the solar array since power up
+Star Tracker,,eMMC Capacity,UINT8,1,BC,,Integer,%,TRUE,0,-,-,-,-,-,50,70,80,100,
+Star Tracker,,readable files,UINT8,1,BD,,Integer,,TRUE,0,-,-,-,-,-,-,-,-,255,
+Star Tracker,,updater status,UINT8,1,BE,,Enum String,,TRUE,0,-,-,-,-,-,-,-,-,255,"States: 0=standby, 1=updating, 2=update_failed, 3=status_file"
+Star Tracker,,updates cached,UINT8,1,BF,,Integer,,TRUE,0,-,-,-,-,-,-,-,-,255,
+Star Tracker,,Right Ascension,INT16,2,C0,,Integer,,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,
+Star Tracker,,Declination,INT16,2,C2,,Integer,,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,
+Star Tracker,,Roll,INT16,2,C4,,Integer,,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,
+Star Tracker,,Timestamp of last measurement,UINT32,4,C6,,Integer,ms since midnight,TRUE,0,-,-,-,-,-,-,-,-,86400000,
+GPS,,eMMC Capacity,UINT8,1,CA,,Integer,%,TRUE,0,-,-,-,-,-,50,70,80,100,
+GPS,,readable files,UINT8,1,CB,,Integer,,TRUE,0,-,-,-,-,-,-,-,-,255,
+GPS,,updater status,UINT8,1,CC,,Enum String,,TRUE,0,-,-,-,-,-,-,-,-,255,"States: 0=standby, 1=updating, 2=update_failed, 3=status_file"
+GPS,,updates cached,UINT8,1,CD,,Integer,,TRUE,0,-,-,-,-,-,-,-,-,255,
+GPS,,gps status,UINT8,1,CE,,Enum String,,TRUE,0,-,-,-,-,-,-,-,-,255,"States: 0=standby, 1=locked, 2=hardware_error, 3=parser_error"
+GPS,,num of sats locked,UINT8,1,CF,,Integer,,TRUE,0,-,-,-,-,-,-,-,-,255,12 is max of SkyTraq
+GPS,,X position,INT32,4,D0,,Integer,cm,TRUE,SMOL,-,-,-,-,-,-,-,-,BEEG,
+GPS,,Y postition,INT32,4,D4,,Integer,cm,TRUE,SMOL,-,-,-,-,-,-,-,-,BEEG,
+GPS,,Z position,INT32,4,D8,,Integer,cm,TRUE,SMOL,-,-,-,-,-,-,-,-,BEEG,
+GPS,,X velocity,INT32,4,DC,,Integer,cm/s,TRUE,SMOL,-,-,-,-,-,-,-,-,BEEG,
+GPS,,Y velocity,INT32,4,E0,,Integer,cm/s,TRUE,SMOL,-,-,-,-,-,-,-,-,BEEG,
+GPS,,Z velocity,INT32,4,E4,,Integer,cm/s,TRUE,SMOL,-,-,-,-,-,-,-,-,BEEG,
+GPS,,Timestamp of last packet,UINT32,4,E8,,Integer,ms since midnight,TRUE,0,-,-,-,-,-,-,-,-,86400000,
+ADS,Gyro,Roll dot,INT16,2,EC,,Integer,deg/sec?,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,
+ADS,Gyro,Pitch dot,INT16,2,EE,,Integer,deg/sec?,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,
+ADS,Gyro,Yaw dot,INT16,2,F0,,Integer,deg/sec?,TRUE,"-32,768",-,-,-,-,-,-,-,-,32767,
+ADS,Gyro,IMU temp,INT8,1,F2,,Integer,Deg C,TRUE,-128,-30,-20,-10,0,40,50,60,70,127,
+DxWiFi,,eMMC Capacity,UINT8,1,F3,,Integer,%,TRUE,0,-,-,-,-,-,50,70,80,100,
+DxWiFi,,readable files,UINT8,1,F4,,Integer,,TRUE,0,-,-,-,-,-,-,-,-,255,
+DxWiFi,,updater status,UINT8,1,F5,,Enum String,,TRUE,0,-,-,-,-,-,-,-,-,255,"States: 0=standby, 1=updating, 2=update_failed, 3=status_file"
+DxWiFi,,updates cached,UINT8,1,F6,,Integer,,TRUE,0,-,-,-,-,-,-,-,-,255,
+DxWiFi,,transmitting,BOOL,1,F7,,Enum String,,TRUE,0,-,-,-,-,-,-,-,-,1,"States: 0=disabled, 1=enabled"
+APRS,Packet,CRC-32,UINT32,4,F8,,Integer,FCS,TRUE,0,-,-,-,-,-,-,-,-,BEEG,Polynomial 0x04C11DB7; computed over all bytes allocated

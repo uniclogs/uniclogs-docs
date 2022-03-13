@@ -17,6 +17,7 @@ TYPES = {
     'UINT32': 'u4',
     'INT64': 's8',
     'UINT64': 'u8',
+    'CHAR': 'b3',
 }
 
 
